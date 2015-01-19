@@ -1,0 +1,5 @@
+cmake_install.cmake_install
+CMakeCache*
+Makefile
+whisper
+CMakeFiles
