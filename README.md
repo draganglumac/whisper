@@ -6,7 +6,7 @@ Based on whisp this is a P2P domain level chat program that provides secure cryp
 
 Components
 ==========
-
+```
 session/
   Session Service
   Session Object
@@ -21,4 +21,4 @@ crypto/
   Integrity Service
 usr/
   User command line I/O
-
+```
