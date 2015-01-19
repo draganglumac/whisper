@@ -55,9 +55,25 @@ void test_rsa_key() {
   asymmetrical_destroy_key(key);
 
 }
-int main(int argc, char **argv) {
+void test_des_encryption() {
+  jnx_char *test_message = "Test";
+  jnx_size message_size = strlen(test_message);
 
+  jnx_char *encrypted_message = symmetrical_encrypt("TestKey",test_message,message_size + 1);
+
+  jnx_char *decrypted_message = symmetrical_decrypt("TestKey",encrypted_message,message_size + 1);
+
+  JNXCHECK(strcmp(decrypted_message,test_message) == 0);
+
+  free(encrypted_message);
+  free(decrypted_message);
+}
+int main(int argc, char **argv) {
+  JNX_LOG(NULL,"Test RSA key");
   test_rsa_key();
+  JNX_LOG(NULL,"Test RSA encryption");
   test_rsa_encryption();
+  JNX_LOG(NULL,"Test DES encryption");
+  test_des_encryption();
   return 0;
 }
