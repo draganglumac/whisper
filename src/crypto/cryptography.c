@@ -83,6 +83,8 @@ jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
   DES_cblock key2;
   DES_key_schedule schedule;
 
+  size += 1;
+
   res = malloc(size);
   bzero(res,size);
   memcpy(key2,key,8);
@@ -99,6 +101,8 @@ jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
   DES_cblock key2;
   DES_key_schedule schedule;
 
+  size += 1;
+  
   res = malloc(size);
   bzero(res,size);
   memcpy(key2,key,8);

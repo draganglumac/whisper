@@ -59,9 +59,9 @@ void test_des_encryption() {
   jnx_char *test_message = "Test";
   jnx_size message_size = strlen(test_message);
 
-  jnx_char *encrypted_message = symmetrical_encrypt("TestKey",test_message,message_size + 1);
+  jnx_char *encrypted_message = symmetrical_encrypt("TestKey",test_message,message_size);
 
-  jnx_char *decrypted_message = symmetrical_decrypt("TestKey",encrypted_message,message_size + 1);
+  jnx_char *decrypted_message = symmetrical_decrypt("TestKey",encrypted_message,message_size);
 
   JNXCHECK(strcmp(decrypted_message,test_message) == 0);
 
