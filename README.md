@@ -7,6 +7,9 @@ Based on whisp this is a P2P domain level chat program that provides secure cryp
 Components
 ==========
 
+session/
+  Session Service
+  Session Object
 net/
   Discovery Service
   Multicast Service
