@@ -16,9 +16,11 @@ net/
   Secure/Non-Secure Socket interface
 
 crypto/
-  Symmetrical key encrypt/decrypt
-  Asymmetrical key encrypt/decrypt
+  ~~Symmetrical key encrypt/decrypt~~ [DONE]
+  ~~Asymmetrical key encrypt/decrypt~~ [DONE]
   Integrity Service
 usr/
   User command line I/O
 ```
+
+Tests for each module are included
