@@ -7,7 +7,6 @@ notifications:
     email:
         recipients:
             - alexsimonjones@gmail.com
-            - dragan.glumac@gmail.com
         on_sucess: [never]
         on_failure: [always] # default: always
     irc:
