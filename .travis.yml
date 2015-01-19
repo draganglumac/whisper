@@ -1,0 +1,17 @@
+language: c
+compiler:
+    - gcc
+    - clang
+script: git submodule update --init && cd jnxlibc && cmake . && make && sudo make install && ../test && ./run_tests
+notifications:
+    email:
+        recipients:
+            - alexsimonjones@gmail.com
+            - dragan.glumac@gmail.com
+        on_sucess: [never]
+        on_failure: [always] # default: always
+    irc:
+        channels:
+            - "chat.freenode.net#jnxlibc"
+    on_sucess: [always]
+    on_failure: [always] # default: always
