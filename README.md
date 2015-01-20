@@ -1,6 +1,7 @@
 whisper
 =======
 
+Status: In active development, not ready for general consumption.
 
 Based on whisp this is a P2P domain level chat program that provides secure cryptography
 
