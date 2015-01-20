@@ -4,6 +4,23 @@ whisper
 
 Based on whisp this is a P2P domain level chat program that provides secure cryptography
 
+Installation
+=========
+
+```
+cmake .
+make
+sudo make install 
+```
+
+Additional Deps
+=====
+
+```
+-lssl -lcrypto
+```
+
+
 Components
 ==========
 ```
