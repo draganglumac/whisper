@@ -18,7 +18,7 @@ net/
 crypto/
   ~~Symmetrical key encrypt/decrypt~~ [DONE]
   ~~Asymmetrical key encrypt/decrypt~~ [DONE]
-  Integrity Service
+  ~~Integrity Service~~ [DONE]
 usr/
   User command line I/O
 ```
