@@ -16,5 +16,14 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include <jnxc_headers/jnxsocket.h>
 #include "discovery.h"
 
+
+discovery_service* discovery_service_create(int port, unsigned int family) {
+	discovery_service *svc = calloc(1, sizeof(discovery_service));
+	svc->port = port;
+	svc->sock_send = jnx_socket_udp_create(family);
+	svc->sock_receive = jnx_socket_udp_create(family);
+	return svc;
+}
