@@ -18,10 +18,17 @@ Additional Deps
 =====
 
 ```
--lssl -lcrypto
+-lssl -lcrypto -lprotobuf-c
 ```
 
+Regenerate Protobuf files
+=========================
 
+```
+./tools/generate_protobuf
+```
+
+This currently uses a wildcard `*.proto` with an assumption for now that there is one proto file in a directory
 Components
 ==========
 ```
