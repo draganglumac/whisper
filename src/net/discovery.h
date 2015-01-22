@@ -33,5 +33,6 @@ typedef struct {
 } discovery_service;
 
 discovery_service* discovery_service_create(int port, jnx_unsigned_int family);
+void discovery_service_cleanup(discovery_service *svc);
 
 #endif

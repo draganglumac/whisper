@@ -34,6 +34,13 @@ void test_service_creation() {
 			&& svc->sock_receive->addrfamily == AF_INET
 			&& svc->sock_receive->stype == SOCK_DGRAM);
 }
+void test_service_cleanup() {
+	discovery_service *svc = discovery_service_create(1234, AF_INET);
+	discovery_service_cleanup(svc);
+	JNXCHECK(svc->port == 0);
+	JNXCHECK(svc->sock_send == 0);
+	JNXCHECK(svc->sock_receive == 0);
+}
 int main(int argc, char **argv) {
   JNX_LOG(NULL,"Test service creation.");
   test_service_creation();
