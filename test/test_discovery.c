@@ -44,5 +44,7 @@ void test_service_cleanup() {
 int main(int argc, char **argv) {
   JNX_LOG(NULL,"Test service creation.");
   test_service_creation();
+  JNX_LOG(NULL,"Test service cleanup.");
+  test_service_cleanup();
   return 0;
 }
