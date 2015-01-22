@@ -30,6 +30,7 @@ typedef struct {
 	int port;
 	jnx_socket *sock_send;
 	jnx_socket *sock_receive;
+	int running;
 } discovery_service;
 
 discovery_service* discovery_service_create(int port, jnx_unsigned_int family);

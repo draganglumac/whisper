@@ -33,6 +33,7 @@ void test_service_creation() {
 	JNXCHECK(svc->sock_receive->socket > 0 
 			&& svc->sock_receive->addrfamily == AF_INET
 			&& svc->sock_receive->stype == SOCK_DGRAM);
+	JNXCHECK(svc->running == 0);
 }
 void test_service_cleanup() {
 	discovery_service *svc = discovery_service_create(1234, AF_INET);
@@ -40,11 +41,31 @@ void test_service_cleanup() {
 	JNXCHECK(svc->port == 0);
 	JNXCHECK(svc->sock_send == 0);
 	JNXCHECK(svc->sock_receive == 0);
+	JNXCHECK(svc->running == 0);
+}
+void test_starting_service() {
+	discovery_service *svc = discovery_service_create(1234, AF_INET);
+	int retval = discovery_service_start(svc);
+	JNXCHECK(retval = 0);
+	if (svc->running) {
+		// check send socket is up and listening
+		int error = 0;
+		socklen_t len = sizeof(error);
+		retval = getsockopt(svc->send_sock->socket, SOL_SOCKET, SO_ERROR, &error, &len);
+		JNXCHECK(retval == 0);
+	}
+}
+void test_stopping_service() {
+//	JNXCHECK(1 == 0);
 }
 int main(int argc, char **argv) {
   JNX_LOG(NULL,"Test service creation.");
   test_service_creation();
   JNX_LOG(NULL,"Test service cleanup.");
   test_service_cleanup();
+  JNX_LOG(NULL, "Test starting discovery service.");
+  test_starting_service();
+  JNX_LOG(NULL, "Test stopping discovery service.");
+  test_stopping_service();
   return 0;
 }

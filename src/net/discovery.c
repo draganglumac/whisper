@@ -24,10 +24,12 @@ discovery_service* discovery_service_create(int port, unsigned int family) {
 	svc->port = port;
 	svc->sock_send = jnx_socket_udp_create(family);
 	svc->sock_receive = jnx_socket_udp_create(family);
+	svc->running = 0;
 	return svc;
 }
 void discovery_service_cleanup(discovery_service *svc) {
 	jnx_socket_destroy(&(svc->sock_send));
 	jnx_socket_destroy(&(svc->sock_receive));
 	svc->port = 0;
+	svc->running = 0;
 }
