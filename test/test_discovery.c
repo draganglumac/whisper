@@ -51,7 +51,7 @@ void test_starting_service() {
 		// check send socket is up and listening
 		int error = 0;
 		socklen_t len = sizeof(error);
-		retval = getsockopt(svc->send_sock->socket, SOL_SOCKET, SO_ERROR, &error, &len);
+		retval = getsockopt(svc->sock_send->socket, SOL_SOCKET, SO_ERROR, &error, &len);
 		JNXCHECK(retval == 0);
 	}
 }
