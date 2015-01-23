@@ -46,7 +46,7 @@ void test_service_cleanup() {
 void test_starting_service() {
 	discovery_service *svc = discovery_service_create(1234, AF_INET);
 	int retval = discovery_service_start(svc);
-	JNXCHECK(retval = 0);
+	JNXCHECK(retval == 0);
 	if (svc->running) {
 		// check send socket is up and listening
 		int error = 0;
