@@ -17,14 +17,20 @@
  */
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <string.h>
 #include "net/discovery.h"
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxlog.h>
 
+void get_broadcast_address(char *buffer) {
+	strncpy(buffer, "192.168.2.255", strlen("192.168.2.255") + 1);
+}
 void test_service_creation() {
 	discovery_service *svc = 0;
 	JNXCHECK(svc == NULL);
-	svc = discovery_service_create(1234, AF_INET);
+	char baddr[16];
+	get_broadcast_address(baddr);
+	svc = discovery_service_create(1234, AF_INET, baddr);
 	JNXCHECK(svc != NULL);
 	JNXCHECK(svc->port == 1234);
 	JNXCHECK(svc->sock_send->socket > 0 
@@ -36,15 +42,28 @@ void test_service_creation() {
 	JNXCHECK(svc->running == 0);
 }
 void test_service_cleanup() {
-	discovery_service *svc = discovery_service_create(1234, AF_INET);
+	discovery_service *svc;
+	char baddr[16];
+	get_broadcast_address(baddr);
+	svc = discovery_service_create(1234, AF_INET, baddr);
 	discovery_service_cleanup(svc);
 	JNXCHECK(svc->port == 0);
 	JNXCHECK(svc->sock_send == 0);
 	JNXCHECK(svc->sock_receive == 0);
 	JNXCHECK(svc->running == 0);
 }
+static int service_started = 0;
+int starting_service_spy(char *message, int len, jnx_socket *s) {
+	JNXCHECK(strcmp(message, "LIST") == 0);
+	service_started = 1;
+	return 0;
+}
 void test_starting_service() {
-	discovery_service *svc = discovery_service_create(1234, AF_INET);
+	discovery_service *svc;
+	char baddr[16];
+	get_broadcast_address(baddr);
+	svc = discovery_service_create(1234, AF_INET, baddr);
+	svc->receive_callback = starting_service_spy;
 	int retval = discovery_service_start(svc);
 	JNXCHECK(retval == 0);
 	if (svc->running) {
@@ -54,6 +73,14 @@ void test_starting_service() {
 		retval = getsockopt(svc->sock_send->socket, SOL_SOCKET, SO_ERROR, &error, &len);
 		JNXCHECK(retval == 0);
 	}
+
+	while (!service_started) {
+		printf(".");
+		fflush(stdout);
+		sleep(1);
+	}
+	printf("\n");
+	service_started = 0;
 }
 void test_stopping_service() {
 //	JNXCHECK(1 == 0);

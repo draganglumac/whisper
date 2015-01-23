@@ -36,23 +36,29 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
 static void* discovery_loop(void* data) {
 	discovery_service *svc = (discovery_service*) data;
 	char *port = port_to_string(svc);
-	int retval = jnx_socket_udp_listen(svc->sock_receive, port, 0, discovery_receive_handler);
+	int retval = jnx_socket_udp_listen(svc->sock_receive, port, 0, svc->receive_callback);
 	free(port);
 	return retval;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
 	return jnx_thread_create_disposable(discovery_loop, (void*) svc);
 }
+
+// Discovery requests
 static jnx_int32 send_discovery_request(discovery_service *svc) {
-	JNX_LOG(0, "[TODO] send_discovery_request\n");
+	char *tmp = "LIST";
+	char *port = port_to_string(svc);
+	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, tmp, 5);	
 	return 0;
 }
 // Public interface functions
-discovery_service* discovery_service_create(int port, unsigned int family) {
+discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address) {
 	discovery_service *svc = calloc(1, sizeof(discovery_service));
 	svc->port = port;
 	svc->sock_send = jnx_socket_udp_create(family);
 	svc->sock_receive = jnx_socket_udp_create(family);
+	svc->broadcast_group_address = broadcast_group_address;
+	svc->receive_callback = discovery_receive_handler;
 	svc->running = 0;
 	return svc;
 }
@@ -68,6 +74,7 @@ int discovery_service_start(discovery_service *svc) {
 		JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
 		return ERR_DISCOVERY_START;
 	}
+	svc->running = 1;
 
 	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_send);
 	send_discovery_request(svc);

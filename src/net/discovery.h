@@ -30,10 +30,12 @@ typedef struct {
 	int port;
 	jnx_socket *sock_send;
 	jnx_socket *sock_receive;
+	char *broadcast_group_address;
+	udp_socket_listener_callback receive_callback;
 	int running;
 } discovery_service;
 
-discovery_service* discovery_service_create(int port, jnx_unsigned_int family);
+discovery_service* discovery_service_create(int port, jnx_unsigned_int family, char *broadcast_group_address);
 void discovery_service_cleanup(discovery_service *svc);
 int discovery_service_start(discovery_service *svc);
 int discovery_service_stop(discovery_service *svc);
