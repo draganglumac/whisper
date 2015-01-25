@@ -25,6 +25,8 @@
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxlog.h>
 
+static char baddr[16];
+
 void get_broadcast_address(char *buffer) {
 	struct ifaddrs *ifap;
 	if (0 != getifaddrs(&ifap)) {
@@ -53,11 +55,10 @@ void get_broadcast_address(char *buffer) {
 
 	freeifaddrs(ifap);
 }
+
 void test_service_creation() {
 	discovery_service *svc = 0;
 	JNXCHECK(svc == NULL);
-	char baddr[16];
-	get_broadcast_address(baddr);
 	svc = discovery_service_create(1234, AF_INET, baddr);
 	JNXCHECK(svc != NULL);
 	JNXCHECK(svc->port == 1234);
@@ -71,8 +72,6 @@ void test_service_creation() {
 }
 void test_service_cleanup() {
 	discovery_service *svc;
-	char baddr[16];
-	get_broadcast_address(baddr);
 	svc = discovery_service_create(1234, AF_INET, baddr);
 	discovery_service_cleanup(svc);
 	JNXCHECK(svc->port == 0);
@@ -88,8 +87,6 @@ int starting_service_spy(char *message, int len, jnx_socket *s) {
 }
 void test_starting_service() {
 	discovery_service *svc;
-	char baddr[16];
-	get_broadcast_address(baddr);
 	svc = discovery_service_create(1234, AF_INET, baddr);
 	svc->receive_callback = starting_service_spy;
 	int retval = discovery_service_start(svc);
@@ -114,6 +111,8 @@ void test_stopping_service() {
 	//	JNXCHECK(1 == 0);
 }
 int main(int argc, char **argv) {
+	get_broadcast_address(baddr);
+	
 	JNX_LOG(NULL,"Test service creation.");
 	test_service_creation();
 	JNX_LOG(NULL,"Test service cleanup.");
