@@ -26,7 +26,6 @@
 #include <jnxc_headers/jnxlog.h>
 
 static char baddr[16];
-
 void get_broadcast_address(char *buffer) {
 	struct ifaddrs *ifap;
 	if (0 != getifaddrs(&ifap)) {
@@ -56,42 +55,53 @@ void get_broadcast_address(char *buffer) {
 	freeifaddrs(ifap);
 }
 
-void test_service_creation() {
-	discovery_service *svc = 0;
-	JNXCHECK(svc == NULL);
-	svc = discovery_service_create(1234, AF_INET, baddr);
+static int list_message_received = 0;
+int starting_service_spy(char *message, int len, jnx_socket *s) {
+	JNXCHECK(strcmp(message, "LIST") == 0);
+	list_message_received = 1;
+	return -1;
+}
+
+// *** Discovery service test runner ***
+#define CLEANUP 0
+#define NO_CLEANUP 1
+typedef int (*discovery_test)(discovery_service *);
+
+void run_discovery_service_test(discovery_test test) {
+	discovery_service *svc = discovery_service_create(1234, AF_INET, baddr);
+	int retval = test(svc);
+	if (retval == CLEANUP) {
+		discovery_service_cleanup(&svc);
+	}
+}
+
+// *** Tests ***
+int test_service_creation(discovery_service *svc) {
 	JNXCHECK(svc != NULL);
 	JNXCHECK(svc->port == 1234);
+	JNXCHECK(svc->family == AF_INET);
+	JNXCHECK(svc->isrunning == 0);
+	JNXCHECK(svc->sock_send == NULL);
+	JNXCHECK(svc->sock_receive == NULL);
+	return CLEANUP;
+}
+int test_service_cleanup(discovery_service *svc) {
+	discovery_service_cleanup(&svc);
+	JNXCHECK(svc == 0);
+	return NO_CLEANUP;
+}
+int test_starting_service(discovery_service *svc) {
+	svc->receive_callback = starting_service_spy;
+	int retval = discovery_service_start(svc);
+	JNXCHECK(retval == 0);
 	JNXCHECK(svc->sock_send->socket > 0 
 			&& svc->sock_send->addrfamily == AF_INET
 			&& svc->sock_send->stype == SOCK_DGRAM);
 	JNXCHECK(svc->sock_receive->socket > 0 
 			&& svc->sock_receive->addrfamily == AF_INET
 			&& svc->sock_receive->stype == SOCK_DGRAM);
-	JNXCHECK(svc->running == 0);
-}
-void test_service_cleanup() {
-	discovery_service *svc;
-	svc = discovery_service_create(1234, AF_INET, baddr);
-	discovery_service_cleanup(svc);
-	JNXCHECK(svc->port == 0);
-	JNXCHECK(svc->sock_send == 0);
-	JNXCHECK(svc->sock_receive == 0);
-	JNXCHECK(svc->running == 0);
-}
-static int service_started = 0;
-int starting_service_spy(char *message, int len, jnx_socket *s) {
-	JNXCHECK(strcmp(message, "LIST") == 0);
-	service_started = 1;
-	return 0;
-}
-void test_starting_service() {
-	discovery_service *svc;
-	svc = discovery_service_create(1234, AF_INET, baddr);
-	svc->receive_callback = starting_service_spy;
-	int retval = discovery_service_start(svc);
-	JNXCHECK(retval == 0);
-	if (svc->running) {
+
+	if (svc->isrunning) {
 		// check send socket is up and listening
 		int error = 0;
 		socklen_t len = sizeof(error);
@@ -99,27 +109,48 @@ void test_starting_service() {
 		JNXCHECK(retval == 0);
 	}
 
-	while (!service_started) {
+	while (!list_message_received) {
 		printf(".");
 		fflush(stdout);
 		sleep(1);
 	}
 	printf("\n");
-	service_started = 0;
+	list_message_received = 0;
+
+	return CLEANUP;
 }
-void test_stopping_service() {
-	//	JNXCHECK(1 == 0);
+int test_stopping_service(discovery_service *svc) {
+	test_starting_service(svc);
+	discovery_service_stop(svc);
+	JNXCHECK(svc->sock_receive == 0);
+	JNXCHECK(svc->sock_send == 0);
+	JNXCHECK(svc->isrunning == 0);
+	list_message_received = 0;
+	return CLEANUP;
+}
+int test_restarting_service(discovery_service *svc) {
+	test_starting_service(svc);
+	discovery_service_stop(svc);
+	test_starting_service(svc);
+	return CLEANUP;
 }
 int main(int argc, char **argv) {
 	get_broadcast_address(baddr);
 	
 	JNX_LOG(NULL,"Test service creation.");
-	test_service_creation();
+	run_discovery_service_test(test_service_creation);
+	
 	JNX_LOG(NULL,"Test service cleanup.");
-	test_service_cleanup();
+	run_discovery_service_test(test_service_cleanup);
+	
 	JNX_LOG(NULL, "Test starting discovery service.");
-	test_starting_service();
+	run_discovery_service_test(test_starting_service);
+	
 	JNX_LOG(NULL, "Test stopping discovery service.");
-	test_stopping_service();
+	run_discovery_service_test(test_stopping_service);
+
+	JNX_LOG(NULL, "Test restarting discovery service.");
+	run_discovery_service_test(test_restarting_service);
+	
 	return 0;
 }

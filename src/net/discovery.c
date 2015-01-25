@@ -19,6 +19,7 @@
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxlog.h>
 #include <jnxc_headers/jnxthread.h>
+#include <jnxc_headers/jnxcheck.h>
 #include "discovery.h"
 #include "err/whisper_errors.h"
 
@@ -51,38 +52,46 @@ static jnx_int32 send_discovery_request(discovery_service *svc) {
 	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, tmp, 5);	
 	return 0;
 }
+
 // Public interface functions
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address) {
 	discovery_service *svc = calloc(1, sizeof(discovery_service));
 	svc->port = port;
-	svc->sock_send = jnx_socket_udp_create(family);
-	svc->sock_receive = jnx_socket_udp_create(family);
+	svc->family = family;
 	svc->broadcast_group_address = broadcast_group_address;
 	svc->receive_callback = discovery_receive_handler;
-	svc->running = 0;
+	svc->isrunning = 0;
 	return svc;
 }
-void discovery_service_cleanup(discovery_service *svc) {
-	jnx_socket_destroy(&(svc->sock_send));
-	jnx_socket_destroy(&(svc->sock_receive));
-	svc->port = 0;
-	svc->running = 0;
-}
 int discovery_service_start(discovery_service *svc) {
+	JNXCHECK(svc);
+	svc->sock_receive = jnx_socket_udp_create(svc->family);
 	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_receive);
+	svc->sock_send = jnx_socket_udp_create(svc->family);
+	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_send);
+	
 	if (0 != listen_for_discovery_packets(svc)) {
 		JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
 		return ERR_DISCOVERY_START;
 	}
-	svc->running = 1;
-
-	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_send);
 	send_discovery_request(svc);
-	
+
+	svc->isrunning = 1;
 	return 0;
 }
 int discovery_service_stop(discovery_service *svc) {
-	exit(1);
+	JNXCHECK(svc);
+	jnx_socket_destroy(&(svc->sock_receive));
+	jnx_socket_destroy(&(svc->sock_send));
+	svc->isrunning = 0;
+	return 0;
 }
-
+void discovery_service_cleanup(discovery_service **svc) {
+	JNXCHECK(*svc);
+	if ((*svc)->isrunning) {
+		discovery_service_stop(*svc);
+	}
+	free(*svc);
+	*svc = 0;
+}
 
