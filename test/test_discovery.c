@@ -17,13 +17,41 @@
  */
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include "net/discovery.h"
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxlog.h>
 
 void get_broadcast_address(char *buffer) {
-	strncpy(buffer, "192.168.2.255", strlen("192.168.2.255") + 1);
+	struct ifaddrs *ifap;
+	if (0 != getifaddrs(&ifap)) {
+		JNX_LOG(0, "[ERROR] Couldn't get descriptions of network interfaces.");
+		exit(1);
+	}
+
+	struct ifaddrs *current = ifap;
+	while (0 != current) {
+		struct sockaddr *ip = current->ifa_addr;
+		if (ip->sa_family == AF_INET) {
+			struct sockaddr *netmask = current->ifa_netmask;
+			char *aip = inet_ntoa(((struct sockaddr_in *) ip)->sin_addr);
+			if (strcmp("127.0.0.1", aip) == 0) {
+				current = current->ifa_next;
+				continue;
+			}
+			((struct sockaddr_in *) ip)->sin_addr.s_addr |= ~(((struct sockaddr_in *) netmask)->sin_addr.s_addr);
+			char *broadcast = inet_ntoa(((struct sockaddr_in *) ip)->sin_addr);
+			strncpy(buffer, broadcast, strlen(broadcast) + 1);
+			JNX_LOG(0, "Broadcast IP is %s", buffer); 
+			break;
+		} 
+		current = current->ifa_next;
+	}
+
+	freeifaddrs(ifap);
 }
 void test_service_creation() {
 	discovery_service *svc = 0;
@@ -83,16 +111,16 @@ void test_starting_service() {
 	service_started = 0;
 }
 void test_stopping_service() {
-//	JNXCHECK(1 == 0);
+	//	JNXCHECK(1 == 0);
 }
 int main(int argc, char **argv) {
-  JNX_LOG(NULL,"Test service creation.");
-  test_service_creation();
-  JNX_LOG(NULL,"Test service cleanup.");
-  test_service_cleanup();
-  JNX_LOG(NULL, "Test starting discovery service.");
-  test_starting_service();
-  JNX_LOG(NULL, "Test stopping discovery service.");
-  test_stopping_service();
-  return 0;
+	JNX_LOG(NULL,"Test service creation.");
+	test_service_creation();
+	JNX_LOG(NULL,"Test service cleanup.");
+	test_service_cleanup();
+	JNX_LOG(NULL, "Test starting discovery service.");
+	test_starting_service();
+	JNX_LOG(NULL, "Test stopping discovery service.");
+	test_stopping_service();
+	return 0;
 }
