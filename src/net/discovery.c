@@ -33,6 +33,7 @@ static char* port_to_string(discovery_service *svc) {
 // Discovery listener and loop - async thread
 static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesread, jnx_socket *s) {
 	JNX_LOG(0, "[DISCOVERY] %s\n", payload);
+	return 0;
 }
 static void* discovery_loop(void* data) {
 	discovery_service *svc = (discovery_service*) data;
