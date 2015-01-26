@@ -31,13 +31,25 @@ void test_encoder() {
   
   jnx_size *secondolen;
   jnx_char *decoded_string = decode_to_string(network_encoded_string,olen,&secondolen);
-
+  
   JNX_LOG(NULL,"Decoded string %s\n",decoded_string);
 
   JNXCHECK(strcmp(decoded_string,test_message) == 0);
 }
+void test_uuid() {
+  
+  uuid_t guid;
+  generate_uuid(&guid);
+  jnx_char str[37];
+  uuid_unparse_lower(guid,str);
+  
+  JNXCHECK(str);
+  
+  JNX_LOG(NULL,"Generated guid => %s\n",str);
+}
 int main(int argc, char **argv) {
 
   test_encoder();
+  test_uuid();
   return 0;
 }
