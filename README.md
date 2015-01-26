@@ -18,7 +18,7 @@ Additional Deps
 =====
 
 ```
--lssl -lcrypto -lprotobuf-c -luuid
+-lssl -lcrypto -lprotobuf-c
 ```
 
 Regenerate Protobuf files
