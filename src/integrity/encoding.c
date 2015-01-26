@@ -37,4 +37,7 @@ void generate_uuid(uuid_t *uuid) {
 
   uuid_generate_time_safe(*uuid);
 }
+void destroy_uuid(uuid_t *uuid) {
 
+  uuid_clear(*uuid);
+}

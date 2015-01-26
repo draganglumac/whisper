@@ -15,7 +15,7 @@ PROTOBUF_C__BEGIN_DECLS
 #endif
 
 
-typedef struct _SessionTransport SessionTransport;
+typedef struct _SessionObject SessionObject;
 
 
 /* --- enums --- */
@@ -23,40 +23,40 @@ typedef struct _SessionTransport SessionTransport;
 
 /* --- messages --- */
 
-struct  _SessionTransport
+struct  _SessionObject
 {
   ProtobufCMessage base;
   size_t n_guid;
   int32_t *guid;
 };
-#define SESSION_TRANSPORT__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&session_transport__descriptor) \
+#define SESSION_OBJECT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&session_object__descriptor) \
     , 0,NULL }
 
 
-/* SessionTransport methods */
-void   session_transport__init
-                     (SessionTransport         *message);
-size_t session_transport__get_packed_size
-                     (const SessionTransport   *message);
-size_t session_transport__pack
-                     (const SessionTransport   *message,
+/* SessionObject methods */
+void   session_object__init
+                     (SessionObject         *message);
+size_t session_object__get_packed_size
+                     (const SessionObject   *message);
+size_t session_object__pack
+                     (const SessionObject   *message,
                       uint8_t             *out);
-size_t session_transport__pack_to_buffer
-                     (const SessionTransport   *message,
+size_t session_object__pack_to_buffer
+                     (const SessionObject   *message,
                       ProtobufCBuffer     *buffer);
-SessionTransport *
-       session_transport__unpack
+SessionObject *
+       session_object__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   session_transport__free_unpacked
-                     (SessionTransport *message,
+void   session_object__free_unpacked
+                     (SessionObject *message,
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
-typedef void (*SessionTransport_Closure)
-                 (const SessionTransport *message,
+typedef void (*SessionObject_Closure)
+                 (const SessionObject *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -64,7 +64,7 @@ typedef void (*SessionTransport_Closure)
 
 /* --- descriptors --- */
 
-extern const ProtobufCMessageDescriptor session_transport__descriptor;
+extern const ProtobufCMessageDescriptor session_object__descriptor;
 
 PROTOBUF_C__END_DECLS
 

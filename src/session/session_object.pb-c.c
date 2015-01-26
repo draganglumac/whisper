@@ -7,84 +7,84 @@
 #endif
 
 #include "session_object.pb-c.h"
-void   session_transport__init
-                     (SessionTransport         *message)
+void   session_object__init
+                     (SessionObject         *message)
 {
-  static SessionTransport init_value = SESSION_TRANSPORT__INIT;
+  static SessionObject init_value = SESSION_OBJECT__INIT;
   *message = init_value;
 }
-size_t session_transport__get_packed_size
-                     (const SessionTransport *message)
+size_t session_object__get_packed_size
+                     (const SessionObject *message)
 {
-  assert(message->base.descriptor == &session_transport__descriptor);
+  assert(message->base.descriptor == &session_object__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t session_transport__pack
-                     (const SessionTransport *message,
+size_t session_object__pack
+                     (const SessionObject *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &session_transport__descriptor);
+  assert(message->base.descriptor == &session_object__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t session_transport__pack_to_buffer
-                     (const SessionTransport *message,
+size_t session_object__pack_to_buffer
+                     (const SessionObject *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &session_transport__descriptor);
+  assert(message->base.descriptor == &session_object__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-SessionTransport *
-       session_transport__unpack
+SessionObject *
+       session_object__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (SessionTransport *)
-     protobuf_c_message_unpack (&session_transport__descriptor,
+  return (SessionObject *)
+     protobuf_c_message_unpack (&session_object__descriptor,
                                 allocator, len, data);
 }
-void   session_transport__free_unpacked
-                     (SessionTransport *message,
+void   session_object__free_unpacked
+                     (SessionObject *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &session_transport__descriptor);
+  assert(message->base.descriptor == &session_object__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor session_transport__field_descriptors[1] =
+static const ProtobufCFieldDescriptor session_object__field_descriptors[1] =
 {
   {
     "guid",
     1,
     PROTOBUF_C_LABEL_REPEATED,
     PROTOBUF_C_TYPE_INT32,
-    offsetof(SessionTransport, n_guid),
-    offsetof(SessionTransport, guid),
+    offsetof(SessionObject, n_guid),
+    offsetof(SessionObject, guid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned session_transport__field_indices_by_name[] = {
+static const unsigned session_object__field_indices_by_name[] = {
   0,   /* field[0] = guid */
 };
-static const ProtobufCIntRange session_transport__number_ranges[1 + 1] =
+static const ProtobufCIntRange session_object__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 1 }
 };
-const ProtobufCMessageDescriptor session_transport__descriptor =
+const ProtobufCMessageDescriptor session_object__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "session_transport",
-  "SessionTransport",
-  "SessionTransport",
+  "session_object",
+  "SessionObject",
+  "SessionObject",
   "",
-  sizeof(SessionTransport),
+  sizeof(SessionObject),
   1,
-  session_transport__field_descriptors,
-  session_transport__field_indices_by_name,
-  1,  session_transport__number_ranges,
-  (ProtobufCMessageInit) session_transport__init,
+  session_object__field_descriptors,
+  session_object__field_indices_by_name,
+  1,  session_object__number_ranges,
+  (ProtobufCMessageInit) session_object__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

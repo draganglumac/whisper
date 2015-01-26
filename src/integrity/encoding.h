@@ -24,4 +24,6 @@ jnx_uint8 *encode_from_string(jnx_char *input, jnx_size input_length, jnx_size *
 jnx_char *decode_to_string(jnx_char *input, jnx_size input_length, jnx_size *output_length);
 
 void generate_uuid(uuid_t *uuid);
+
+void destroy_uuid(uuid_t *uuid);
 #endif

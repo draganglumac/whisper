@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  session.h
+ *       Filename:  session.c
  *
  *    Description:  
  *
  *        Version:  1.0
- *        Created:  26/01/15 12:02:43
+ *        Created:  26/01/15 12:32:16
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,9 +15,8 @@
  *
  * =====================================================================================
  */
-#ifndef __SESSION_H__
-#define __SESSION_H__
-#include "session_object.pb-c.h"
-
-
-#endif
+#include <stdlib.h>
+#include <jnxc_headers/jnxlog.h>
+#include "../integrity/encoding.h"
+#include <string.h>
+#include "session.h"

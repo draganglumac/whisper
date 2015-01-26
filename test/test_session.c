@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  session.h
+ *       Filename:  test_encoder.c
  *
  *    Description:  
  *
  *        Version:  1.0
- *        Created:  26/01/15 12:02:43
+ *        Created:  01/20/2015 08:31:35 AM
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,9 +15,17 @@
  *
  * =====================================================================================
  */
-#ifndef __SESSION_H__
-#define __SESSION_H__
-#include "session_object.pb-c.h"
+#include <stdlib.h>
+#include "session/session.h"
+#include <jnxc_headers/jnxcheck.h>
+#include <jnxc_headers/jnxlog.h>
+#include <jnxc_headers/jnxtypes.h>
 
+void session_create_destroy() {
+  
+}
+int main(int argc, char **argv) {
 
-#endif
+  session_create_destroy();
+  return 0;
+}
