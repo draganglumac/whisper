@@ -19,9 +19,6 @@
 #define __SESSION_H__
 #include "session_object.pb-c.h"
 
-typedef struct session { 
 
-}session;
-
-session* session_create();
+void session_create();
 #endif

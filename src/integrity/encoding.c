@@ -33,11 +33,3 @@ jnx_char *decode_to_string(jnx_char *input, jnx_size input_length, jnx_size *out
   jnx_encoder_destroy(&e);
   return decoded;
 }
-void generate_uuid(uuid_t *uuid) {
-
-  uuid_generate_time_safe(*uuid);
-}
-void destroy_uuid(uuid_t *uuid) {
-
-  uuid_clear(*uuid);
-}
