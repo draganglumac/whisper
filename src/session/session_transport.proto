@@ -1,0 +1,3 @@
+message session_transport {
+  repeated int32 guid=1;
+}
