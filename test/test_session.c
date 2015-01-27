@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include "session/session.h"
 #include <jnxc_headers/jnxcheck.h>
+#include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxlog.h>
 #include <jnxc_headers/jnxtypes.h>
 
@@ -32,8 +33,7 @@ void session_create_destroy() {
 
   SessionObject *us = session_unpack(obuffer,size);
   free(obuffer);
-
-
+  
   JNXCHECK(jnx_guid_compare_raw(s.guid,us->guid) == JNX_GUID_STATE_SUCCESS);
 }
 int main(int argc, char **argv) {

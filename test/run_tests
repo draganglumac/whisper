@@ -63,9 +63,9 @@ function run_single_test()
   for file in $filelist; do
     if [ "$file" == "$1"  ]; then
       echo "found match"
-      
+
       current=${file:0:${#file}-2}
-      
+
       if [ -e $current ]
       then
         rm $current
