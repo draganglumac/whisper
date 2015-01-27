@@ -17,20 +17,22 @@
  */
 #include <stdlib.h>
 #include <jnxc_headers/jnxlog.h>
-#include <jnxc_headers/jnxguid.h>
 #include "../integrity/encoding.h"
 #include <string.h>
 #include "session.h"
 
-void session_create() {
+session_ref* session_create() {
 
   jnx_guid g;
   jnx_guid_create(&g);
+  session_ref *s = malloc(sizeof(session_ref));
+  memcpy(&(*s).guid_ref,&g,sizeof g);
+
   jnx_char *ostr;
-  jnx_guid_to_string(&g,&ostr);
+  jnx_guid_to_string(&(*s).guid_ref,&ostr);
   JNX_LOG(NULL,"Created new session %s\n",ostr);
   free(ostr);
+ 
 
-
-
+  return s;
 }

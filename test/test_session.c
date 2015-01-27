@@ -22,7 +22,9 @@
 #include <jnxc_headers/jnxtypes.h>
 
 void session_create_destroy() {
-  
+
+  session_ref *s = session_create();
+
 }
 int main(int argc, char **argv) {
 
