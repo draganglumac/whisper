@@ -19,6 +19,8 @@
 #ifndef __PEERSTORE_H__
 #define __PEERSTORE_H__
 
+#include "data/peer.h"
+
 typedef void peerstore;
 
 int peerstore_store_peer(peerstore *ps, peer *p);
