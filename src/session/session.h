@@ -19,13 +19,12 @@
 #define __SESSION_H__
 #include "session_object.pb-c.h"
 #include <jnxc_headers/jnxguid.h>
+#include <jnxc_headers/jnxtypes.h>
 
-typedef struct session_ref {
-  /*
-   * Guid created on stack
-   */
-  jnx_guid guid_ref;
-}session_ref;
+void session_guid_create(SessionObject *s);
 
-session_ref* session_create();
+jnx_size session_pack(SessionObject *s,jnx_uint8 **obuffer);
+
+SessionObject *session_unpack(jnx_uint8 *buffer,jnx_size len);
+
 #endif

@@ -23,8 +23,18 @@
 
 void session_create_destroy() {
 
-  session_ref *s = session_create();
+  SessionObject s = SESSION_OBJECT__INIT;
+  session_guid_create(&s);
 
+  jnx_uint8 *obuffer;
+  jnx_size size = session_pack(&s,&obuffer);
+  JNXCHECK(obuffer);
+
+  SessionObject *us = session_unpack(obuffer,size);
+  free(obuffer);
+
+
+  JNXCHECK(jnx_guid_compare_raw(s.guid,us->guid) == JNX_GUID_STATE_SUCCESS);
 }
 int main(int argc, char **argv) {
 

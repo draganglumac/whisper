@@ -8,7 +8,6 @@ execute_process(COMMAND git submodule update)
 execute_process(COMMAND cmake . WORKING_DIRECTORY jnxlibc)
 execute_process(COMMAND make . WORKING_DIRECTORY jnxlibc)
 execute_process(COMMAND sudo make install . WORKING_DIRECTORY jnxlibc)
-
 option(RUN_TESTS "Tests" OFF)
 
 if(RUN_TESTS)
