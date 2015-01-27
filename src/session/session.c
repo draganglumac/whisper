@@ -1,4 +1,5 @@
 /*
+:w
  * =====================================================================================
  *
  *       Filename:  session.c
@@ -44,8 +45,7 @@ SessionObject *session_unpack(jnx_uint8 *buffer,jnx_size len) {
   SessionObject *s=session_object__unpack(NULL,len,buffer);
   return s;
 }
-void session_generate_keys(SessionObject *s) {
-
+void session_generate_keys(SessionObject *s,session_key_store *sk) {
   RSA *keys = asymmetrical_generate_key(2048); 
   jnx_char *publickey = asymmetrical_key_to_string(keys,PUBLIC);
   jnx_size len = strlen(publickey);
@@ -53,4 +53,8 @@ void session_generate_keys(SessionObject *s) {
   bzero(s->rsa_public_key,len);
   memcpy(s->rsa_public_key,publickey,len);
 
+  /*
+   * we should create a hash map that contains session guid / RSA key pair
+   */
+  //jnx_hash_put(sk->store,s->guid.guid,keys);
 }
