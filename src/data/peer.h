@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  peerstore.h
+ *       Filename:  peer.h
  *
  *    Description:  
  *
  *        Version:  1.0
- *        Created:  27/01/2015 08:07:27
+ *        Created:  27/01/2015 15:49:29
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -16,12 +16,20 @@
  * =====================================================================================
  */
 
-#ifndef __PEERSTORE_H__
-#define __PEERSTORE_H__
+#ifndef __PEER_H__
+#define __PEER_H__
 
-typedef void peerstore;
+#include <time.h>
 
-peer* peerstore_get_local_peer(peerstore *ps);
-int peerstore_store_peer(peerstore *ps, peer *p);
+typedef struct {
+	char *guid;
+	char *host_address;
+	char *public_key;
+	time_t last_seen;
+} peer;
+
+peer *peer_local();
+size_t peerton(peer *p, void **out);
+peer *ntopeer(void *in, size_t len);
 
 #endif
