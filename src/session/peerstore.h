@@ -21,7 +21,6 @@
 
 typedef void peerstore;
 
-peer* peerstore_get_local_peer(peerstore *ps);
 int peerstore_store_peer(peerstore *ps, peer *p);
 
 #endif
