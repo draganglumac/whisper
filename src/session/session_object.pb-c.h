@@ -27,37 +27,38 @@ struct  _SessionObject
 {
   ProtobufCMessage base;
   size_t n_guid;
-  int32_t *guid;
+  uint32_t *guid;
+  char *rsa_public_key;
 };
 #define SESSION_OBJECT__INIT \
-{ PROTOBUF_C_MESSAGE_INIT (&session_object__descriptor) \
-  , 0,NULL }
+ { PROTOBUF_C_MESSAGE_INIT (&session_object__descriptor) \
+    , 0,NULL, NULL }
 
 
 /* SessionObject methods */
 void   session_object__init
-(SessionObject         *message);
+                     (SessionObject         *message);
 size_t session_object__get_packed_size
-(const SessionObject   *message);
+                     (const SessionObject   *message);
 size_t session_object__pack
-(const SessionObject   *message,
- uint8_t             *out);
+                     (const SessionObject   *message,
+                      uint8_t             *out);
 size_t session_object__pack_to_buffer
-(const SessionObject   *message,
- ProtobufCBuffer     *buffer);
+                     (const SessionObject   *message,
+                      ProtobufCBuffer     *buffer);
 SessionObject *
-session_object__unpack
-(ProtobufCAllocator  *allocator,
- size_t               len,
- const uint8_t       *data);
+       session_object__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
 void   session_object__free_unpacked
-(SessionObject *message,
- ProtobufCAllocator *allocator);
+                     (SessionObject *message,
+                      ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
 typedef void (*SessionObject_Closure)
-  (const SessionObject *message,
-   void *closure_data);
+                 (const SessionObject *message,
+                  void *closure_data);
 
 /* --- services --- */
 

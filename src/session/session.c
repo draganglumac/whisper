@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <jnxc_headers/jnxlog.h>
 #include <jnxc_headers/jnxguid.h>
+#include "../crypto/cryptography.h"
 #include "../integrity/encoding.h"
 #include <string.h>
 #include "session.h"
@@ -42,4 +43,14 @@ jnx_size session_pack(SessionObject *s,jnx_uint8 **obuffer) {
 SessionObject *session_unpack(jnx_uint8 *buffer,jnx_size len) {
   SessionObject *s=session_object__unpack(NULL,len,buffer);
   return s;
+}
+void session_generate_keys(SessionObject *s) {
+
+  RSA *keys = asymmetrical_generate_key(2048); 
+  jnx_char *publickey = asymmetrical_key_to_string(keys,PUBLIC);
+  jnx_size len = strlen(publickey);
+  s->rsa_public_key = malloc(len);
+  bzero(s->rsa_public_key,len);
+  memcpy(s->rsa_public_key,publickey,len);
+
 }

@@ -50,15 +50,27 @@ void   session_object__free_unpacked
   assert(message->base.descriptor == &session_object__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor session_object__field_descriptors[1] =
+static const ProtobufCFieldDescriptor session_object__field_descriptors[2] =
 {
   {
     "guid",
     1,
     PROTOBUF_C_LABEL_REPEATED,
-    PROTOBUF_C_TYPE_INT32,
+    PROTOBUF_C_TYPE_UINT32,
     offsetof(SessionObject, n_guid),
     offsetof(SessionObject, guid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rsa_public_key",
+    2,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(SessionObject, rsa_public_key),
     NULL,
     NULL,
     0,             /* flags */
@@ -67,11 +79,12 @@ static const ProtobufCFieldDescriptor session_object__field_descriptors[1] =
 };
 static const unsigned session_object__field_indices_by_name[] = {
   0,   /* field[0] = guid */
+  1,   /* field[1] = rsa_public_key */
 };
 static const ProtobufCIntRange session_object__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 2 }
 };
 const ProtobufCMessageDescriptor session_object__descriptor =
 {
@@ -81,7 +94,7 @@ const ProtobufCMessageDescriptor session_object__descriptor =
   "SessionObject",
   "",
   sizeof(SessionObject),
-  1,
+  2,
   session_object__field_descriptors,
   session_object__field_indices_by_name,
   1,  session_object__number_ranges,

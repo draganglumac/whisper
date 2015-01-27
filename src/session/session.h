@@ -27,4 +27,5 @@ jnx_size session_pack(SessionObject *s,jnx_uint8 **obuffer);
 
 SessionObject *session_unpack(jnx_uint8 *buffer,jnx_size len);
 
+void session_generate_keys(SessionObject *s);
 #endif
