@@ -9,7 +9,7 @@ Installation
 =========
 
 ```
-cmake .
+cmake . -DRUN_TESTS=ON #Or ignore the flag for no tests
 make
 sudo make install 
 ```

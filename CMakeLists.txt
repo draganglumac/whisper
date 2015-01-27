@@ -8,8 +8,13 @@ execute_process(COMMAND git submodule update)
 execute_process(COMMAND cmake . WORKING_DIRECTORY jnxlibc)
 execute_process(COMMAND make . WORKING_DIRECTORY jnxlibc)
 execute_process(COMMAND sudo make install . WORKING_DIRECTORY jnxlibc)
-execute_process(COMMAND ./run_tests WORKING_DIRECTORY test)
-include_directories(${SRC})
+
+option(RUN_TESTS "Tests" OFF)
+
+if(RUN_TESTS)
+  execute_process(COMMAND ./run_tests WORKING_DIRECTORY test)
+endif()
+
 file(GLOB SRC "src/**/*.c")
 add_executable(whisper ${SRC})
 install(TARGETS whisper DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

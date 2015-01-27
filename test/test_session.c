@@ -16,28 +16,18 @@
  * =====================================================================================
  */
 #include <stdlib.h>
-#include "integrity/encoding.h"
+#include "session/session.h"
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxlog.h>
 #include <jnxc_headers/jnxtypes.h>
 
-void test_encoder() {
-  jnx_char *test_message = "This is a test message";
-  jnx_size size = strlen(test_message);
-  jnx_size *olen;
-  jnx_uint8 *network_encoded_string = encode_from_string(test_message,size,&olen);
+void session_create_destroy() {
 
-  JNX_LOG(NULL,"Encoded string %s\n",network_encoded_string);
-  
-  jnx_size *secondolen;
-  jnx_char *decoded_string = decode_to_string(network_encoded_string,olen,&secondolen);
+  session_ref *s = session_create();
 
-  JNX_LOG(NULL,"Decoded string %s\n",decoded_string);
-
-  JNXCHECK(strcmp(decoded_string,test_message) == 0);
 }
 int main(int argc, char **argv) {
 
-  test_encoder();
+  session_create_destroy();
   return 0;
 }
