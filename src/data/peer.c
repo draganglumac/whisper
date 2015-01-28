@@ -17,7 +17,7 @@
  */
 #include <stdlib.h>
 #include <string.h>
-#include <jnxc/jxnlog.h>
+#include <jnxc_headers/jnxlog.h>
 #include "peer.h"
 #include "peer.pb-c.h"
 
@@ -55,7 +55,7 @@ size_t peerton(peer *p, void **out) {
 
 peer *ntopeer(void *in, size_t len) {
 	Peer *msg;
-	peer *peer = calloc(1, sizeof(peer));
+	peer *p = calloc(1, sizeof(peer));
 
 	msg = peer__unpack(NULL, len, in);
 	if (NULL == msg) {
@@ -64,19 +64,19 @@ peer *ntopeer(void *in, size_t len) {
 	}
 
 	// required bytes guid=1;
-	memcpy(p->guid, msg.guid.data, msg.guid.len);
+	memcpy(p->guid, msg->guid.data, msg->guid.len);
 
 	// required string host_address=2;
-	p->host_address = malloc(1 + strlen(msg.host_address));
-	strcpy(p->host_address, msg.host_address);
+	p->host_address = malloc(1 + strlen(msg->host_address));
+	strcpy(p->host_address, msg->host_address);
 
 	// optional string public_key=3;
-	if (strlen(msg.public_key) > 0) {
-		p->public_key = malloc(1 + strlen(msg.public_key));
-		strcpy(p->public_key, msg.public_key);
+	if (strlen(msg->public_key) > 0) {
+		p->public_key = malloc(1 + strlen(msg->public_key));
+		strcpy(p->public_key, msg->public_key);
 	}
 
 	peer__free_unpacked(msg, NULL);
 	
-	return peer;	
+	return p;	
 }

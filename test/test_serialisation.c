@@ -16,11 +16,30 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include <string.h>
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxlog.h>
 #include "data/peer.h"
 
 void test_peer_serialisation() {
+	peer p;
+
+	for (int j = 0; j < 16; j++) {
+		p.guid[j] = (uint8_t) 0x01;
+	}	
+	p.host_address = "127.0.0.1";
+	p.public_key = "0123456789PublicKey";
+
+	uint8_t *buffer;
+	size_t length = peerton(&p, &buffer);
+
+	JNX_LOG(0, "length = %d", length);
+	for (int i = 0; i < length; i++) {
+		printf("%02x ", buffer[i]);
+		fflush(stdout);
+	}
+	printf("\n");
+
 	JNXCHECK(1 == 0);
 }
 void test_peer_deserialisation() {
