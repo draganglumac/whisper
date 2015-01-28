@@ -21,6 +21,7 @@
 #include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxtypes.h>
 #include <jnxc_headers/jnxhash.h>
+#include <openssl/rsa.h>
 
 typedef struct session_key_store {
   jnx_hashmap *store;
