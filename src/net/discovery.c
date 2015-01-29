@@ -21,7 +21,13 @@
 #include <jnxc_headers/jnxthread.h>
 #include <jnxc_headers/jnxcheck.h>
 #include "discovery.h"
+#include "data/peer.h"
 #include "err/whisper_errors.h"
+
+typedef struct {
+	jnx_socket *sock;
+	discovery_service *svc;
+} discovery_data;
 
 // Private and helper functions
 static char* port_to_string(discovery_service *svc) {
@@ -30,23 +36,21 @@ static char* port_to_string(discovery_service *svc) {
 	return tmp;
 }
 
-// Discovery listener and loop - async thread
-static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesread, jnx_socket *s) {
-	JNX_LOG(0, "[DISCOVERY] %s\n", payload);
-	return 0;
-}
-static void* discovery_loop(void* data) {
-	discovery_service *svc = (discovery_service*) data;
-	char *port = port_to_string(svc);
-	int retval = jnx_socket_udp_listen(svc->sock_receive, port, 0, svc->receive_callback);
-	free(port);
-	return retval;
-}
-static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
-	return jnx_thread_create_disposable(discovery_loop, (void*) svc);
-}
+static void send_peer_packet(discovery_service *svc) {
+	void *buffer;
+	size_t len = peerton(svc->peerstore->local_peer, &buffer);
+	char *message = malloc(4 + len);
+	memcpy(message, "PEER", 4);
+	memcpy(message + 4, buffer, len);
 
-// Discovery requests
+	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc->port), message, len + 4);
+	
+	free(message);
+	free(buffer);
+}
+static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
+	JNX_LOG(0, "[DEBUG] Handling peer packet.");
+}
 static jnx_int32 send_discovery_request(discovery_service *svc) {
 	char *tmp = "LIST";
 	char *port = port_to_string(svc);
@@ -54,14 +58,43 @@ static jnx_int32 send_discovery_request(discovery_service *svc) {
 	return 0;
 }
 
+// Discovery listener and loop - async thread
+static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesread, jnx_socket *s, void *context) {
+	char command[5];
+	memset(command, 0, 5);
+	strncpy(command, payload, 4);
+	if (0 == strcmp(command, "LIST")) {
+		send_peer_packet(svc);
+	}
+	else if (0 == strcmp(command, "PEER")) {
+		discovery_service *svc = (discovery_service *) context;
+		handle_peer(svc, payload, bytesread);
+	}
+	else {
+		JNX_LOG(0, "[DISCOVERY] Received unknown command. Ignoring the packet.");
+	}
+	return 0;
+}
+static void* discovery_loop(void* data) {
+	discovery_service *svc = (discovery_service*) data;
+	char *port = port_to_string(svc);
+	int retval = jnx_socket_udp_listen_with_context(svc->sock_receive, port, 0, svc->receive_callback, data);
+	free(port);
+	return retval;
+}
+static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
+	return jnx_thread_create_disposable(discovery_loop, (void*) svc);
+}
+
 // Public interface functions
-discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address) {
+discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers) {
 	discovery_service *svc = calloc(1, sizeof(discovery_service));
 	svc->port = port;
 	svc->family = family;
 	svc->broadcast_group_address = broadcast_group_address;
 	svc->receive_callback = discovery_receive_handler;
 	svc->isrunning = 0;
+	svc->peers = peers; 
 	return svc;
 }
 int discovery_service_start(discovery_service *svc) {

@@ -20,11 +20,9 @@
 
 #include <jnxc_headers/jnxtypes.h>
 #include <jnxc_headers/jnxsocket.h>
-
-typedef struct {
-	char *guid;
-	char *ip;
-} peer;
+#include <jnxc_headers/jnxthread.h>
+#include "data/peer.h"
+#include "data/peerstore.h"
 
 typedef struct {
 	int port;
@@ -32,8 +30,10 @@ typedef struct {
 	jnx_socket *sock_send;
 	jnx_socket *sock_receive;
 	char *broadcast_group_address;
-	udp_socket_listener_callback receive_callback;
+	udp_socket_listener_callback_with_context receive_callback;
 	int isrunning;
+	peerstore *peers;
+	jnx_thread_mutex *ps_lock;
 } discovery_service;
 
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address);
