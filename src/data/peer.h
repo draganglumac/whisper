@@ -20,16 +20,18 @@
 #define __PEER_H__
 
 #include <time.h>
+#include <jnxc_headers/jnxguid.h>
 
 typedef struct {
-	char *guid;
+	jnx_guid guid;
 	char *host_address;
 	char *public_key;
 	time_t last_seen;
 } peer;
 
-peer *peer_local();
 size_t peerton(peer *p, void **out);
 peer *ntopeer(void *in, size_t len);
+void peer_free(peer **p);
+peer *peer_create(jnx_guid guid, char *host_address, char *public_key);
 
 #endif

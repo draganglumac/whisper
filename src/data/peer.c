@@ -21,10 +21,6 @@
 #include "peer.h"
 #include "peer.pb-c.h"
 
-peer *peer_local() {
-	exit(1);
-}
-
 size_t peerton(peer *p, void **out) {
 	Peer msg = PEER__INIT;
 	size_t len;
@@ -33,7 +29,7 @@ size_t peerton(peer *p, void **out) {
 	msg.guid.len = 16;
 	msg.guid.data = malloc(sizeof(char) * msg.guid.len);
 	for (int i = 0; i < msg.guid.len; i++) {
-		msg.guid.data[i] = p->guid[i];
+		msg.guid.data[i] = p->guid.guid[i];
 	}
 
 	// required string host_address=2;
@@ -52,31 +48,39 @@ size_t peerton(peer *p, void **out) {
 	
 	return len;
 }
-
 peer *ntopeer(void *in, size_t len) {
 	Peer *msg;
-	peer *p = calloc(1, sizeof(peer));
-
 	msg = peer__unpack(NULL, len, in);
 	if (NULL == msg) {
 		JNX_LOG(NULL, "Error unpacking a peer message.");
 		return NULL;
 	}
 
-	// required bytes guid=1;
-	memcpy(p->guid, msg->guid.data, msg->guid.len);
-
-	// required string host_address=2;
-	p->host_address = malloc(1 + strlen(msg->host_address));
-	strcpy(p->host_address, msg->host_address);
-
-	// optional string public_key=3;
-	if (strlen(msg->public_key) > 0) {
-		p->public_key = malloc(1 + strlen(msg->public_key));
-		strcpy(p->public_key, msg->public_key);
-	}
-
+	jnx_guid gd;
+	memcpy(gd.guid, msg->guid.data, msg->guid.len);	
+	peer *p = peer_create(gd, msg->host_address, msg->public_key); 
 	peer__free_unpacked(msg, NULL);
-	
 	return p;	
+}
+peer *peer_create(jnx_guid guid, char *host_address, char *public_key) {
+	JNXCHECK(host_address);
+	peer *temp = malloc(sizeof(peer));
+	
+	memcpy(temp->guid.guid, guid.guid, 16);
+	temp->host_address = malloc(1 + strlen(host_address));
+	strcpy(temp->host_address, host_address);
+	if (NULL != public_key && strlen(public_key) > 0) {
+		temp->public_key = malloc(1 + strlen(public_key));
+		strcpy(temp->public_key, public_key);
+	}
+	return temp;
+}
+void peer_free(peer **p) {
+	peer *temp = *p;
+	free(temp->host_address);
+	if (NULL != temp->public_key) {
+		free(temp->public_key);
+	}
+	free(temp);
+	*p = NULL;
 }
