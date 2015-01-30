@@ -104,7 +104,7 @@ int test_service_cleanup(discovery_service *svc) {
 }
 int test_starting_service(discovery_service *svc) {
 	svc->receive_callback = starting_service_spy;
-	int retval = discovery_service_start(svc);
+	int retval = discovery_service_start(svc, ASK_ONCE_STRATEGY);
 	JNXCHECK(retval == 0);
 	JNXCHECK(svc->sock_send->socket > 0 
 			&& svc->sock_send->addrfamily == AF_INET
@@ -147,7 +147,7 @@ int test_peer_packet_sent_after_list_packet_received(discovery_service *svc) {
 	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
 	svc->peers = store;
 	JNXCHECK(NULL == peerstore_lookup(svc->peers, &guid));
-	discovery_service_start(svc);
+	discovery_service_start(svc, ASK_ONCE_STRATEGY);
 	while (NULL == peerstore_lookup(svc->peers, &guid)) {
 		printf(".");
 		fflush(stdout);

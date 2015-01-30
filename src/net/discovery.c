@@ -46,14 +46,16 @@ static void send_peer_packet(discovery_service *svc) {
 	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
 
 	free(message);
-	free(buffer
+	free(buffer);
 }
-static void ndle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
+static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
 	peer *p = ntopeer(payload, bytesread);
 	peerstore_store_peer(svc->peers, p);	
 }
 
 // *** Peer discovery strategies ***
+int peer_update_interval = 10;
+
 jnx_int32 send_discovery_request(discovery_service *svc) {
 	char *tmp = "LIST";
 	char *port = port_to_string(svc);
@@ -63,11 +65,11 @@ jnx_int32 send_discovery_request(discovery_service *svc) {
 
 void *polling_update_loop(void *data) {
 	discovery_service *svc = (discovery_service *) data;
-	time_t next_update = time(0) + peer_update_timeout;
+	time_t next_update = time(0) + peer_update_interval;
 	while (1) {
 		send_discovery_request(svc);
 		sleep(next_update - time(0));
-		next_update += peer_update_timeout;
+		next_update += peer_update_interval;
 	}
 	return NULL;
 }
@@ -77,11 +79,11 @@ jnx_int32 polling_update_strategy(discovery_service *svc) {
 
 void *broadcast_update_loop(void *data) {
 	discovery_service *svc = (discovery_service *) data;
-	time_t next_update = time(0) + peer_update_timeout;
+	time_t next_update = time(0) + peer_update_interval;
 	while (1) {
 		send_peer_packet(svc);
 		sleep(next_update - time(0));
-		next_update += peer_update_timeout;
+		next_update += peer_update_interval;
 	}
 	return NULL;
 }
@@ -129,7 +131,7 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 	svc->peers = peers; 
 	return svc;
 }
-int discovery_service_start(discovery_service *svc, discovery_strategy *strategy) {
+int discovery_service_start(discovery_service *svc, discovery_strategy strategy) {
 	JNXCHECK(svc);
 	svc->sock_receive = jnx_socket_udp_create(svc->family);
 	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_receive);

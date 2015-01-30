@@ -39,7 +39,7 @@ typedef struct {
 
 typedef jnx_int32 (*discovery_strategy)(discovery_service *);
 
-int peer_update_timeout = 10; // seconds
+extern int peer_update_interval; // seconds
 
 #define ASK_ONCE_STRATEGY NULL
 #define POLLING_UPDATE_STRATEGY polling_update_strategy
@@ -47,7 +47,7 @@ int peer_update_timeout = 10; // seconds
 
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers);
 void discovery_service_cleanup(discovery_service **svc);
-int discovery_service_start(discovery_service *svc, discovery_strategy *strategy);
+int discovery_service_start(discovery_service *svc, discovery_strategy strategy);
 int discovery_service_stop(discovery_service *svc);
 
 #endif
