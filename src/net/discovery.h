@@ -34,11 +34,20 @@ typedef struct {
 	int isrunning;
 	peerstore *peers;
 	jnx_thread_mutex *ps_lock;
+	time_t last_updated;
 } discovery_service;
+
+typedef jnx_int32 (*discovery_strategy)(discovery_service *);
+
+int peer_update_timeout = 10; // seconds
+
+#define ASK_ONCE_STRATEGY NULL
+#define POLLING_UPDATE_STRATEGY polling_update_strategy
+#define BROADCAST_UPDATE_STRATEGY broadcast_update_strategy
 
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers);
 void discovery_service_cleanup(discovery_service **svc);
-int discovery_service_start(discovery_service *svc);
+int discovery_service_start(discovery_service *svc, discovery_strategy *strategy);
 int discovery_service_stop(discovery_service *svc);
 
 #endif

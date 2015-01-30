@@ -39,31 +39,60 @@ static char* port_to_string(discovery_service *svc) {
 static void send_peer_packet(discovery_service *svc) {
 	void *buffer;
 	size_t len = peerton(svc->peers->local_peer, &buffer);
-	char *message = malloc(4 + len);
+	jnx_uint8 *message = malloc(4 + len);
 	memcpy(message, "PEER", 4);
 	memcpy(message + 4, buffer, len);
 
 	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
-	
+
 	free(message);
-	free(buffer);
+	free(buffer
 }
-static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
+static void ndle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
 	peer *p = ntopeer(payload, bytesread);
 	peerstore_store_peer(svc->peers, p);	
 }
-static jnx_int32 send_discovery_request(discovery_service *svc) {
+
+// *** Peer discovery strategies ***
+jnx_int32 send_discovery_request(discovery_service *svc) {
 	char *tmp = "LIST";
 	char *port = port_to_string(svc);
-	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, tmp, 5);	
+	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, (jnx_uint8 *) tmp, 5);	
 	return 0;
 }
 
+void *polling_update_loop(void *data) {
+	discovery_service *svc = (discovery_service *) data;
+	time_t next_update = time(0) + peer_update_timeout;
+	while (1) {
+		send_discovery_request(svc);
+		sleep(next_update - time(0));
+		next_update += peer_update_timeout;
+	}
+	return NULL;
+}
+jnx_int32 polling_update_strategy(discovery_service *svc) {
+	return jnx_thread_create_disposable(polling_update_loop, (void *) svc);
+}
+
+void *broadcast_update_loop(void *data) {
+	discovery_service *svc = (discovery_service *) data;
+	time_t next_update = time(0) + peer_update_timeout;
+	while (1) {
+		send_peer_packet(svc);
+		sleep(next_update - time(0));
+		next_update += peer_update_timeout;
+	}
+	return NULL;
+}
+jnx_int32 broadcast_update_strategy(discovery_service *svc) {
+	return jnx_thread_create_disposable(broadcast_update_loop, (void *) svc);
+}
 // Discovery listener and loop - async thread
 static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesread, jnx_socket *s, void *context) {
 	char command[5];
 	memset(command, 0, 5);
-	strncpy(command, payload, 4);
+	memcpy(command, payload, 4);
 	if (0 == strcmp(command, "LIST")) {
 		discovery_service *svc = (discovery_service *) context;
 		send_peer_packet(svc);
@@ -78,12 +107,12 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
 	free(payload);
 	return 0;
 }
-static void* discovery_loop(void* data) {
+static void *discovery_loop(void* data) {
 	discovery_service *svc = (discovery_service*) data;
 	char *port = port_to_string(svc);
-	int retval = jnx_socket_udp_listen_with_context(svc->sock_receive, port, 0, svc->receive_callback, data);
+	jnx_socket_udp_listen_with_context(svc->sock_receive, port, 0, svc->receive_callback, data);
 	free(port);
-	return retval;
+	return NULL;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
 	return jnx_thread_create_disposable(discovery_loop, (void*) svc);
@@ -100,18 +129,24 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 	svc->peers = peers; 
 	return svc;
 }
-int discovery_service_start(discovery_service *svc) {
+int discovery_service_start(discovery_service *svc, discovery_strategy *strategy) {
 	JNXCHECK(svc);
 	svc->sock_receive = jnx_socket_udp_create(svc->family);
 	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_receive);
 	svc->sock_send = jnx_socket_udp_create(svc->family);
 	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_send);
-	
+
 	if (0 != listen_for_discovery_packets(svc)) {
 		JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
 		return ERR_DISCOVERY_START;
 	}
-	send_discovery_request(svc);
+
+	if (strategy == NULL) {
+		send_discovery_request(svc);
+	}
+	else {
+		strategy(svc);
+	}
 
 	svc->isrunning = 1;
 	return 0;

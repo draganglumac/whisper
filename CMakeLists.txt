@@ -16,6 +16,7 @@ if(RUN_TESTS)
 endif()
 
 file(GLOB SRC "src/**/*.c")
+include_directories(src)
 add_executable(whisper ${SRC})
 install(TARGETS whisper DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 target_link_libraries(whisper -ljnxc -lcrypto -lssl -g -lprotobuf-c)
