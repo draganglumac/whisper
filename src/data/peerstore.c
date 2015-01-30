@@ -43,3 +43,15 @@ void peerstore_destroy(peerstore *ps) {
 	jnx_list_destroy(&peers);
 	free(ps);
 }
+peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
+	jnx_list *peers = PEERSTORE(ps->peers);
+	jnx_node *current = peers->head;
+	while (current != NULL) {
+		peer *curr_peer = (peer *) current->_data;
+		if (jnx_guid_compare(guid, &(curr_peer->guid)) == JNX_GUID_STATE_SUCCESS) {
+			return curr_peer;
+		}
+		current = current->next_node;
+	}
+	return NULL;
+}

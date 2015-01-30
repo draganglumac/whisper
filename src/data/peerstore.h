@@ -32,5 +32,6 @@ peerstore *peerstore_init(peer *local_peer);
 peer *peerstore_get_local_peer(peerstore *ps);
 void peerstore_store_peer(peerstore *ps, peer *p);
 void peerstore_destroy(peerstore *ps);
+peer *peerstore_lookup(peerstore *ps, jnx_guid *guid);
 
 #endif

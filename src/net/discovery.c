@@ -38,18 +38,19 @@ static char* port_to_string(discovery_service *svc) {
 
 static void send_peer_packet(discovery_service *svc) {
 	void *buffer;
-	size_t len = peerton(svc->peerstore->local_peer, &buffer);
+	size_t len = peerton(svc->peers->local_peer, &buffer);
 	char *message = malloc(4 + len);
 	memcpy(message, "PEER", 4);
 	memcpy(message + 4, buffer, len);
 
-	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc->port), message, len + 4);
+	jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
 	
 	free(message);
 	free(buffer);
 }
 static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
-	JNX_LOG(0, "[DEBUG] Handling peer packet.");
+	peer *p = ntopeer(payload, bytesread);
+	peerstore_store_peer(svc->peers, p);	
 }
 static jnx_int32 send_discovery_request(discovery_service *svc) {
 	char *tmp = "LIST";
@@ -64,15 +65,17 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
 	memset(command, 0, 5);
 	strncpy(command, payload, 4);
 	if (0 == strcmp(command, "LIST")) {
+		discovery_service *svc = (discovery_service *) context;
 		send_peer_packet(svc);
 	}
 	else if (0 == strcmp(command, "PEER")) {
 		discovery_service *svc = (discovery_service *) context;
-		handle_peer(svc, payload, bytesread);
+		handle_peer(svc, payload + 4, bytesread - 4);
 	}
 	else {
 		JNX_LOG(0, "[DISCOVERY] Received unknown command. Ignoring the packet.");
 	}
+	free(payload);
 	return 0;
 }
 static void* discovery_loop(void* data) {

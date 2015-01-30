@@ -27,10 +27,6 @@
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxlog.h>
 
-typedef struct {
-	peer *local_peer;
-} test_peerstore;
-
 static char baddr[16];
 void get_broadcast_address(char *buffer) {
 	struct ifaddrs *ifap;
@@ -61,14 +57,14 @@ void get_broadcast_address(char *buffer) {
 	freeifaddrs(ifap);
 }
 
-void wait_until_flag_set(int flag) {
-	while (!flag) {
+void wait_for_flag(int *flag) {
+	while (!(*flag)) {
 		printf(".");
 		fflush(stdout);
 		sleep(1);
 	}
 	printf("\n");
-	flag = 0;
+	*flag = 0;
 }
 
 static int list_message_received = 0;
@@ -78,32 +74,13 @@ int starting_service_spy(char *message, int len, jnx_socket *s, void *context) {
 	return -1;
 }
 
-static int peer_packet_sent= 0;
-int list_packet_spy(char *message, int len, jnx_socket *s, void *context) {
-	JNXCHECK(0 == strncmp(message, "LIST", 4));
-	int expected_len = 50;
-	uint8_t expected[] = { 
-		0x0a, 0x10, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 
-		0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 
-		0x01, 0x01, 0x12, 0x09, 0x31, 0x32, 0x37, 0x2e, 
-		0x30, 0x2e, 0x30, 0x2e, 0x31, 0x1a, 0x13, 0x30, 
-		0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 
-		0x39, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x4b, 
-		0x65, 0x79 };
-	for (int i = 0; i < expected_len; i++) {
-		JNXCHECK(*(message + 4 + i) == expected[i]);
-	}
-	peer_packet_sent = 1;
-	return -1;
-}
-
 // *** Discovery service test runner ***
 #define CLEANUP 0
 #define NO_CLEANUP 1
 typedef int (*discovery_test)(discovery_service *);
 
 void run_discovery_service_test(discovery_test test) {
-	discovery_service *svc = discovery_service_create(1234, AF_INET, baddr);
+	discovery_service *svc = discovery_service_create(1234, AF_INET, baddr, NULL);
 	int retval = test(svc);
 	if (retval == CLEANUP) {
 		discovery_service_cleanup(&svc);
@@ -144,7 +121,7 @@ int test_starting_service(discovery_service *svc) {
 		JNXCHECK(retval == 0);
 	}
 
-	wait_for_flag(list_message_received);
+	wait_for_flag(&list_message_received);
 	return CLEANUP;
 }
 int test_stopping_service(discovery_service *svc) {
@@ -162,20 +139,21 @@ int test_restarting_service(discovery_service *svc) {
 	test_starting_service(svc);
 	return CLEANUP;
 }
-
-int test_sending_peer_packet(discovery_service *svc) {
-	test_peerstore store;
+int test_peer_packet_sent_after_list_packet_received(discovery_service *svc) {
 	jnx_guid guid;
 	for (int i = 0; i < 16; i++) {
 		guid.guid[i] = 1;
 	}
-	store.local_peer = peer_create(guid, "127.0.0.1", "0123456789PublicKey");
-	svc->peerstore = &store;
-	jnx_socket *s = jnx_socket_udp_create(AF_INET);
-	jnx_socket_udp_listen(s, "1234", 0, list_packet_spy);
-	
+	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
+	svc->peers = store;
+	JNXCHECK(NULL == peerstore_lookup(svc->peers, &guid));
 	discovery_service_start(svc);
-	wait_for_flag(peer_packet_sent);
+	while (NULL == peerstore_lookup(svc->peers, &guid)) {
+		printf(".");
+		fflush(stdout);
+		sleep(1);
+	}
+	printf("\n");
 	return CLEANUP;
 }
 int main(int argc, char **argv) {
@@ -196,7 +174,7 @@ int main(int argc, char **argv) {
 	JNX_LOG(NULL, "Test restarting discovery service.");
 	run_discovery_service_test(test_restarting_service);
 
-	JNX_LOG(NULL, "Test sending peer packet.");
-	run_discovery_service_test(test_sending_peer_packet);	
+	JNX_LOG(NULL, "Test PEER packet is sent after discovery service recieves LIST packet.");
+	run_discovery_service_test(test_peer_packet_sent_after_list_packet_received);	
 	return 0;
 }

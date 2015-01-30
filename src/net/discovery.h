@@ -36,7 +36,7 @@ typedef struct {
 	jnx_thread_mutex *ps_lock;
 } discovery_service;
 
-discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address);
+discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers);
 void discovery_service_cleanup(discovery_service **svc);
 int discovery_service_start(discovery_service *svc);
 int discovery_service_stop(discovery_service *svc);
