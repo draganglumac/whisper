@@ -24,11 +24,6 @@
 #include <string.h>
 #include "session.h"
 
-void session_create(SessionObject *s){
-  session_object__init(s);
-  session_guid_create(s);
-  session_generate_keys(s);
-}
 jnx_uint32* session_guid_create(SessionObject *s) {
   jnx_guid g;
   jnx_guid_create(&g);
@@ -58,4 +53,9 @@ void session_generate_keys(SessionObject *s) {
   s->rsa_public_key = malloc(len);
   bzero(s->rsa_public_key,len);
   memcpy(s->rsa_public_key,publickey,len);
+}
+void session_create(SessionObject *s){
+  session_object__init(s);
+  session_guid_create(s);
+  session_generate_keys(s);
 }
