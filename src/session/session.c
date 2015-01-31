@@ -45,6 +45,9 @@ SessionObject *session_unpack(jnx_uint8 *buffer,jnx_size len) {
   SessionObject *s=session_object__unpack(DEFAULT_CONTEXT,len,buffer);
   return s;
 }
+void session_fetch_guid(SessionObject *s,jnx_guid *g) {
+  jnx_guid_from_string(s->guid,g);
+}
 void session_generate_keys(SessionObject *s) {
   RSA *keys = asymmetrical_generate_key(2048); 
   jnx_char *publickey = asymmetrical_key_to_string(keys,PUBLIC);

@@ -35,6 +35,11 @@ void session_create_destroy() {
 
   JNXCHECK(jnx_guid_compare_raw(s.guid,us->guid) == JNX_GUID_STATE_SUCCESS);
 
+  jnx_guid a;
+
+  session_fetch_guid(&s,&a);
+
+
   session_object__free_unpacked(us,NULL);
 }
 
