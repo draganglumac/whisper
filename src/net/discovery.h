@@ -41,7 +41,9 @@ typedef struct {
 	jnx_thread_mutex *update_time_lock;
 } discovery_service;
 
-typedef jnx_int32 (*discovery_strategy)(discovery_service *);
+typedef jnx_int32 (discovery_strategy)(discovery_service *);
+extern discovery_strategy polling_update_strategy;
+extern discovery_strategy broadcast_update_strategy;
 
 extern int peer_update_interval; // seconds
 
@@ -51,7 +53,7 @@ extern int peer_update_interval; // seconds
 
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers);
 void discovery_service_cleanup(discovery_service **svc);
-int discovery_service_start(discovery_service *svc, discovery_strategy strategy);
+int discovery_service_start(discovery_service *svc, discovery_strategy *strategy);
 int discovery_service_stop(discovery_service *svc);
 time_t get_last_update_time(discovery_service *svc);
 

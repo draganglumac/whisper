@@ -43,7 +43,7 @@ static void safely_update_last_update_time(discovery_service *svc) {
 
 static void send_peer_packet(discovery_service *svc) {
 	void *buffer;
-	size_t len = peerton(svc->peers->local_peer, &buffer);
+	size_t len = peerton(peerstore_get_local_peer(svc->peers), &buffer);
 	jnx_uint8 *message = malloc(4 + len);
 	memcpy(message, "PEER", 4);
 	memcpy(message + 4, buffer, len);
@@ -69,6 +69,7 @@ jnx_int32 send_discovery_request(discovery_service *svc) {
 	return 0;
 }
 
+// Polling update strategy
 void *polling_update_loop(void *data) {
 	// The slightly more complicated logic is here to ensure that updates
 	// do not happen more frequently than peer_update_interval on average.
@@ -100,6 +101,7 @@ jnx_int32 polling_update_strategy(discovery_service *svc) {
 	return jnx_thread_create_disposable(polling_update_loop, (void *) svc);
 }
 
+// Broadcast update strategy
 void *broadcast_update_loop(void *data) {
 	discovery_service *svc = (discovery_service *) data;
 	time_t next_update = time(0) + peer_update_interval;
@@ -116,6 +118,7 @@ void *broadcast_update_loop(void *data) {
 jnx_int32 broadcast_update_strategy(discovery_service *svc) {
 	return jnx_thread_create_disposable(broadcast_update_loop, (void *) svc);
 }
+
 // Discovery listener and loop - async thread
 static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesread, jnx_socket *s, void *context) {
 	discovery_service *svc = (discovery_service *) context;
@@ -159,7 +162,7 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 	svc->update_time_lock = jnx_thread_mutex_create();	
 	return svc;
 }
-int discovery_service_start(discovery_service *svc, discovery_strategy strategy) {
+int discovery_service_start(discovery_service *svc, discovery_strategy *strategy) {
 	JNXCHECK(svc);
 	svc->sock_receive = jnx_socket_udp_create(svc->family);
 	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_receive);

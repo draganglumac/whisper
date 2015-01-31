@@ -56,6 +56,18 @@ void get_broadcast_address(char *buffer) {
 
 	freeifaddrs(ifap);
 }
+void update_time_checks(discovery_service *svc) {
+	time_t last_update_time = get_last_update_time(svc);
+	for (int i = 0; i < 5; i++) {
+		printf(".");
+		fflush(stdout);
+		sleep(peer_update_interval);
+		time_t temp = get_last_update_time(svc);
+		JNXCHECK(temp > last_update_time);
+		last_update_time = temp;
+	}
+	printf("\n");
+}
 
 void wait_for_flag(int *flag) {
 	while (!(*flag)) {
@@ -139,6 +151,7 @@ int test_restarting_service(discovery_service *svc) {
 	test_starting_service(svc);
 	return CLEANUP;
 }
+
 int test_peer_packet_sent_after_list_packet_received(discovery_service *svc) {
 	jnx_guid guid;
 	for (int i = 0; i < 16; i++) {
@@ -146,6 +159,7 @@ int test_peer_packet_sent_after_list_packet_received(discovery_service *svc) {
 	}
 	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
 	svc->peers = store;
+
 	JNXCHECK(NULL == peerstore_lookup(svc->peers, &guid));
 	discovery_service_start(svc, ASK_ONCE_STRATEGY);
 	while (NULL == peerstore_lookup(svc->peers, &guid)) {
@@ -162,6 +176,36 @@ int test_setting_peer_update_interval(discovery_service *svc) {
 	JNXCHECK(peer_update_interval == 20);
 	peer_update_interval = 10;
 	JNXCHECK(peer_update_interval == 10);
+	return CLEANUP;
+}
+int test_polling_update_strategy(discovery_service *svc) {
+	jnx_guid guid;
+	for (int i = 0; i < 16; i++) {
+		guid.guid[i] = 1;
+	}
+	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
+	svc->peers = store;
+	
+	peer_update_interval = 1;
+	
+	discovery_service_start(svc, POLLING_UPDATE_STRATEGY);
+	sleep(1);
+	update_time_checks(svc);
+	return CLEANUP;
+}
+int test_broadcast_update_strategy(discovery_service *svc) {
+	jnx_guid guid;
+	for (int i = 0; i < 16; i++) {
+		guid.guid[i] = 1;
+	}
+	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
+	svc->peers = store;
+
+	peer_update_interval = 1;
+	
+	discovery_service_start(svc, BROADCAST_UPDATE_STRATEGY);
+	sleep(2);
+	update_time_checks(svc);
 	return CLEANUP;
 }
 int main(int argc, char **argv) {
@@ -187,5 +231,11 @@ int main(int argc, char **argv) {
 	
 	JNX_LOG(NULL, "Test setting peer_update_interval global variable.");
 	run_discovery_service_test(test_setting_peer_update_interval);
+	
+	JNX_LOG(NULL, "Test polling update strategy.");
+	run_discovery_service_test(test_polling_update_strategy);
+
+	JNX_LOG(NULL, "Test broadcast update strategy.");
+	run_discovery_service_test(test_broadcast_update_strategy);
 	return 0;
 }
