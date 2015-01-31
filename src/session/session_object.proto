@@ -1,5 +1,5 @@
 message session_object {
-  repeated uint32 guid=1;
+  required string  guid=1;
   required string rsa_public_key=2;
   optional string rsa_private_key=3;
 }

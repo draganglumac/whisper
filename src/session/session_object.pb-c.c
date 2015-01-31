@@ -54,9 +54,9 @@ static const ProtobufCFieldDescriptor session_object__field_descriptors[3] =
   {
     "guid",
     1,
-    PROTOBUF_C_LABEL_REPEATED,
-    PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(SessionObject, n_guid),
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(SessionObject, guid),
     NULL,
     NULL,

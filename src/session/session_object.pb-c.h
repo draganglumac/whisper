@@ -19,14 +19,13 @@ typedef struct _SessionObject SessionObject;
 struct  _SessionObject
 {
   ProtobufCMessage base;
-  size_t n_guid;
-  uint32_t *guid;
+  char *guid;
   char *rsa_public_key;
   char *rsa_private_key;
 };
 #define SESSION_OBJECT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&session_object__descriptor) \
-    , 0,NULL, NULL, NULL }
+    , NULL, NULL, NULL }
 
 
 /* SessionObject methods */

@@ -23,17 +23,16 @@
 #include <string.h>
 #include "session.h"
 
-jnx_uint32* session_guid_create(SessionObject *s) {
+void session_guid_create(SessionObject *s) {
   jnx_guid g;
   jnx_guid_create(&g);
-  s->n_guid = sizeof(g.guid);
-  s->guid = malloc(sizeof(jnx_uint32) * s->n_guid);
-  memcpy(s->guid,g.guid,s->n_guid);
   jnx_char *ostr;
   jnx_guid_to_string(&g,&ostr);
-  JNX_LOG(DEFAULT_CONTEXT,"New session %s\n",ostr);
+  s->guid = malloc(strlen(ostr) + 1);
+  bzero(s->guid,strlen(ostr) +1);
+  memcpy(s->guid,ostr,strlen(ostr) + 1);
+  JNX_LOG(DEFAULT_CONTEXT,"New session %s\n",s->guid);
   free(ostr);
-  return s->guid;
 }
 jnx_size session_pack(SessionObject *s,jnx_uint8 **obuffer) {
   jnx_size size = session_object__get_packed_size(s);
