@@ -85,6 +85,9 @@ void *polling_update_loop(void *data) {
 	discovery_service *svc = (discovery_service *) data;
 	time_t next_update = get_last_update_time(svc) + peer_update_interval;
 	while (1) {
+		if (!svc->isrunning) {
+			return NULL;
+		}
 		if (next_update == get_last_update_time(svc) + peer_update_interval) {
 			send_discovery_request(svc);
 		}
@@ -101,6 +104,9 @@ void *broadcast_update_loop(void *data) {
 	discovery_service *svc = (discovery_service *) data;
 	time_t next_update = time(0) + peer_update_interval;
 	while (1) {
+		if (!svc->isrunning) {
+			return NULL;
+		}
 		send_peer_packet(svc);
 		sleep(next_update - time(0));
 		next_update += peer_update_interval;
