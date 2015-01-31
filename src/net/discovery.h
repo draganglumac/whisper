@@ -21,6 +21,7 @@
 #include <jnxc_headers/jnxtypes.h>
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxthread.h>
+#include <time.h>
 #include "data/peer.h"
 #include "data/peerstore.h"
 
@@ -32,9 +33,12 @@ typedef struct {
 	char *broadcast_group_address;
 	udp_socket_listener_callback_with_context receive_callback;
 	int isrunning;
-	peerstore *peers;
+	
+	peerstore *peers; // synchronised
 	jnx_thread_mutex *ps_lock;
-	time_t last_updated;
+	
+	time_t last_updated; // synchronised
+	jnx_thread_mutex *update_time_lock;
 } discovery_service;
 
 typedef jnx_int32 (*discovery_strategy)(discovery_service *);
@@ -49,5 +53,6 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 void discovery_service_cleanup(discovery_service **svc);
 int discovery_service_start(discovery_service *svc, discovery_strategy strategy);
 int discovery_service_stop(discovery_service *svc);
+time_t get_last_update_time(discovery_service *svc);
 
 #endif
