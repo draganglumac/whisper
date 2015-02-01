@@ -16,15 +16,17 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include <jnxc_headers/jnxhash.h>
+#include <jnxc_headers/jnxguid.h>
 #include "peerstore.h"
 
-#define PEERSTORE(x) ((jnx_list *) x)
+#define PEERSTORE(x) ((jnx_hashmap *) x)
 
 peerstore *peerstore_init(peer *local_peer) {
 	peerstore *store = malloc(sizeof(peerstore));
 	store->local_peer = local_peer;
 	store->store_lock = jnx_thread_mutex_create();
-	store->peers = (void *) jnx_list_create();
+	store->peers = (void *) jnx_hash_create(1024);
 	return (peerstore *) store;
 }
 peer *peerstore_get_local_peer(peerstore *ps) {
@@ -32,6 +34,7 @@ peer *peerstore_get_local_peer(peerstore *ps) {
 }
 void peerstore_store_peer(peerstore *ps, peer *p) {
 	jnx_thread_lock(ps->store_lock);
+	
 	jnx_list_add(PEERSTORE(ps->peers), p);
 	jnx_thread_unlock(ps->store_lock);
 }
