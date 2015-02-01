@@ -61,7 +61,7 @@ peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
 	jnx_thread_unlock(ps->store_lock);
 	return NULL;
 }
-jnx_list *peerstore_get_active_guids(peerstore *ps) {
+void peerstore_get_active_guids(peerstore *ps, jnx_guid *guids, int *num_guids) {
 	jnx_list *temp = jnx_list_create();
 	jnx_thread_lock(ps->store_lock);
 	jnx_list *peers = (jnx_list *) ps->peers;
@@ -71,5 +71,4 @@ jnx_list *peerstore_get_active_guids(peerstore *ps) {
 		jnx_list_add(temp, (void *) &p->guid);
 	}
 	jnx_thread_unlock(ps->store_lock);
-	return temp;
 }
