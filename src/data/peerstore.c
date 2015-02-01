@@ -31,8 +31,9 @@ peer *peerstore_get_local_peer(peerstore *ps) {
 	return ps->local_peer;
 }
 void peerstore_store_peer(peerstore *ps, peer *p) {
-
+	jnx_thread_lock(ps->store_lock);
 	jnx_list_add(PEERSTORE(ps->peers), p);
+	jnx_thread_unlock(ps->store_lock);
 }
 void peerstore_destroy(peerstore *ps) {
 	peer_free(&(ps->local_peer));
@@ -46,14 +47,29 @@ void peerstore_destroy(peerstore *ps) {
 	free(ps);
 }
 peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
+	jnx_thread_lock(ps->store_lock);
 	jnx_list *peers = PEERSTORE(ps->peers);
 	jnx_node *current = peers->head;
 	while (current != NULL) {
 		peer *curr_peer = (peer *) current->_data;
 		if (jnx_guid_compare(guid, &(curr_peer->guid)) == JNX_GUID_STATE_SUCCESS) {
+			jnx_thread_unlock(ps->store_lock);
 			return curr_peer;
 		}
 		current = current->next_node;
 	}
+	jnx_thread_unlock(ps->store_lock);
 	return NULL;
+}
+jnx_list *peerstore_get_active_guids(peerstore *ps) {
+	jnx_list *temp = jnx_list_create();
+	jnx_thread_lock(ps->store_lock);
+	jnx_list *peers = (jnx_list *) ps->peers;
+	jnx_node *curr = peers->head;
+	while (curr != NULL) {
+		peer *p = (peer *) curr->_data;
+		jnx_list_add(temp, (void *) &p->guid);
+	}
+	jnx_thread_unlock(ps->store_lock);
+	return temp;
 }
