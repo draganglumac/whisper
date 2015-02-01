@@ -137,6 +137,10 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
 	free(payload);
 	return 0;
 }
+static void ensure_listening_on_port(int port) {
+	// Until we find a smarter strategy just sleep a little
+	sleep(1);
+}
 static void *discovery_loop(void* data) {
 	discovery_service *svc = (discovery_service*) data;
 	char *port = port_to_string(svc);
@@ -145,7 +149,9 @@ static void *discovery_loop(void* data) {
 	return NULL;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
-	return jnx_thread_create_disposable(discovery_loop, (void*) svc);
+	int retval = jnx_thread_create_disposable(discovery_loop, (void*) svc);
+	ensure_listening_on_port(svc->port);
+	return retval;
 }
 
 // Public interface functions

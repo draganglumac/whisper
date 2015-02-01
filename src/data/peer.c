@@ -28,7 +28,8 @@ size_t peerton(peer *p, void **out) {
 	// required bytes guid=1;
 	msg.guid.len = 16;
 	msg.guid.data = malloc(sizeof(char) * msg.guid.len);
-	for (int i = 0; i < msg.guid.len; i++) {
+	int i;
+	for (i = 0; i < msg.guid.len; i++) {
 		msg.guid.data[i] = p->guid.guid[i];
 	}
 

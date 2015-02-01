@@ -61,7 +61,8 @@ void test_peer_deserialisation() {
 		0x65, 0x79 };
 	peer *p = ntopeer(input, input_len);
 
-	for (int i = 0; i < 16; i++) {
+	int i;
+	for (i = 0; i < 16; i++) {
 		JNXCHECK(p->guid.guid[i] == 0x01);
 	}
 	JNXCHECK(0 == strcmp(p->host_address, "127.0.0.1"));

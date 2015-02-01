@@ -58,7 +58,8 @@ void get_broadcast_address(char *buffer) {
 }
 void update_time_checks(discovery_service *svc) {
 	time_t last_update_time = get_last_update_time(svc);
-	for (int i = 0; i < 5; i++) {
+	int i;
+	for (i = 0; i < 5; i++) {
 		printf(".");
 		fflush(stdout);
 		sleep(peer_update_interval);
@@ -154,7 +155,8 @@ int test_restarting_service(discovery_service *svc) {
 
 int test_peer_packet_sent_after_list_packet_received(discovery_service *svc) {
 	jnx_guid guid;
-	for (int i = 0; i < 16; i++) {
+	int i;
+	for (i = 0; i < 16; i++) {
 		guid.guid[i] = 1;
 	}
 	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
@@ -180,7 +182,8 @@ int test_setting_peer_update_interval(discovery_service *svc) {
 }
 int test_polling_update_strategy(discovery_service *svc) {
 	jnx_guid guid;
-	for (int i = 0; i < 16; i++) {
+	int i;
+	for (i = 0; i < 16; i++) {
 		guid.guid[i] = 1;
 	}
 	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
@@ -195,7 +198,8 @@ int test_polling_update_strategy(discovery_service *svc) {
 }
 int test_broadcast_update_strategy(discovery_service *svc) {
 	jnx_guid guid;
-	for (int i = 0; i < 16; i++) {
+	int i;
+	for (i = 0; i < 16; i++) {
 		guid.guid[i] = 1;
 	}
 	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
