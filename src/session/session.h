@@ -23,6 +23,8 @@
 #include <jnxc_headers/jnxhash.h>
 #include <openssl/rsa.h>
 
+void session_create(SessionObject *s);
+
 jnx_uint32* session_guid_create(SessionObject *s);
 
 jnx_size session_pack(SessionObject *s,jnx_uint8 **obuffer);

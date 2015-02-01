@@ -24,9 +24,8 @@
 
 void session_create_destroy() {
 
-  SessionObject s = SESSION_OBJECT__INIT;
-  session_guid_create(&s);
-  session_generate_keys(&s);
+  SessionObject s;
+  session_create(&s);
   jnx_uint8 *obuffer;
   jnx_size size = session_pack(&s,&obuffer);
   JNXCHECK(obuffer);
