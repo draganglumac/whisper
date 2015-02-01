@@ -192,7 +192,7 @@ int test_polling_update_strategy(discovery_service *svc) {
 	peer_update_interval = 1;
 	
 	discovery_service_start(svc, POLLING_UPDATE_STRATEGY);
-	sleep(1);
+	sleep(2);
 	update_time_checks(svc);
 	return CLEANUP;
 }
