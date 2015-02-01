@@ -22,6 +22,10 @@
 
 #define PEERSTORE(x) ((jnx_hashmap *) x)
 
+static int is_active_peer(peerstore *ps, peer *p) {
+	JNX_LOG(NULL, "Function is_active_peer is not implemented yet!");
+	return 1;
+}
 peerstore *peerstore_init(peer *local_peer) {
 	peerstore *store = malloc(sizeof(peerstore));
 	store->local_peer = local_peer;
@@ -34,44 +38,57 @@ peer *peerstore_get_local_peer(peerstore *ps) {
 }
 void peerstore_store_peer(peerstore *ps, peer *p) {
 	jnx_thread_lock(ps->store_lock);
-	
-	jnx_list_add(PEERSTORE(ps->peers), p);
+	char *guid_str;
+	jnx_guid_to_string(&p->guid, &guid_str);
+	jnx_hash_put(ps->peers, guid_str, (void *) p);
+	free(guid_str);
 	jnx_thread_unlock(ps->store_lock);
 }
-void peerstore_destroy(peerstore *ps) {
+void peerstore_destroy(peerstore **pps) {
+	peerstore *ps = *pps;
 	peer_free(&(ps->local_peer));
-	peer *next;
-	jnx_list *peers = PEERSTORE(ps->peers);
-	while ((next = (peer *) jnx_list_remove_front(&peers)) != NULL) {
-		peer_free(&next);
+	
+	jnx_hashmap *peers = PEERSTORE(ps->peers);
+	const char **keys;
+	int num_keys = jnx_hash_get_keys(peers, &keys); 
+	int i;
+	for (i = 0; i < num_keys; i++) {
+		peer *temp = jnx_hash_get(peers, *(keys + i));
+		peer_free(&temp);
 	}
-	jnx_list_destroy(&peers);
+	jnx_hash_destroy(&peers);
 	jnx_thread_mutex_destroy(&ps->store_lock);
 	free(ps);
+	pps = NULL;
 }
 peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
 	jnx_thread_lock(ps->store_lock);
-	jnx_list *peers = PEERSTORE(ps->peers);
-	jnx_node *current = peers->head;
-	while (current != NULL) {
-		peer *curr_peer = (peer *) current->_data;
-		if (jnx_guid_compare(guid, &(curr_peer->guid)) == JNX_GUID_STATE_SUCCESS) {
-			jnx_thread_unlock(ps->store_lock);
-			return curr_peer;
-		}
-		current = current->next_node;
+	char *guid_str;
+	jnx_guid_to_string(guid, &guid_str);
+	peer *p = (peer *) jnx_hash_get(PEERSTORE(ps->peers), guid_str);
+	if (!is_active_peer(ps, p)) {
+		jnx_hash_delete_value(PEERSTORE(ps->peers), guid_str);
+		peer_free(&p);
+		p = NULL;
 	}
+	free(guid_str);
 	jnx_thread_unlock(ps->store_lock);
-	return NULL;
+	return p;
 }
-void peerstore_get_active_guids(peerstore *ps, jnx_guid *guids, int *num_guids) {
-	jnx_list *temp = jnx_list_create();
+int peerstore_get_active_guids(peerstore *ps, jnx_guid **guids) {
 	jnx_thread_lock(ps->store_lock);
-	jnx_list *peers = (jnx_list *) ps->peers;
-	jnx_node *curr = peers->head;
-	while (curr != NULL) {
-		peer *p = (peer *) curr->_data;
-		jnx_list_add(temp, (void *) &p->guid);
+	jnx_hashmap *peers = PEERSTORE(ps->peers);
+	const char **keys;
+	int num_keys = jnx_hash_get_keys(peers, &keys); 
+	int i, num_guids = 0;
+	guids = calloc(num_guids, sizeof(jnx_guid *));
+	for (i = 0; i < num_keys; i++) {
+		peer *temp = jnx_hash_get(peers, *(keys + i));
+		if (is_active_peer(ps, temp)) {
+			guids[num_guids] = &temp->guid;
+			num_guids++;
+		}	
 	}
 	jnx_thread_unlock(ps->store_lock);
+	return num_guids;
 }
