@@ -23,35 +23,11 @@
 #include <jnxc_headers/jnxhash.h>
 #include <openssl/rsa.h>
 
-typedef struct session_key_store {
-  jnx_hashmap *store;
-}session_key_store;
-
-typedef enum SESSION_STORE_STATE {
-  SESSION_STORE_OKAY,
-  SESSION_STORE_FAILURE,
-  SESSION_STORE_FOUND_OKAY,
-  SESSION_STORE_NOT_FOUND,
-}SESSION_STORE_STATE;
-/*
- * Key store is where we keep our local session RSA full keys
- */
-session_key_store *session_key_store_create();
-
-void session_key_store_destroy(session_key_store *s);
-
-void session_key_store_send(session_key_store *s,jnx_uint8 *guid, jnx_size guid_len, RSA *keypair);
-
-SESSION_STORE_STATE session_key_store_retrieve(session_key_store *s, jnx_uint8 *guid, jnx_size guid_len, RSA **okeypair);
-/*
- * 
- */
-
-void session_guid_create(SessionObject *s);
+jnx_uint32* session_guid_create(SessionObject *s);
 
 jnx_size session_pack(SessionObject *s,jnx_uint8 **obuffer);
 
 SessionObject *session_unpack(jnx_uint8 *buffer,jnx_size len);
 
-void session_generate_keys(SessionObject *s,session_key_store *sk);
+void session_generate_keys(SessionObject *s);
 #endif

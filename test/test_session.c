@@ -25,9 +25,8 @@
 void session_create_destroy() {
 
   SessionObject s = SESSION_OBJECT__INIT;
-
   session_guid_create(&s);
-  session_generate_keys(&s,NULL);
+  session_generate_keys(&s);
   jnx_uint8 *obuffer;
   jnx_size size = session_pack(&s,&obuffer);
   JNXCHECK(obuffer);
@@ -39,8 +38,10 @@ void session_create_destroy() {
 
   session_object__free_unpacked(us,NULL);
 }
+
 int main(int argc, char **argv) {
 
   session_create_destroy();
+
   return 0;
 }
