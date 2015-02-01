@@ -19,12 +19,14 @@
 #ifndef __PEERSTORE_H__
 #define __PEERSTORE_H__
 
+#include <time.h>
 #include <jnxc_headers/jnxthread.h>
 #include "peer.h"
 
 typedef struct {
 	peer *local_peer;
 	jnx_thread_mutex *store_lock;
+	time_t last_update;
 	void *peers;
 } peerstore;
 
@@ -34,5 +36,6 @@ void peerstore_store_peer(peerstore *ps, peer *p);
 void peerstore_destroy(peerstore **ps);
 peer *peerstore_lookup(peerstore *ps, jnx_guid *guid);
 int peerstore_get_active_guids(peerstore *ps, jnx_guid **guids);
+void peerstore_set_last_update_time(peerstore *ps, time_t last_update);
 
 #endif

@@ -38,6 +38,7 @@ static char* port_to_string(discovery_service *svc) {
 static void safely_update_last_update_time(discovery_service *svc) {
 	jnx_thread_lock(svc->update_time_lock);
 	svc->last_updated = time(0);
+	peerstore_set_last_update_time(svc->peers, svc->last_updated);
 	jnx_thread_unlock(svc->update_time_lock);
 }
 

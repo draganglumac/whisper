@@ -31,6 +31,7 @@ peerstore *peerstore_init(peer *local_peer) {
 	store->local_peer = local_peer;
 	store->store_lock = jnx_thread_mutex_create();
 	store->peers = (void *) jnx_hash_create(1024);
+	store->last_update = time(0);
 	return (peerstore *) store;
 }
 peer *peerstore_get_local_peer(peerstore *ps) {
@@ -91,4 +92,9 @@ int peerstore_get_active_guids(peerstore *ps, jnx_guid **guids) {
 	}
 	jnx_thread_unlock(ps->store_lock);
 	return num_guids;
+}
+void peerstore_set_last_update_time(peerstore *ps, time_t last_update) {
+	jnx_thread_lock(ps->store_lock);
+	ps->last_update = last_update;
+	jnx_thread_unlock(ps->store_lock);
 }
