@@ -33,9 +33,7 @@ typedef struct {
 	char *broadcast_group_address;
 	udp_socket_listener_callback_with_context receive_callback;
 	int isrunning;
-	
 	peerstore *peers; // synchronised
-	jnx_thread_mutex *ps_lock;
 	
 	time_t last_updated; // synchronised
 	jnx_thread_mutex *update_time_lock;

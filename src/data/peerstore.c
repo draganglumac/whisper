@@ -31,6 +31,7 @@ peer *peerstore_get_local_peer(peerstore *ps) {
 	return ps->local_peer;
 }
 void peerstore_store_peer(peerstore *ps, peer *p) {
+
 	jnx_list_add(PEERSTORE(ps->peers), p);
 }
 void peerstore_destroy(peerstore *ps) {
@@ -41,6 +42,7 @@ void peerstore_destroy(peerstore *ps) {
 		peer_free(&next);
 	}
 	jnx_list_destroy(&peers);
+	jnx_thread_mutex_destroy(&ps->store_lock);
 	free(ps);
 }
 peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {

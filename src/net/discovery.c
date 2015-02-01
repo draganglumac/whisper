@@ -164,7 +164,6 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 	svc->isrunning = 0;
 	svc->peers = peers;
 	svc->last_updated = time(0);
-	svc->ps_lock = jnx_thread_mutex_create();
 	svc->update_time_lock = jnx_thread_mutex_create();	
 	return svc;
 }
@@ -202,7 +201,6 @@ void discovery_service_cleanup(discovery_service **svc) {
 	if ((*svc)->isrunning) {
 		discovery_service_stop(*svc);
 	}
-	jnx_thread_mutex_destroy(&(*svc)->ps_lock);
 	jnx_thread_mutex_destroy(&(*svc)->update_time_lock);
 	free(*svc);
 	*svc = 0;
