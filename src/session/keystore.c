@@ -33,7 +33,6 @@ session_key_store_state session_key_store_destroy(session_key_store *s) {
    */
   jnx_list_destroy(&s->key_data_list);
   free(s);
-
   return SESSION_KEY_STORE_OKAY;
 }
 jnx_int32 compare_sessions(void *a, void *b) {
@@ -66,4 +65,8 @@ session_key_store_state session_key_store_add(session_key_store *s, jnx_guid *g,
     jnx_list_add_ts(s->key_data_list,skd);
   }
   return SESSION_KEY_STORE_OKAY;
+}
+session_key_store_state session_key_store_remove(session_key_store *s,jnx_guid *g, session_key_data **okeydata) {
+
+  return SESSION_KEY_STORE_NOT_FOUND;
 }

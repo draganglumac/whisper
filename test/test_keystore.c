@@ -31,7 +31,7 @@ void test_create_destroy() {
 void test_keystore_add() {
   session_key_store *s = session_key_store_create();
   JNXCHECK(s);
-  
+
   RSA *keypair = asymmetrical_generate_key(2048);
   jnx_guid g;
 
