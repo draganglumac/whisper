@@ -24,7 +24,7 @@
  * The keystore keeps information about a sessions keys asymmetrical/symmetrical
  */
 typedef struct session_key_data {
-  jnx_guid guid;
+  jnx_guid *guid;
   RSA *keypair;
 }session_key_data;
 
@@ -43,5 +43,7 @@ session_key_store *session_key_store_create();
 
 session_key_store_state session_key_store_destroy(session_key_store *s);
 
+session_key_store_state session_key_store_does_exist(session_key_store *s, jnx_guid *g);
 
+session_key_store_state session_key_store_add(session_key_store *s, jnx_guid *g, RSA *keypair);
 #endif

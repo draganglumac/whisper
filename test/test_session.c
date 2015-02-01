@@ -45,10 +45,8 @@ void session_create_destroy() {
 
   session_object__free_unpacked(us,NULL);
 }
-
 int main(int argc, char **argv) {
 
   session_create_destroy();
-
   return 0;
 }
