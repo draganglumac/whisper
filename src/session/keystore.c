@@ -40,9 +40,7 @@ jnx_int32 compare_sessions(void *a, void *b) {
 
   session_key_data *bdata = (session_key_data*)b;
   jnx_guid *bguid = bdata->guid;
-
   jnx_guid *aguid = (jnx_guid*)a;
-
   jnx_guid_state r = jnx_guid_compare(aguid,bguid);
   if(r == JNX_GUID_STATE_SUCCESS) {
     return 1;
@@ -51,7 +49,7 @@ jnx_int32 compare_sessions(void *a, void *b) {
 }
 session_key_store_state session_key_store_does_exist(session_key_store *s, jnx_guid *g) {
 
-  jnx_int r = jnx_list_contains(s->key_data_list,g,compare_sessions);
+  jnx_int r = jnx_list_contains_ts(s->key_data_list,g,compare_sessions);
   if(r == 1) {
     return SESSION_KEY_STORE_EXISTS;
   }
@@ -65,7 +63,7 @@ session_key_store_state session_key_store_add(session_key_store *s, jnx_guid *g,
     session_key_data *skd = malloc(sizeof(session_key_data));
     skd->guid = g;
     skd->keypair = keypair; 
-    jnx_list_add(s->key_data_list,skd);
+    jnx_list_add_ts(s->key_data_list,skd);
   }
   return SESSION_KEY_STORE_OKAY;
 }
