@@ -23,13 +23,15 @@
 #include <jnxc_headers/jnxhash.h>
 #include <openssl/rsa.h>
 
+/*
+ * @fn session_create(SessionObject *s)
+ * @brief Pass a ref in for population with session object, will generate keys
+ * and unique identiifier
+ * @param s is a ref to be passed in
+ */
 void session_create(SessionObject *s);
 
-jnx_uint32* session_guid_create(SessionObject *s);
-
 jnx_size session_pack(SessionObject *s,jnx_uint8 **obuffer);
-
 SessionObject *session_unpack(jnx_uint8 *buffer,jnx_size len);
 
-void session_generate_keys(SessionObject *s);
 #endif
