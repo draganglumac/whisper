@@ -17,6 +17,7 @@
  */
 #include <stdlib.h>
 #include "session/session.h"
+#include "session/keystore.h"
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxlog.h>
@@ -25,7 +26,8 @@
 void session_create_destroy() {
 
   SessionObject s;
-  session_create(&s);
+  session_key_store *sk = session_key_store_create();
+  session_create(&s,sk);
   jnx_uint8 *obuffer;
   jnx_size size = session_pack(&s,&obuffer);
   JNXCHECK(obuffer);

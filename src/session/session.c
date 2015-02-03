@@ -47,16 +47,25 @@ SessionObject *session_unpack(jnx_uint8 *buffer,jnx_size len) {
 void session_fetch_guid(SessionObject *s,jnx_guid *g) {
   jnx_guid_from_string(s->guid,g);
 }
-void session_generate_keys(SessionObject *s) {
+void session_generate_keys(SessionObject *s,session_key_store *sk) {
   RSA *keys = asymmetrical_generate_key(2048); 
   jnx_char *publickey = asymmetrical_key_to_string(keys,PUBLIC);
   jnx_size len = strlen(publickey);
   s->rsa_public_key = malloc(len);
   bzero(s->rsa_public_key,len);
   memcpy(s->rsa_public_key,publickey,len);
+  /*
+   * Store if we can
+   */
+  jnx_guid g;
+  jnx_guid_from_string(s->guid,&g);
+  session_key_store_state e = session_key_store_does_exist(sk,&g);
+  JNXCHECK(e == SESSION_KEY_STORE_NOT_FOUND);
+  e = session_key_store_add(sk,&g,keys);
+  JNXCHECK(e == SESSION_KEY_STORE_OKAY);
 }
-void session_create(SessionObject *s){
+void session_create(SessionObject *s, session_key_store *sk) {
   session_object__init(s);
   session_guid_create(s);
-  session_generate_keys(s);
+  session_generate_keys(s,sk);
 }

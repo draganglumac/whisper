@@ -18,6 +18,7 @@
 #ifndef __SESSION_H__
 #define __SESSION_H__
 #include "session_object.pb-c.h"
+#include "keystore.h"
 #include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxtypes.h>
 #include <jnxc_headers/jnxhash.h>
@@ -29,7 +30,7 @@
  * and unique identiifier
  * @param s is a ref to be passed in
  */
-void session_create(SessionObject *s);
+void session_create(SessionObject *s, session_key_store *sk);
 
 void session_fetch_guid(SessionObject *s,jnx_guid *g);
 

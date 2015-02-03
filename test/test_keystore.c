@@ -39,13 +39,9 @@ void test_keystore_add() {
   session_key_store_add(s,&g,keypair);
 
   session_key_store_state e = session_key_store_does_exist(s,&g);
-
   JNXCHECK(e == SESSION_KEY_STORE_EXISTS);
-
   session_key_store_state eagain = session_key_store_add(s,&g,keypair);
-
   JNXCHECK(eagain == SESSION_KEY_STORE_EXISTS);
-
   session_key_store_destroy(s);
 }
 int main(int argc, char **argv) {
