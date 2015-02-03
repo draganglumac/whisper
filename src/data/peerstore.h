@@ -23,10 +23,13 @@
 #include <jnxc_headers/jnxthread.h>
 #include "peer.h"
 
+typedef int (*is_active_peer_t)(time_t last_update_time, peer *p);
+
 typedef struct {
 	peer *local_peer;
 	jnx_thread_mutex *store_lock;
 	time_t last_update;
+	is_active_peer_t is_active_peer;
 	void *peers;
 } peerstore;
 

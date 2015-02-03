@@ -44,6 +44,7 @@ static void safely_update_last_update_time(discovery_service *svc) {
 
 static void send_peer_packet(discovery_service *svc) {
 	void *buffer;
+	JNX_LOG(0, "svc = %x, local_peer = %x", svc, peerstore_get_local_peer(svc->peers)); fflush(stdout);
 	size_t len = peerton(peerstore_get_local_peer(svc->peers), &buffer);
 	jnx_uint8 *message = malloc(4 + len);
 	memcpy(message, "PEER", 4);
@@ -62,6 +63,16 @@ static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size byt
 
 // *** Peer discovery strategies ***
 int peer_update_interval = 10;
+
+int is_active_peer_ask_once(time_t last_update_time, peer *p) {
+	return 1;
+}
+int is_active_peer_periodic_update(time_t last_update_time, peer *p) {
+	if (p->last_seen >= last_update_time - 2 * peer_update_interval) {
+		return 1;
+	}
+	return 0;
+}
 
 jnx_int32 send_discovery_request(discovery_service *svc) {
 	char *tmp = "LIST";
@@ -99,6 +110,7 @@ void *polling_update_loop(void *data) {
 	return NULL;
 }
 jnx_int32 polling_update_strategy(discovery_service *svc) {
+	JNX_LOG(0, "svc = %x", svc);
 	return jnx_thread_create_disposable(polling_update_loop, (void *) svc);
 }
 
@@ -181,9 +193,11 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
 	}
 
 	if (strategy == NULL) {
+		svc->peers->is_active_peer = is_active_peer_ask_once;
 		send_discovery_request(svc);
 	}
 	else {
+		svc->peers->is_active_peer = is_active_peer_periodic_update;
 		strategy(svc);
 	}
 
@@ -197,14 +211,16 @@ int discovery_service_stop(discovery_service *svc) {
 	svc->isrunning = 0;
 	return 0;
 }
-void discovery_service_cleanup(discovery_service **svc) {
-	JNXCHECK(*svc);
-	if ((*svc)->isrunning) {
-		discovery_service_stop(*svc);
+void discovery_service_cleanup(discovery_service **ppsvc) {
+	discovery_service *svc = *ppsvc;
+	JNXCHECK(svc);
+	if (svc->isrunning) {
+		discovery_service_stop(svc);
 	}
-	jnx_thread_mutex_destroy(&(*svc)->update_time_lock);
-	free(*svc);
-	*svc = 0;
+	jnx_thread_mutex_destroy(&svc->update_time_lock);
+	peerstore_destroy(&(svc->peers));
+	free(svc);
+	*ppsvc = 0;
 }
 time_t get_last_update_time(discovery_service *svc) {
 	jnx_thread_lock(svc->update_time_lock);

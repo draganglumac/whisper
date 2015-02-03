@@ -93,7 +93,13 @@ int starting_service_spy(char *message, int len, jnx_socket *s, void *context) {
 typedef int (*discovery_test)(discovery_service *);
 
 void run_discovery_service_test(discovery_test test) {
-	discovery_service *svc = discovery_service_create(1234, AF_INET, baddr, NULL);
+	jnx_guid guid;
+	int i;
+	for (i = 0; i < 16; i++) {
+		guid.guid[i] = 1;
+	}
+	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
+	discovery_service *svc = discovery_service_create(1234, AF_INET, baddr, store);
 	int retval = test(svc);
 	if (retval == CLEANUP) {
 		discovery_service_cleanup(&svc);
@@ -154,17 +160,10 @@ int test_restarting_service(discovery_service *svc) {
 }
 
 int test_peer_packet_sent_after_list_packet_received(discovery_service *svc) {
-	jnx_guid guid;
-	int i;
-	for (i = 0; i < 16; i++) {
-		guid.guid[i] = 1;
-	}
-	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
-	svc->peers = store;
-
-	JNXCHECK(NULL == peerstore_lookup(svc->peers, &guid));
+	jnx_guid *guid = &(svc->peers->local_peer->guid);
 	discovery_service_start(svc, ASK_ONCE_STRATEGY);
-	while (NULL == peerstore_lookup(svc->peers, &guid)) {
+	JNXCHECK(NULL == peerstore_lookup(svc->peers, guid));
+	while (NULL == peerstore_lookup(svc->peers, guid)) {
 		printf(".");
 		fflush(stdout);
 		sleep(1);
@@ -181,32 +180,14 @@ int test_setting_peer_update_interval(discovery_service *svc) {
 	return CLEANUP;
 }
 int test_polling_update_strategy(discovery_service *svc) {
-	jnx_guid guid;
-	int i;
-	for (i = 0; i < 16; i++) {
-		guid.guid[i] = 1;
-	}
-	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
-	svc->peers = store;
-	
 	peer_update_interval = 1;
-	
 	discovery_service_start(svc, POLLING_UPDATE_STRATEGY);
 	sleep(2);
 	update_time_checks(svc);
 	return CLEANUP;
 }
 int test_broadcast_update_strategy(discovery_service *svc) {
-	jnx_guid guid;
-	int i;
-	for (i = 0; i < 16; i++) {
-		guid.guid[i] = 1;
-	}
-	peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "0123456789PublicKey"));
-	svc->peers = store;
-
 	peer_update_interval = 1;
-	
 	discovery_service_start(svc, BROADCAST_UPDATE_STRATEGY);
 	sleep(2);
 	update_time_checks(svc);
