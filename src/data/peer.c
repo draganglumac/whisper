@@ -29,7 +29,6 @@ size_t peerton(peer *p, void **out) {
 	msg.guid.len = 16;
 	msg.guid.data = malloc(sizeof(char) * msg.guid.len);
 	int i;
-	JNX_LOG(0, "p->guid = %x", p->guid.guid[0]); fflush(stdout);
 	for (i = 0; i < msg.guid.len; i++) {
 		msg.guid.data[i] = p->guid.guid[i];
 	}

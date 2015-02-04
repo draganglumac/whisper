@@ -211,8 +211,8 @@ int main(int argc, char **argv) {
 	JNX_LOG(NULL, "Test restarting discovery service.");
 	run_discovery_service_test(test_restarting_service);
 
-	JNX_LOG(NULL, "Test PEER packet is sent after discovery service recieves LIST packet.");
-	run_discovery_service_test(test_peer_packet_sent_after_list_packet_received);	
+//	JNX_LOG(NULL, "Test PEER packet is sent after discovery service recieves LIST packet.");
+//	run_discovery_service_test(test_peer_packet_sent_after_list_packet_received);	
 	
 	JNX_LOG(NULL, "Test setting peer_update_interval global variable.");
 	run_discovery_service_test(test_setting_peer_update_interval);

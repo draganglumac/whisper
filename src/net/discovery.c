@@ -44,7 +44,6 @@ static void safely_update_last_update_time(discovery_service *svc) {
 
 static void send_peer_packet(discovery_service *svc) {
 	void *buffer;
-	JNX_LOG(0, "svc = %x, local_peer = %x", svc, peerstore_get_local_peer(svc->peers)); fflush(stdout);
 	size_t len = peerton(peerstore_get_local_peer(svc->peers), &buffer);
 	jnx_uint8 *message = malloc(4 + len);
 	memcpy(message, "PEER", 4);
@@ -95,6 +94,8 @@ void *polling_update_loop(void *data) {
 	//
 	// The only time we may get a time shorter than peer_update_interval between
 	// updates is when a new discovery service joins the broadcast group..
+	int old_cancel_state;
+	pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
 	discovery_service *svc = (discovery_service *) data;
 	time_t next_update = get_last_update_time(svc) + peer_update_interval;
 	while (1) {
@@ -110,12 +111,14 @@ void *polling_update_loop(void *data) {
 	return NULL;
 }
 jnx_int32 polling_update_strategy(discovery_service *svc) {
-	JNX_LOG(0, "svc = %x", svc);
-	return jnx_thread_create_disposable(polling_update_loop, (void *) svc);
+	svc->update_thread = jnx_thread_create(polling_update_loop, (void *) svc);
+	return 0;
 }
 
 // Broadcast update strategy
 void *broadcast_update_loop(void *data) {
+	int old_cancel_state;
+	pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
 	discovery_service *svc = (discovery_service *) data;
 	time_t next_update = time(0) + peer_update_interval;
 	while (1) {
@@ -129,7 +132,8 @@ void *broadcast_update_loop(void *data) {
 	return NULL;
 }
 jnx_int32 broadcast_update_strategy(discovery_service *svc) {
-	return jnx_thread_create_disposable(broadcast_update_loop, (void *) svc);
+	svc->update_thread = jnx_thread_create(broadcast_update_loop, (void *) svc);
+	return 0;
 }
 
 // Discovery listener and loop - async thread
@@ -155,6 +159,8 @@ static void ensure_listening_on_port(int port) {
 	sleep(1);
 }
 static void *discovery_loop(void* data) {
+	int old_cancel_state;
+	pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
 	discovery_service *svc = (discovery_service*) data;
 	char *port = port_to_string(svc);
 	jnx_socket_udp_listen_with_context(svc->sock_receive, port, 0, svc->receive_callback, data);
@@ -162,11 +168,17 @@ static void *discovery_loop(void* data) {
 	return NULL;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
-	int retval = jnx_thread_create_disposable(discovery_loop, (void*) svc);
+	svc->listening_thread = jnx_thread_create(discovery_loop, (void*) svc);
 	ensure_listening_on_port(svc->port);
-	return retval;
+	return 0;
 }
-
+static void cancel_thread(jnx_thread **thr) {
+	jnx_thread *temp = *thr;
+	pthread_cancel(temp->system_thread);
+	pthread_join(temp->system_thread, NULL);
+	jnx_thread_handle_destroy(temp);
+	*thr = NULL;
+}
 // Public interface functions
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers) {
 	discovery_service *svc = calloc(1, sizeof(discovery_service));
@@ -176,6 +188,8 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 	svc->receive_callback = discovery_receive_handler;
 	svc->isrunning = 0;
 	svc->peers = peers;
+	svc->listening_thread = NULL;
+	svc->update_thread = NULL;
 	svc->last_updated = time(0);
 	svc->update_time_lock = jnx_thread_mutex_create();	
 	return svc;
@@ -208,6 +222,12 @@ int discovery_service_stop(discovery_service *svc) {
 	JNXCHECK(svc);
 	jnx_socket_destroy(&(svc->sock_receive));
 	jnx_socket_destroy(&(svc->sock_send));
+	if (svc->update_thread != NULL) {
+		cancel_thread(&svc->update_thread);	
+	}
+	if (svc->listening_thread != NULL) {
+		cancel_thread(&svc->listening_thread);
+	}
 	svc->isrunning = 0;
 	return 0;
 }
