@@ -25,5 +25,5 @@ typedef struct session_service {
 }session_service;
 
 session_service *session_service_create();
-
+void session_service_destroy(session_service *ss);
 #endif

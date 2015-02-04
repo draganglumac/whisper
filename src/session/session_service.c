@@ -25,3 +25,7 @@ session_service *session_service_create() {
   s->keystore = session_key_store_create(); 
   return s;
 }
+void session_service_destroy(session_service *ss) {
+  session_key_store_destroy(ss->keystore);
+  free(ss);
+}

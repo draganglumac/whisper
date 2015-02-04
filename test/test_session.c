@@ -44,7 +44,7 @@ void session_create_destroy() {
   session_object__free_unpacked(us,NULL);
 }
 int main(int argc, char **argv) {
-
+  JNX_LOG(NULL,"Testing session");
   session_create_destroy();
   return 0;
 }
