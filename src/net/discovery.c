@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include <sys/ioctl.h>
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxlog.h>
 #include <jnxc_headers/jnxcheck.h>
@@ -111,7 +112,7 @@ void *polling_update_loop(void *data) {
 	return NULL;
 }
 jnx_int32 polling_update_strategy(discovery_service *svc) {
-	svc->update_thread = jnx_thread_create(polling_update_loop, (void *) svc);
+	svc->update_thread = jnx_thread_create_disposable(polling_update_loop, (void *) svc);
 	return 0;
 }
 
@@ -132,7 +133,7 @@ void *broadcast_update_loop(void *data) {
 	return NULL;
 }
 jnx_int32 broadcast_update_strategy(discovery_service *svc) {
-	svc->update_thread = jnx_thread_create(broadcast_update_loop, (void *) svc);
+	svc->update_thread = jnx_thread_create_disposable(broadcast_update_loop, (void *) svc);
 	return 0;
 }
 
@@ -168,9 +169,9 @@ static void *discovery_loop(void* data) {
 	return NULL;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
-	svc->listening_thread = jnx_thread_create(discovery_loop, (void*) svc);
+	int retval = jnx_thread_create_disposable(discovery_loop, (void*) svc);
 	ensure_listening_on_port(svc->port);
-	return 0;
+	return retval;
 }
 static void cancel_thread(jnx_thread **thr) {
 	jnx_thread *temp = *thr;
@@ -179,6 +180,11 @@ static void cancel_thread(jnx_thread **thr) {
 	jnx_thread_handle_destroy(temp);
 	*thr = NULL;
 }
+static int stop_listening(discovery_service *svc) {
+	int dont_block = 1; 
+	return ioctl(svc->sock_receive, FIONBIO, (char *) &dont_block);
+}
+
 // Public interface functions
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers) {
 	discovery_service *svc = calloc(1, sizeof(discovery_service));
@@ -188,7 +194,6 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 	svc->receive_callback = discovery_receive_handler;
 	svc->isrunning = 0;
 	svc->peers = peers;
-	svc->listening_thread = NULL;
 	svc->update_thread = NULL;
 	svc->last_updated = time(0);
 	svc->update_time_lock = jnx_thread_mutex_create();	
@@ -220,15 +225,13 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
 }
 int discovery_service_stop(discovery_service *svc) {
 	JNXCHECK(svc);
+	svc->isrunning = 0;
+	stop_listening(svc);
+	if (svc->update_thread != NULL) {
+		cancel_thread(svc->update_thread);
+	}
 	jnx_socket_destroy(&(svc->sock_receive));
 	jnx_socket_destroy(&(svc->sock_send));
-	if (svc->update_thread != NULL) {
-		cancel_thread(&svc->update_thread);	
-	}
-	if (svc->listening_thread != NULL) {
-		cancel_thread(&svc->listening_thread);
-	}
-	svc->isrunning = 0;
 	return 0;
 }
 void discovery_service_cleanup(discovery_service **ppsvc) {
