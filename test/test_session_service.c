@@ -20,6 +20,7 @@
 #include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxlog.h>
 #include <jnxc_headers/jnxtypes.h>
+#include "../src/crypto/cryptography.h"
 #include "../src/session/session_service.h"
 
 
@@ -36,5 +37,12 @@ int main(int argc, char **argv) {
   RSA *okeys;
   session_service_fetch_session_keys(service,&session,&okeys);
   JNXCHECK(okeys);
+
+  jnx_char *pubkeystring = asymmetrical_key_to_string(okeys,PUBLIC);
+  jnx_char *prikeystring = asymmetrical_key_to_string(okeys,PRIVATE);
+  
+  JNX_LOG(NULL,"Key %s",pubkeystring);
+  JNX_LOG(NULL,"Key %s",prikeystring);
+
   return 0;
 }
