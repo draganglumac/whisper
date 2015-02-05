@@ -20,16 +20,21 @@
 #include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxlog.h>
 #include <jnxc_headers/jnxtypes.h>
-#include "session/session_service.h"
+#include "../src/session/session_service.h"
 
 
 int main(int argc, char **argv) {
   JNX_LOG(NULL,"Testing session service");
 
-
   session_service *service = session_service_create();
   JNXCHECK(service);
   JNXCHECK(service->keystore);
+
+  SessionObject session;
+  session_service_create_session(service,&session);
+
+  RSA *okeys;
+  session_service_fetch_session_keys(service,&session,&okeys);
 
   return 0;
 }

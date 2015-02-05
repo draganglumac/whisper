@@ -11,7 +11,7 @@ execute_process(COMMAND sudo make install . WORKING_DIRECTORY jnxlibc)
 option(RUN_TESTS "Tests" OFF)
 
 if(RUN_TESTS)
-  execute_process(COMMAND ./run_tests WORKING_DIRECTORY test)
+  execute_process(COMMAND ./test/run_tests)
 endif()
 
 file(GLOB SRC "src/**/*.c")

@@ -24,6 +24,8 @@
 session_key_store *session_key_store_create() {
   session_key_store *s = malloc(sizeof(session_key_store));
   s->key_data_list = jnx_list_create();
+  JNXCHECK(s->key_data_list);
+  JNXCHECK(s->key_data_list->internal_lock);
   return s;
 }
 session_key_store_state session_key_store_destroy(session_key_store *s) {
@@ -35,30 +37,27 @@ session_key_store_state session_key_store_destroy(session_key_store *s) {
   free(s);
   return SESSION_KEY_STORE_OKAY;
 }
-jnx_int32 compare_sessions(void *a, void *b) {
+jnx_int session_key_store_does_exist(session_key_store *s, jnx_guid *g) {
+  JNXCHECK(s->key_data_list);
+  JNXCHECK(s->key_data_list->internal_lock);
 
-  session_key_data *bdata = (session_key_data*)b;
-  jnx_guid *bguid = bdata->guid;
-  jnx_guid *aguid = (jnx_guid*)a;
-  jnx_guid_state r = jnx_guid_compare(aguid,bguid);
-  if(r == JNX_GUID_STATE_SUCCESS) {
-    return 1;
+  jnx_node *n = s->key_data_list->head;
+  jnx_node *reset = s->key_data_list->head;
+
+  while(n) {
+    session_key_data *d = n->_data;
+    jnx_guid *bguid = d->guid;
+    if(jnx_guid_compare(g,bguid)) {
+      n = reset; 
+      return 1;
+    }
+    n = n->next_node;
   }
   return 0;
 }
-session_key_store_state session_key_store_does_exist(session_key_store *s, jnx_guid *g) {
-
-  jnx_int r = jnx_list_contains_ts(s->key_data_list,g,compare_sessions);
-  if(r == 1) {
-    return SESSION_KEY_STORE_EXISTS;
-  }
-  return SESSION_KEY_STORE_NOT_FOUND;
-}
 session_key_store_state session_key_store_add(session_key_store *s, jnx_guid *g, RSA *keypair) {
-  //does exist?
-  if(session_key_store_does_exist(s,g) == SESSION_KEY_STORE_EXISTS) {
-    return SESSION_KEY_STORE_EXISTS;
-  }else {
+  JNXCHECK(s);
+  if(!session_key_store_does_exist(s,g)) {
     session_key_data *skd = malloc(sizeof(session_key_data));
     skd->guid = g;
     skd->keypair = keypair; 
@@ -68,5 +67,19 @@ session_key_store_state session_key_store_add(session_key_store *s, jnx_guid *g,
 }
 session_key_store_state session_key_store_remove(session_key_store *s,jnx_guid *g, session_key_data **okeydata) {
 
+  return SESSION_KEY_STORE_NOT_FOUND;
+}
+session_key_store_state session_key_store_retrieve_key(session_key_store *s, jnx_guid *g,RSA **okeydata) {
+  *okeydata = NULL;
+  jnx_node *n = s->key_data_list->head;
+  while(n) {
+    session_key_data *data = n->_data;
+    jnx_guid *c = data->guid;
+    if(jnx_guid_compare(g,c)) {
+      *okeydata = data->keypair;
+      return SESSION_KEY_STORE_EXISTS;
+    }
+    n = n->next_node;
+  }
   return SESSION_KEY_STORE_NOT_FOUND;
 }
