@@ -34,7 +34,6 @@ void session_service_create_session(session_service *ss,SessionObject *os) {
 void session_service_fetch_session_keys(session_service *ss,SessionObject *session, RSA **okeys) {
   jnx_guid g;
   session_fetch_guid(session,&g);
-  *okeys = NULL;
   JNXCHECK(session_key_store_does_exist(ss->keystore,&g));
   session_key_store_retrieve_key(ss->keystore,&g,okeys); 
 }

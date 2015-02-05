@@ -67,18 +67,13 @@ session_key_store_state session_key_store_remove(session_key_store *s,jnx_guid *
 }
 void session_key_store_retrieve_key(session_key_store *s, jnx_guid *g,RSA **okeydata) {
   *okeydata = NULL;
-  if(s->key_data_list->counter == 0) {
-    return;
-  }
   jnx_node *h = s->key_data_list->head,
            *r = s->key_data_list->head;
   while(h) {
     session_key_data *d = h->_data;
     jnx_guid *stored_guid = d->guid;
-
     if(jnx_guid_compare(g,stored_guid)) {
-      RSA *stored_keys = d->keypair;
-      *okeydata = stored_keys;
+      *okeydata = d->keypair;
     }
     h = h->next_node;
   }

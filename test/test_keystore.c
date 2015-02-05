@@ -30,12 +30,13 @@ void test_create_destroy() {
   JNXCHECK(s->key_data_list->counter == 0);
   session_key_store_state e = session_key_store_destroy(s);
 }
-void generate_new_key_entry(session_key_store *s) {
+void generate_new_key_entry(session_key_store *s, jnx_guid *ref) {
   JNX_LOG(NULL,"- generating asymmetrical key");
   RSA *keypair = asymmetrical_generate_key(2048);
   jnx_guid g;
   JNX_LOG(NULL,"- generating guid");
   jnx_guid_create(&g);
+  ref = &g;
   jnx_char *gstr;
   jnx_guid_to_string(&g,&gstr);
   JNX_LOG(NULL,"- created guid %s",gstr);
@@ -51,35 +52,31 @@ void test_keystore_add() {
   int i;
   for(i=0;i<10;++i) {
     JNX_LOG(NULL,"Loop %d KeyStore size %d",i,s->key_data_list->counter);
-    generate_new_key_entry(s);
+    jnx_guid *ref;
+    generate_new_key_entry(s,ref);
     JNXCHECK(s->key_data_list->counter == i + 1);
   }
   session_key_store_destroy(s);
 }
-void test_keystore_collisions() {
-  JNX_LOG(NULL,"test_keystore_collisions");
+void test_keystore_retrieval() {
+  JNX_LOG(NULL,"test_keystore_retrieval");
   session_key_store *s = session_key_store_create();
   JNXCHECK(s);
   int i;
-  for(i=0;i<5;++i){
-    RSA *keypair = asymmetrical_generate_key(2048);
-    jnx_guid g;
-    jnx_guid_create(&g);
-    session_key_store_state e = session_key_store_add(s,&g,keypair);
-    JNXCHECK(e != SESSION_KEY_STORE_EXISTS);
-    /*
-     * Retrieve our stored keypair
-     */
+  for(i=0;i<15;++i){
+    jnx_guid ref;
+    generate_new_key_entry(s,&ref); 
+    
     RSA *okeys;
-    session_key_store_retrieve_key(s,&g,&okeys);
+    session_key_store_retrieve_key(s,&ref,&okeys);
     JNXCHECK(okeys);
   }
-  JNXCHECK(s->key_data_list->counter == 5);
+  JNXCHECK(s->key_data_list->counter == 15);
 }
 int main(int argc, char **argv) {
 
   test_create_destroy();
   test_keystore_add();
-  test_keystore_collisions();
+  test_keystore_retrieval();
   return 0;
 }
