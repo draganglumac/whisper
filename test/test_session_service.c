@@ -35,6 +35,6 @@ int main(int argc, char **argv) {
 
   RSA *okeys;
   session_service_fetch_session_keys(service,&session,&okeys);
-
+  JNXCHECK(okeys);
   return 0;
 }
