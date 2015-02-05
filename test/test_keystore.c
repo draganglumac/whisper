@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #include <stdlib.h>
-#include "../src/session/keystore.h"
+#include "../src/crypto/keystore.h"
 #include <openssl/rsa.h>
 #include "../src/crypto/cryptography.h"
 #include <jnxc_headers/jnxcheck.h>
@@ -29,19 +29,22 @@ void test_create_destroy() {
   JNXCHECK(s);
   session_key_store_state e = session_key_store_destroy(s);
 }
-void test_keystore_add() {
-  JNX_LOG(NULL,"test_keystore_add");
-  session_key_store *s = session_key_store_create();
-  JNXCHECK(s);
+
+
+void generate_new_key_entry(session_key_store *s) {
   RSA *keypair = asymmetrical_generate_key(2048);
   jnx_guid g;
   jnx_guid_create(&g);
-  session_key_store_add(s,&g,keypair);
-
-  session_key_store_state e = session_key_store_does_exist(s,&g);
-  JNXCHECK(e == SESSION_KEY_STORE_EXISTS);
-  session_key_store_state eagain = session_key_store_add(s,&g,keypair);
-  JNXCHECK(eagain == SESSION_KEY_STORE_EXISTS);
+  JNXCHECK(session_key_store_add(s,&g,keypair) == SESSION_KEY_STORE_OKAY);
+}
+void test_keystore_add() {
+  JNX_LOG(NULL,"test_keystore_add");
+  session_key_store *s = session_key_store_create(); 
+  int i;
+  for(i=0;i<10;++i) {
+    generate_new_key_entry(s);
+    JNXCHECK(s->key_data_list->counter == i + 1);
+  }
   session_key_store_destroy(s);
 }
 void test_keystore_collisions() {
@@ -63,8 +66,8 @@ void test_keystore_collisions() {
 }
 int main(int argc, char **argv) {
 
-  //  test_create_destroy();
-  //  test_keystore_add();
+  test_create_destroy();
+  test_keystore_add();
   test_keystore_collisions();
   return 0;
 }

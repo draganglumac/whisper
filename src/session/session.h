@@ -18,7 +18,7 @@
 #ifndef __SESSION_H__
 #define __SESSION_H__
 #include "session_object.pb-c.h"
-#include "keystore.h"
+#include "../crypto/keystore.h"
 #include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxtypes.h>
 #include <jnxc_headers/jnxhash.h>

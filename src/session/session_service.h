@@ -18,8 +18,7 @@
 #ifndef __SESSION_SERVICE_H__
 #define __SESSION_SERVICE_H__
 #include "session.h"
-#include "keystore.h"
-
+#include "../crypto/keystore.h"
 typedef struct session_service {
   session_key_store *keystore;
 }session_service;

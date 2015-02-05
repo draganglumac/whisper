@@ -17,7 +17,6 @@
  */
 #include <stdlib.h>
 #include "session_service.h"
-#include "keystore.h"
 #include "session.h"
 
 session_service *session_service_create() {

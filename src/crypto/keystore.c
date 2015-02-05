@@ -45,11 +45,12 @@ jnx_int session_key_store_does_exist(session_key_store *s, jnx_guid *g) {
     session_key_data *d = n->_data;
     jnx_guid *bguid = d->guid;
     if(jnx_guid_compare(g,bguid)) {
-      n = reset; 
+      s->key_data_list->head = reset;
       return 1;
     }
     n = n->next_node;
   }
+  s->key_data_list->head = reset;
   return 0;
 }
 session_key_store_state session_key_store_add(session_key_store *s, jnx_guid *g, RSA *keypair) {

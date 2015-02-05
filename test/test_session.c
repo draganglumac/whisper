@@ -17,7 +17,7 @@
  */
 #include <stdlib.h>
 #include "../src/session/session.h"
-#include "../src/session/keystore.h"
+#include "../src/crypto/keystore.h"
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxlog.h>
