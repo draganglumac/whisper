@@ -65,7 +65,7 @@ session_key_store_state session_key_store_add(session_key_store *s, jnx_guid *g,
   return SESSION_KEY_STORE_EXISTS;
 }
 session_key_store_state session_key_store_remove(session_key_store *s,jnx_guid *g, session_key_data **okeydata) {
-
+  JNXFAIL("Not implemented");
   return SESSION_KEY_STORE_NOT_FOUND;
 }
 session_key_store_state session_key_store_retrieve_key(session_key_store *s, jnx_guid *g,RSA **okeydata) {
