@@ -40,9 +40,13 @@ int main(int argc, char **argv) {
 
   jnx_char *pubkeystring = asymmetrical_key_to_string(okeys,PUBLIC);
   jnx_char *prikeystring = asymmetrical_key_to_string(okeys,PRIVATE);
-  
   JNX_LOG(NULL,"Key %s",pubkeystring);
   JNX_LOG(NULL,"Key %s",prikeystring);
+  JNXCHECK(pubkeystring);
+  JNXCHECK(prikeystring);
+  free(pubkeystring);
+  free(prikeystring);
+
 
   return 0;
 }

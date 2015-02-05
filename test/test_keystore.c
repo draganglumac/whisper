@@ -74,7 +74,6 @@ void test_keystore_retrieval() {
   JNXCHECK(s->key_data_list->counter == 15);
 }
 int main(int argc, char **argv) {
-
   test_create_destroy();
   test_keystore_add();
   test_keystore_retrieval();
