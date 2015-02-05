@@ -36,5 +36,5 @@ void session_service_fetch_session_keys(session_service *ss,SessionObject *sessi
   session_fetch_guid(session,&g);
   *okeys = NULL;
   JNXCHECK(session_key_store_does_exist(ss->keystore,&g));
-  JNXCHECK(session_key_store_retrieve_key(ss->keystore,&g,okeys) == SESSION_KEY_STORE_EXISTS);  
+  session_key_store_retrieve_key(ss->keystore,&g,okeys); 
 }
