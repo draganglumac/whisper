@@ -185,6 +185,20 @@ static int stop_listening(discovery_service *svc) {
 	return ioctl(svc->sock_receive, FIONBIO, (char *) &dont_block);
 }
 
+// Broadcast or Multicast - call the appropriate function
+static void set_up_sockets_for_broadcast(discovery_service *svc) {
+	svc->sock_receive = jnx_socket_udp_create(svc->family);
+	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_receive);
+	svc->sock_send = jnx_socket_udp_create(svc->family);
+	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_send);
+}
+static void set_up_sockets_for_multicast(discovery_service *svc) {
+	svc->sock_receive = jnx_socket_udp_create(svc->family);
+	jnx_socket_udp_enable_multicast_listen(svc->sock_receive, "todo", 0);
+	svc->sock_send = jnx_socket_udp_create(svc->family);
+	jnx_socket_udp_enable_multicast_send(svc->sock_send, "todo", "todo");
+}
+
 // Public interface functions
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers) {
 	discovery_service *svc = calloc(1, sizeof(discovery_service));
@@ -201,11 +215,13 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 }
 int discovery_service_start(discovery_service *svc, discovery_strategy *strategy) {
 	JNXCHECK(svc);
-	svc->sock_receive = jnx_socket_udp_create(svc->family);
-	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_receive);
-	svc->sock_send = jnx_socket_udp_create(svc->family);
-	jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_send);
-
+	
+	// *** TODO Set up brodcast or multicast ***
+	// It should just be a simple matter of passing a flag to the service
+	// or changing the function signature and calling either
+	// set_up_sockets_for_broadcast or set_up_sockets_for_multicast.
+	set_up_sockets_for_broadcast(svc);
+	
 	if (0 != listen_for_discovery_packets(svc)) {
 		JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
 		return ERR_DISCOVERY_START;
