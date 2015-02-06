@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include "../crypto/cryptography.h"
 #include "session_service.h"
 #include "session.h"
 
@@ -36,10 +37,18 @@ void session_service_create_session(session_service *ss,jnx_guid *outguid) {
   session_fetch_guid(&os,outguid);
 }
 void session_service_destroy_session(session_service *ss, jnx_guid *inguid) {
-  session_data *sessiondata;
+  session_data *sessiondata = NULL;
   session_store_remove(ss->sessionstore,inguid,&sessiondata);
-  session_key_data *keydata;
+  session_key_data *keydata = NULL;
   session_key_store_remove(ss->keystore,inguid,&keydata);
+
+  if(sessiondata) {
+    free(sessiondata);
+  }
+  if(keydata) {
+    asymmetrical_destroy_key(keydata->keypair); 
+    free(keydata);
+  }
 }
 session_service_state session_service_fetch_session(session_service *s, jnx_guid *g, SessionObject **osessionObject) {
   *osessionObject = NULL;
