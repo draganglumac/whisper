@@ -21,7 +21,8 @@
 
 session_service *session_service_create() {
   session_service *s = malloc(sizeof(session_service));
-  s->keystore = session_key_store_create(); 
+  s->keystore = session_key_store_create();
+  s->sessionstore = session_store_create();
   return s;
 }
 void session_service_destroy(session_service *ss) {
@@ -30,6 +31,7 @@ void session_service_destroy(session_service *ss) {
 }
 void session_service_create_session(session_service *ss,SessionObject *os) {
   session_create(os,ss->keystore);
+  session_store_add(ss->sessionstore,os);
 }
 void session_service_fetch_session_keys(session_service *ss,SessionObject *session, RSA **okeys) {
   jnx_guid g;

@@ -1,6 +1,6 @@
 /*
- * =====================================================================================
- *
+ * =============================================================================
+ * 
  *       Filename:  keystore.h
  *
  *    Description:  
@@ -13,7 +13,7 @@
  *         Author:  YOUR NAME (), 
  *   Organization:  
  *
- * =====================================================================================
+ * =============================================================================
  */
 #ifndef __SESSION_STORE_H__
 #include <openssl/rsa.h>
@@ -46,9 +46,11 @@ session_store_state session_store_destroy(session_store *s);
 
 jnx_int session_store_does_exist(session_store *s, jnx_guid *g);
 
-session_store_state session_store_add(session_store *s, jnx_guid *g, SessionObject *session);
+session_store_state session_store_add(session_store *s,SessionObject *session);
 
-session_store_state session_store_remove(session_store *s,jnx_guid *g, session_data **okeydata);
+session_store_state session_store_remove(session_store *s, 
+    jnx_guid *g, session_data **okeydata);
 
-void session_store_retrieve_session(session_store *s, jnx_guid *g,SessionObject **osession);
+void session_store_retrieve_session(session_store *s,
+    jnx_guid *g,SessionObject **osession);
 #endif

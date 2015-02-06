@@ -49,12 +49,13 @@ jnx_int session_store_does_exist(session_store *s, jnx_guid *g) {
   s->key_data_list->head = r;
   return does_exist;
 }
-session_store_state session_store_add(session_store *s, jnx_guid *g,SessionObject *session) {
+session_store_state session_store_add(session_store *s,SessionObject *session) {
   JNXCHECK(s);
-  JNXCHECK(g);
-  if(!session_store_does_exist(s,g)) {
+  jnx_guid g;
+  jnx_guid_from_string(session->guid,&g); 
+  if(!session_store_does_exist(s,&g)) {
     session_data *skd = malloc(sizeof(session_data));
-    skd->guid = g;
+    skd->guid = &g;
     skd->session = session;
     jnx_list_add_ts(s->key_data_list,skd);
     return SESSION_STORE_OKAY;
