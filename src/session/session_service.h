@@ -20,10 +20,37 @@
 #include "session.h"
 #include "../crypto/keystore.h"
 #include "session_store.h"
+//---------------------------------
+// Session service is the manager for all things session
+// It will be used to create a session and return you the guid of that session
+// Behind the scenes it will generate cryptographic keypairs
+// It will also store your SessionObject for transmission
+//---------------------------------
+//Example Usage:
+//
+//Peer A wants to talk to Peer B
+//
+//Peer A creates a local session through service
+//
+//Session service links the guid against keystore and sessionstore
+//
+//SessionObject is packed and sent to Peer B
+//
+//Peer B generates session and links against incoming guid (guids form a pair)
+//
+//Peer B packs and transmits encrypted public key to A
+//
+//Peer A decrypts public key of B
+//
+//Session service generates session symmetrical key
+//
+//Peer A encrypts symmetrical key with public key of B
+//
+//Session service sends packed encrypted key to Peer B
+//
+//B unpacks encrypted session key and replies that handshake is complete
+//---------------------------------
 typedef struct session_service {
-  /*
-   * Session components are tied together through a guid
-   */
   session_key_store *keystore;
   session_store *sessionstore;
 }session_service;
