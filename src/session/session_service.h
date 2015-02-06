@@ -19,8 +19,13 @@
 #define __SESSION_SERVICE_H__
 #include "session.h"
 #include "../crypto/keystore.h"
+#include "session_store.h"
 typedef struct session_service {
+  /*
+   * Session components are tied together through a guid
+   */
   session_key_store *keystore;
+  session_store *sessionstore;
 }session_service;
 
 session_service *session_service_create();
@@ -32,6 +37,12 @@ void session_service_destroy(session_service *ss);
  *keys in the keystore
  */
 void session_service_create_session(session_service *ss,SessionObject *os);
+
+//SessionObject* session_service_fetch_session(jnx_guid *g);
+
+//void session_service_update_session(jnx_guid *g);
+
+//sesssion_service_state session_service_resolve_session(jnx_guid *g, SessionObject **osession);
 
 void session_service_fetch_session_keys(session_service *ss,SessionObject *session, RSA **okeys);
 #endif
