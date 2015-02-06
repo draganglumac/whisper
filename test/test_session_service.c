@@ -54,15 +54,20 @@ void test_session_create() {
 }
 void test_session_destroy() {
 
+  SessionObject *so;
   session_service *ss = session_service_create();
   jnx_guid guid;
   //This created session will exist in the store
   session_service_create_session(ss,&guid);
+  session_service_state e = session_service_fetch_session(ss,&guid, &so);
+  JNXCHECK(e == SESSION_STORE_EXISTS);
   JNXCHECK(ss->keystore->key_data_list->counter == 1);
   JNXCHECK(ss->sessionstore->key_data_list->counter == 1);
   session_service_destroy_session(ss,&guid);
   JNXCHECK(ss->keystore->key_data_list->counter == 0);
   JNXCHECK(ss->sessionstore->key_data_list->counter == 0);
+   e = session_service_fetch_session(ss,&guid, &so);
+  JNXCHECK(e == SESSION_STORE_NOT_FOUND);
 }
 int main(int argc, char **argv) {
   test_session_create();

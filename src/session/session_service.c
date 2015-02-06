@@ -42,7 +42,7 @@ void session_service_destroy_session(session_service *ss, jnx_guid *inguid) {
   session_key_store_remove(ss->keystore,inguid,&keydata);
 }
 session_service_state session_service_fetch_session(session_service *s, jnx_guid *g, SessionObject **osessionObject) {
-  osessionObject = NULL;
+  *osessionObject = NULL;
   session_store_retrieve_session(s->sessionstore,g,osessionObject);
   if(!*osessionObject) {
     return SESSION_STORE_NOT_FOUND; 
