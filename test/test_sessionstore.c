@@ -59,7 +59,6 @@ void test_add_store() {
     generate_sessions(s,sk);
     JNXCHECK(s->key_data_list->counter == i + 1);
   }
-
   session_store_state e = session_store_destroy(s);
 }
 int main(int argc, char **argv) {

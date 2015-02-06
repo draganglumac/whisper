@@ -29,13 +29,32 @@ void session_service_destroy(session_service *ss) {
   session_key_store_destroy(ss->keystore);
   free(ss);
 }
-void session_service_create_session(session_service *ss,SessionObject *os) {
-  session_create(os,ss->keystore);
-  session_store_add(ss->sessionstore,os);
+void session_service_create_session(session_service *ss,jnx_guid *outguid) {
+  SessionObject os;
+  session_create(&os,ss->keystore);
+  session_store_add(ss->sessionstore,&os);
+  session_fetch_guid(&os,outguid);
 }
-void session_service_fetch_session_keys(session_service *ss,SessionObject *session, RSA **okeys) {
-  jnx_guid g;
-  session_fetch_guid(session,&g);
-  JNXCHECK(session_key_store_does_exist(ss->keystore,&g));
-  session_key_store_retrieve_key(ss->keystore,&g,okeys); 
+void session_service_destroy_session(session_service *ss, jnx_guid *inguid) {
+
+}
+session_service_state session_service_fetch_session(session_service *s, jnx_guid *g, SessionObject **osessionObject) {
+  osessionObject = NULL;
+  session_store_retrieve_session(s->sessionstore,g,osessionObject);
+  if(!*osessionObject) {
+    return SESSION_STORE_NOT_FOUND; 
+  }
+  return SESSION_STORE_EXISTS;
+}
+void session_service_fetch_session_keys(session_service *ss,
+    jnx_guid *g, RSA **okeys) {
+  *okeys = NULL;
+  SessionObject *os;
+  session_store_retrieve_session(ss->sessionstore,g,&os);
+  session_fetch_guid(os,g);
+  JNXCHECK(session_key_store_does_exist(ss->keystore,g));
+  session_key_store_retrieve_key(ss->keystore,g,okeys); 
+}
+void session_service_update_session(jnx_guid *g) {
+
 }

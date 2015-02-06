@@ -24,20 +24,12 @@
 #include "../src/session/session_service.h"
 
 
-int main(int argc, char **argv) {
-  JNX_LOG(NULL,"Testing session service");
-
-  session_service *service = session_service_create();
-  JNXCHECK(service);
-  JNXCHECK(service->keystore);
-
-  SessionObject session;
-  session_service_create_session(service,&session);
-
+void generate_session(session_service *service) {
+  jnx_guid guid;
+  //This created session will exist in the store
+  session_service_create_session(service,&guid);
   RSA *okeys;
-  session_service_fetch_session_keys(service,&session,&okeys);
-  JNXCHECK(okeys);
-
+  session_service_fetch_session_keys(service,&guid,&okeys);
   jnx_char *pubkeystring = asymmetrical_key_to_string(okeys,PUBLIC);
   jnx_char *prikeystring = asymmetrical_key_to_string(okeys,PRIVATE);
   JNX_LOG(NULL,"Key %s",pubkeystring);
@@ -46,7 +38,19 @@ int main(int argc, char **argv) {
   JNXCHECK(prikeystring);
   free(pubkeystring);
   free(prikeystring);
+}
+int main(int argc, char **argv) {
+  JNX_LOG(NULL,"Testing session service");
 
+  session_service *service = session_service_create();
+  JNXCHECK(service);
+  JNXCHECK(service->keystore);
+  int i;
+  for(i=0;i<10;++i) {
+    generate_session(service);
+    JNXCHECK(service->sessionstore->key_data_list->counter == i + 1);
+  }
 
+  session_service_destroy(service);
   return 0;
 }
