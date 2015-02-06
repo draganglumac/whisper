@@ -36,7 +36,10 @@ void session_service_create_session(session_service *ss,jnx_guid *outguid) {
   session_fetch_guid(&os,outguid);
 }
 void session_service_destroy_session(session_service *ss, jnx_guid *inguid) {
-
+  session_data *sessiondata;
+  session_store_remove(ss->sessionstore,inguid,&sessiondata);
+  session_key_data *keydata;
+  session_key_store_remove(ss->keystore,inguid,&keydata);
 }
 session_service_state session_service_fetch_session(session_service *s, jnx_guid *g, SessionObject **osessionObject) {
   osessionObject = NULL;

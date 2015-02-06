@@ -62,8 +62,24 @@ session_key_store_state session_key_store_add(session_key_store *s, jnx_guid *g,
   return SESSION_KEY_STORE_EXISTS;
 }
 session_key_store_state session_key_store_remove(session_key_store *s,jnx_guid *g, session_key_data **okeydata) {
-  JNXFAIL("Not implemented");
-  return SESSION_KEY_STORE_NOT_FOUND;
+  *okeydata = NULL;
+  session_key_store_state e = SESSION_KEY_STORE_NOT_FOUND;  
+  jnx_node *h = s->key_data_list->head;
+  jnx_list *revised_list = jnx_list_create();
+  while(h) {
+    session_key_data *d = h->_data;
+    jnx_guid *stored_guid = d->guid;
+    if(!jnx_guid_compare(g,stored_guid)) {
+      jnx_list_add(revised_list,d);
+    }else {
+      *okeydata = d;
+      e = SESSION_KEY_STORE_EXISTS;
+    }
+    h = h->next_node;
+  }
+  jnx_list_destroy(&s->key_data_list);
+  s->key_data_list = revised_list;
+  return e;
 }
 void session_key_store_retrieve_key(session_key_store *s, jnx_guid *g,RSA **okeydata) {
   *okeydata = NULL;

@@ -39,9 +39,8 @@ void generate_session(session_service *service) {
   free(pubkeystring);
   free(prikeystring);
 }
-int main(int argc, char **argv) {
+void test_session_create() {
   JNX_LOG(NULL,"Testing session service");
-
   session_service *service = session_service_create();
   JNXCHECK(service);
   JNXCHECK(service->keystore);
@@ -52,5 +51,23 @@ int main(int argc, char **argv) {
   }
 
   session_service_destroy(service);
+}
+void test_session_destroy() {
+
+  session_service *ss = session_service_create();
+  jnx_guid guid;
+  //This created session will exist in the store
+  session_service_create_session(ss,&guid);
+  JNXCHECK(ss->keystore->key_data_list->counter == 1);
+  JNXCHECK(ss->sessionstore->key_data_list->counter == 1);
+  session_service_destroy_session(ss,&guid);
+  JNXCHECK(ss->keystore->key_data_list->counter == 0);
+  JNXCHECK(ss->sessionstore->key_data_list->counter == 0);
+}
+int main(int argc, char **argv) {
+  test_session_create();
+  test_session_destroy();
+
   return 0;
 }
+
