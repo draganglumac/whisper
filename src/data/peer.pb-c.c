@@ -6,7 +6,7 @@
 #define PROTOBUF_C__NO_DEPRECATED
 #endif
 
-#include "src/data/peer.pb-c.h"
+#include "peer.pb-c.h"
 void   peer__init
                      (Peer         *message)
 {

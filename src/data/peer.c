@@ -37,10 +37,10 @@ size_t peerton(peer *p, void **out) {
 	msg.host_address = malloc(1 + sizeof(char) * strlen(p->host_address));
 	strcpy(msg.host_address, p->host_address);
 
-	// optional string public_key=3;
-	if (0 != p->public_key) {
-		msg.public_key = malloc(1 + sizeof(char) * strlen(p->public_key));
-		strcpy(msg.public_key, p->public_key);
+	// optional string user_name=3;
+	if (0 != p->user_name) {
+		msg.user_name = malloc(1 + sizeof(char) * strlen(p->user_name));
+		strcpy(msg.user_name, p->user_name);
 	}
 
 	len = peer__get_packed_size(&msg);
@@ -59,28 +59,28 @@ peer *ntopeer(void *in, size_t len) {
 
 	jnx_guid gd;
 	memcpy(gd.guid, msg->guid.data, msg->guid.len);	
-	peer *p = peer_create(gd, msg->host_address, msg->public_key); 
+	peer *p = peer_create(gd, msg->host_address, msg->user_name); 
 	peer__free_unpacked(msg, NULL);
 	return p;	
 }
-peer *peer_create(jnx_guid guid, char *host_address, char *public_key) {
+peer *peer_create(jnx_guid guid, char *host_address, char *user_name) {
 	JNXCHECK(host_address);
 	peer *temp = malloc(sizeof(peer));
 	
 	memcpy(temp->guid.guid, guid.guid, 16);
 	temp->host_address = malloc(1 + strlen(host_address));
 	strcpy(temp->host_address, host_address);
-	if (NULL != public_key && strlen(public_key) > 0) {
-		temp->public_key = malloc(1 + strlen(public_key));
-		strcpy(temp->public_key, public_key);
+	if (NULL != user_name && strlen(user_name) > 0) {
+		temp->user_name = malloc(1 + strlen(user_name));
+		strcpy(temp->user_name, user_name);
 	}
 	return temp;
 }
 void peer_free(peer **p) {
 	peer *temp = *p;
 	free(temp->host_address);
-	if (NULL != temp->public_key) {
-		free(temp->public_key);
+	if (NULL != temp->user_name) {
+		free(temp->user_name);
 	}
 	free(temp);
 	*p = NULL;

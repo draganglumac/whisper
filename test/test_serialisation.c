@@ -66,7 +66,7 @@ void test_peer_deserialisation() {
 		JNXCHECK(p->guid.guid[i] == 0x01);
 	}
 	JNXCHECK(0 == strcmp(p->host_address, "127.0.0.1"));
-	JNXCHECK(0 == strcmp(p->public_key, "0123456789PublicKey"));
+	JNXCHECK(0 == strcmp(p->user_name, "0123456789PublicKey"));
 	peer_free(&p);
 	JNXCHECK(NULL == p);
 }

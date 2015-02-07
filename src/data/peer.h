@@ -32,6 +32,6 @@ typedef struct {
 size_t peerton(peer *p, void **out);
 peer *ntopeer(void *in, size_t len);
 void peer_free(peer **p);
-peer *peer_create(jnx_guid guid, char *host_address, char *public_key);
+peer *peer_create(jnx_guid guid, char *host_address, char *user_name);
 
 #endif
