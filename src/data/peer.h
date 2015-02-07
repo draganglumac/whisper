@@ -25,7 +25,7 @@
 typedef struct {
 	jnx_guid guid;
 	char *host_address;
-	char *public_key;
+	char *user_name;
 	time_t last_seen;
 } peer;
 
