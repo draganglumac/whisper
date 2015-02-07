@@ -63,7 +63,6 @@ void session_service_fetch_session_keys(session_service *ss,
   *okeys = NULL;
   SessionObject *os;
   session_store_retrieve_session(ss->sessionstore,g,&os);
-  session_fetch_guid(os,g);
   JNXCHECK(session_key_store_does_exist(ss->keystore,g));
   session_key_store_retrieve_key(ss->keystore,g,okeys); 
 }
