@@ -51,11 +51,6 @@ void session_generate_keys(SessionObject *s,session_key_store *sk) {
   JNXCHECK(s);
   JNXCHECK(sk);
   RSA *keys = asymmetrical_generate_key(2048); 
-  jnx_char *publickey = asymmetrical_key_to_string(keys,PUBLIC);
-  jnx_size len = strlen(publickey);
-  s->rsa_public_key = malloc(len);
-  bzero(s->rsa_public_key,len);
-  memcpy(s->rsa_public_key,publickey,len);
   //Store key
   jnx_guid g;
   jnx_guid_from_string(s->guid,&g);

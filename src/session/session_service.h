@@ -72,6 +72,9 @@ void session_service_destroy_session(session_service *ss, jnx_guid *inguid);
 session_service_state session_service_fetch_session(session_service *s,
     jnx_guid *g, SessionObject **osessionObject);
 
+void session_service_link_session(session_service *ss,
+    jnx_guid *inguid, jnx_guid *foreign_guid);
+
 void session_service_fetch_session_keys(session_service *ss,
     jnx_guid *g, RSA **okeys);
 

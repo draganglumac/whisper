@@ -49,7 +49,7 @@ void   session_object__free_unpacked
   PROTOBUF_C_ASSERT (message->base.descriptor == &session_object__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor session_object__field_descriptors[3] =
+static const ProtobufCFieldDescriptor session_object__field_descriptors[2] =
 {
   {
     "guid",
@@ -64,24 +64,12 @@ static const ProtobufCFieldDescriptor session_object__field_descriptors[3] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "rsa_public_key",
+    "remote_guid",
     2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    PROTOBUF_C_OFFSETOF(SessionObject, rsa_public_key),
-    NULL,
-    NULL,
-    0,            /* packed */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "rsa_private_key",
-    3,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    PROTOBUF_C_OFFSETOF(SessionObject, rsa_private_key),
+    PROTOBUF_C_OFFSETOF(SessionObject, remote_guid),
     NULL,
     NULL,
     0,            /* packed */
@@ -90,13 +78,12 @@ static const ProtobufCFieldDescriptor session_object__field_descriptors[3] =
 };
 static const unsigned session_object__field_indices_by_name[] = {
   0,   /* field[0] = guid */
-  2,   /* field[2] = rsa_private_key */
-  1,   /* field[1] = rsa_public_key */
+  1,   /* field[1] = remote_guid */
 };
 static const ProtobufCIntRange session_object__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 2 }
 };
 const ProtobufCMessageDescriptor session_object__descriptor =
 {
@@ -106,7 +93,7 @@ const ProtobufCMessageDescriptor session_object__descriptor =
   "SessionObject",
   "",
   sizeof(SessionObject),
-  3,
+  2,
   session_object__field_descriptors,
   session_object__field_indices_by_name,
   1,  session_object__number_ranges,

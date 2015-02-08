@@ -58,6 +58,9 @@ session_service_state session_service_fetch_session(session_service *s, jnx_guid
   }
   return SESSION_STORE_EXISTS;
 }
+void session_service_link_session(session_service *ss,jnx_guid *inguid, jnx_guid *foriegn_guid) {
+
+}
 void session_service_fetch_session_keys(session_service *ss,
     jnx_guid *g, RSA **okeys) {
   *okeys = NULL;

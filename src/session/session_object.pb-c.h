@@ -20,12 +20,11 @@ struct  _SessionObject
 {
   ProtobufCMessage base;
   char *guid;
-  char *rsa_public_key;
-  char *rsa_private_key;
+  char *remote_guid;
 };
 #define SESSION_OBJECT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&session_object__descriptor) \
-    , NULL, NULL, NULL }
+    , NULL, NULL }
 
 
 /* SessionObject methods */
