@@ -19,9 +19,8 @@
 #include "../src/session/session_service.h"
 #include "../src/util/utils.h"
 void test_create_destroy() {
-
+  JNX_LOG(NULL,"test_create_destroy");
   session_service *service = session_service_create();
-
   session *os;
   //Create a session
   session_state e = session_service_create_session(service,&os);
@@ -32,7 +31,6 @@ void test_create_destroy() {
   //Lets test we can retrieve our session by giving our service the guid
   e = session_service_fetch_session(service,&os->local_guid,&retrieved);
   JNXCHECK(e == SESSION_STATE_OKAY);
-
   JNXCHECK(jnx_guid_compare(&os->local_guid,&retrieved->local_guid) == JNX_GUID_STATE_SUCCESS);
   e = session_service_destroy_session(service,&os->local_guid);
   JNXCHECK(e == SESSION_STATE_OKAY);
@@ -40,9 +38,20 @@ void test_create_destroy() {
   session_service_destroy(&service);
   JNXCHECK(service == NULL);
 }
+void test_heavy_load() {
+  JNX_LOG(NULL,"test_heavy_load");
+  session_service *service = session_service_create();
+  jnx_int c = 20,d;
+  for(d=0;d<c;++d) {
+    session *os;
+    session_state e = session_service_create_session(service,&os);
+    JNXCHECK(service->session_list->counter == d + 1);
+  }
+  session_service_destroy(&service);
+  JNXCHECK(service == NULL);
+}
 int main(int argc, char **argv) {
-
   test_create_destroy();
-
+  test_heavy_load();
   return 0;
 }

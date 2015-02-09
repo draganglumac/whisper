@@ -51,6 +51,7 @@ void session_service_destroy(session_service **service) {
 }
 session_state session_service_create_session(session_service *service, session **osession) {
   session *s = malloc(sizeof(session));
+  s->keypair = asymmetrical_generate_key(2048);  
   jnx_guid_create(&s->local_guid);
   if(session_service_does_exist(service,&s->local_guid)){
     return SESSION_STATE_EXISTS;
@@ -101,6 +102,7 @@ session_state session_service_destroy_session(session_service *service, jnx_guid
     /*
      * Any other session related cleanup here!
      */
+    asymmetrical_destroy_key(retrieved_session->keypair);
     free(retrieved_session);
   }
   jnx_list *old_list = service->session_list;

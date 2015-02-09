@@ -20,11 +20,7 @@
 #include <jnxc_headers/jnxguid.h>
 #include <jnxc_headers/jnxlist.h>
 #include <jnxc_headers/jnxcheck.h>
-typedef struct session {
-  jnx_guid local_guid;
-  jnx_guid remote_guid;
-}session;
-
+#include "session.h"
 typedef struct session_service {
   jnx_list *session_list;
 }session_service;
