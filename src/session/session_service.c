@@ -17,7 +17,8 @@
  */
 #include <stdlib.h>
 #include "session_service.h"
-
+#include "../util/utils.h"
+static void destroy_session(session *s);
 static int session_service_does_exist(session_service *service, jnx_guid *g) {
   jnx_int does_exist = 0;
   jnx_node *h = service->session_list->head,
@@ -44,6 +45,19 @@ session_service *session_service_create() {
   return s;
 }
 void session_service_destroy(session_service **service) {
+  if((*service)->session_list->counter){
+    jnx_list *sessions_list;
+    JNXCHECK(session_service_fetch_all_sessions(*service,&sessions_list) == SESSION_STATE_OKAY);
+    jnx_node *h = sessions_list->head,
+             *r = sessions_list->head;
+    while(h) {
+      session *s = h->_data;
+      session_service_destroy_session(*service,&s->local_guid);
+      h = h->next_node;
+    }
+    h = r;
+    jnx_list_destroy(&sessions_list);
+  }
   jnx_list *s = (*service)->session_list;
   jnx_list_destroy(&s);
   free(*service);
@@ -58,6 +72,23 @@ session_state session_service_create_session(session_service *service, session *
   }
   session_service_add_session(service,s);
   *osession = s;
+  return SESSION_STATE_OKAY;
+}
+session_state session_service_fetch_all_sessions(session_service *service, jnx_list **olist) {
+  *olist = NULL;
+  if(service->session_list->counter == 0) {
+    JNX_LOG(NULL,"Session list is empty");
+    return SESSION_STATE_NOT_FOUND;
+  }
+  jnx_node *h = service->session_list->head,
+           *r = service->session_list->head;
+  *olist = jnx_list_create();
+  while(h) {
+    session *s = h->_data;
+    jnx_list_add_ts(*olist,s); 
+    h = h->next_node;
+  }
+  service->session_list->head = r;
   return SESSION_STATE_OKAY;
 }
 session_state session_service_fetch_session(session_service *service, jnx_guid *g, session **osession) {
@@ -82,31 +113,33 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
   service->session_list->head = r;
   return SESSION_STATE_NOT_FOUND;
 }
+static void destroy_session(session *s) {
+  JNXCHECK(s);
+  asymmetrical_destroy_key(s->keypair);
+  free(s);
+}
 session_state session_service_destroy_session(session_service *service, jnx_guid *g) {
+  JNXCHECK(service);
   session_state e = SESSION_STATE_NOT_FOUND;
   jnx_node *h = service->session_list->head,
            *r = service->session_list->head;
-  jnx_list *replacement = jnx_list_create();
+  jnx_list *cl = jnx_list_create();
   session *retrieved_session = NULL;
   while(h) {
-    retrieved_session = h->_data;
-    jnx_guid *retrieved_guid = &retrieved_session->local_guid;
-    if(jnx_guid_compare_raw(g->guid,retrieved_guid->guid) == JNX_GUID_STATE_SUCCESS) {
+    session *s = h->_data;
+    if(jnx_guid_compare(g,&s->local_guid) == JNX_GUID_STATE_SUCCESS) {
+      retrieved_session = s;
       e = SESSION_STATE_OKAY;
     }else {
-      jnx_list_add_ts(replacement,retrieved_session);
+      jnx_list_add_ts(cl,s);
     }
     h = h->next_node;
   }
-  if(e == SESSION_STATE_OKAY && (retrieved_session != NULL)) {
-    /*
-     * Any other session related cleanup here!
-     */
-    asymmetrical_destroy_key(retrieved_session->keypair);
-    free(retrieved_session);
+  service->session_list->head = r;
+  jnx_list_destroy(&service->session_list); 
+  if(cl) {
+    destroy_session(retrieved_session);
   }
-  jnx_list *old_list = service->session_list;
-  service->session_list = replacement;
-  jnx_list_destroy(&old_list); 
+  service->session_list = cl;
   return e;
 }

@@ -40,6 +40,8 @@ session_state session_service_create_session(session_service *service, session *
 
 session_state session_service_fetch_session(session_service *service, jnx_guid *g, session **osession);
 
+session_state session_service_fetch_all_sessions(session_service *service, jnx_list **olist);
+
 session_state session_service_destroy_session(session_service *service, jnx_guid *g);
 
 #endif
