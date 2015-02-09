@@ -51,6 +51,7 @@ jnx_int session_store_does_exist(session_store *s, jnx_guid *g) {
 }
 session_store_state session_store_add(session_store *s,SessionObject *session) {
   JNXCHECK(s);
+  JNXCHECK(session);
   jnx_guid g;
   jnx_guid_from_string(session->guid,&g); 
   if(!session_store_does_exist(s,&g)) {
@@ -90,6 +91,7 @@ void session_store_retrieve_session(session_store *s, jnx_guid *g,SessionObject 
     session_data *d = h->_data;
     jnx_guid *stored_guid = d->guid;
     if(jnx_guid_compare(g,stored_guid)) {
+      SessionObject *s = d->session;
       *osession = d->session;
     }
     h = h->next_node;

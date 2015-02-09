@@ -30,7 +30,7 @@
  * and unique identiifier
  * @param s is a ref to be passed in
  */
-void session_create(SessionObject *s, session_key_store *sk);
+void session_create(SessionObject **s, session_key_store *sk);
 
 void session_fetch_guid(SessionObject *s,jnx_guid *g);
 

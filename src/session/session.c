@@ -28,10 +28,12 @@ void session_guid_create(SessionObject *s) {
   jnx_guid_create(&g);
   jnx_char *ostr;
   jnx_guid_to_string(&g,&ostr);
+  JNXCHECK(strlen(ostr) > 24);
   s->guid = malloc(strlen(ostr) + 1);
   bzero(s->guid,strlen(ostr) +1);
   memcpy(s->guid,ostr,strlen(ostr) + 1);
   JNX_LOG(DEFAULT_CONTEXT,"New session %s\n",s->guid);
+  JNXCHECK(s->guid);
   free(ostr);
 }
 jnx_size session_pack(SessionObject *s,jnx_uint8 **obuffer) {
@@ -55,10 +57,12 @@ void session_generate_keys(SessionObject *s,session_key_store *sk) {
   jnx_guid g;
   jnx_guid_from_string(s->guid,&g);
   JNXCHECK(session_key_store_does_exist(sk,&g) == 0);
+  jnx_int key_count = sk->key_data_list->counter;
   JNXCHECK(session_key_store_add(sk,&g,keys) == SESSION_KEY_STORE_OKAY);
+  JNXCHECK(sk->key_data_list->counter == (key_count + 1));
 }
-void session_create(SessionObject *s, session_key_store *sk) {
-  session_object__init(s);
-  session_guid_create(s);
-  session_generate_keys(s,sk);
+void session_create(SessionObject **s, session_key_store *sk) {
+  session_object__init(*s);
+  session_guid_create(*s);
+  session_generate_keys(*s,sk);
 }
