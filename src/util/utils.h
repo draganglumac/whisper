@@ -25,4 +25,12 @@ void print_guid(jnx_guid *g) {
   JNX_LOG(NULL,"%s",str);
   free(str);
 }
+void print_pair(jnx_guid *a, jnx_guid *b) {
+  jnx_char *str,*str2;
+  jnx_guid_to_string(a,&str);
+  jnx_guid_to_string(b,&str2);
+  JNX_LOG(NULL,"[%s] [%s]",str,str2);
+  free(str);
+  free(str2);
+}
 #endif

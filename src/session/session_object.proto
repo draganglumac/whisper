@@ -1,4 +1,0 @@
-message session_object {
-  required string  guid=1;
-  optional string  remote_guid=2;
-}

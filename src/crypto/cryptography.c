@@ -50,7 +50,8 @@ jnx_char *asymmetrical_encrypt(RSA *keypair, jnx_uint8 *message, jnx_size *out_l
   bzero(encrypted_message, RSA_size(keypair));
   char *err = malloc(30);
 
-  if((*out_len = RSA_public_encrypt(strlen(message) + 1, message, encrypted_message, keypair, RSA_PKCS1_OAEP_PADDING)) == -1) {
+  if((*out_len = RSA_public_encrypt(strlen(message) + 1, message,
+          encrypted_message, keypair, RSA_PKCS1_OAEP_PADDING)) == -1) {
     ERR_load_crypto_strings();
     ERR_error_string(ERR_get_error(),err);
     printf("%s\n",err);
@@ -65,7 +66,8 @@ jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, jnx_size in_len
   bzero(decrypted_message, RSA_size(keypair));
   char *err = malloc(30);
 
-  if((*out_len = RSA_private_decrypt(in_len, message, decrypted_message, keypair, RSA_PKCS1_OAEP_PADDING)) == -1) {
+  if((*out_len = RSA_private_decrypt(in_len, message,
+          decrypted_message, keypair, RSA_PKCS1_OAEP_PADDING)) == -1) {
     ERR_load_crypto_strings();
     ERR_error_string(ERR_get_error(),err);
     printf("%s\n",err);
@@ -79,12 +81,9 @@ jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
   jnx_char *res;
   jnx_int n = 0;
   jnx_size dlen;
-
   DES_cblock key2;
   DES_key_schedule schedule;
-
   size += 1;
-
   res = malloc(size);
   bzero(res,size);
   memcpy(key2,key,8);
@@ -97,12 +96,9 @@ jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
   jnx_char *res;
   jnx_int n = 0;
   jnx_size dlen;
-
   DES_cblock key2;
   DES_key_schedule schedule;
-
   size += 1;
-
   res = malloc(size);
   bzero(res,size);
   memcpy(key2,key,8);

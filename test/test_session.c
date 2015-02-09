@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  test_encoder.c
+ *       Filename:  test_session.c
  *
  *    Description:  
  *
  *        Version:  1.0
- *        Created:  01/20/2015 08:31:35 AM
+ *        Created:  02/09/2015 05:57:10 AM
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -16,35 +16,33 @@
  * =====================================================================================
  */
 #include <stdlib.h>
-#include "../src/session/session.h"
-#include "../src/crypto/keystore.h"
-#include <jnxc_headers/jnxcheck.h>
-#include <jnxc_headers/jnxguid.h>
-#include <jnxc_headers/jnxlog.h>
-#include <jnxc_headers/jnxtypes.h>
+#include "../src/session/session_service.h"
+#include "../src/util/utils.h"
+void test_create_destroy() {
 
-void session_create_destroy() {
+  session_service *service = session_service_create();
 
-  SessionObject s;
-  session_key_store *sk = session_key_store_create();
-  session_create(&s,sk);
-  jnx_uint8 *obuffer;
-  jnx_size size = session_pack(&s,&obuffer);
-  JNXCHECK(obuffer);
+  session *os;
+  //Create a session
+  session_state e = session_service_create_session(service,&os);
+  JNXCHECK(e == SESSION_STATE_OKAY);
+  JNXCHECK(service->session_list->counter == 1);
+  //Pulling out that session guid lets get a handle on our session
+  session *retrieved = NULL;
+  //Lets test we can retrieve our session by giving our service the guid
+  e = session_service_fetch_session(service,&os->local_guid,&retrieved);
+  JNXCHECK(e == SESSION_STATE_OKAY);
 
-  SessionObject *us = session_unpack(obuffer,size);
-  free(obuffer);
-  JNXCHECK(jnx_guid_compare_raw(s.guid,us->guid) == JNX_GUID_STATE_SUCCESS);
-  jnx_guid a;
-  session_fetch_guid(&s,&a);
-  jnx_guid b;
-  session_fetch_guid(us,&b);
-
-  JNXCHECK(jnx_guid_compare(&a,&b) == JNX_GUID_STATE_SUCCESS);
-  session_object__free_unpacked(us,NULL);
+  JNXCHECK(jnx_guid_compare(&os->local_guid,&retrieved->local_guid) == JNX_GUID_STATE_SUCCESS);
+  e = session_service_destroy_session(service,&os->local_guid);
+  JNXCHECK(e == SESSION_STATE_OKAY);
+  JNXCHECK(service->session_list->counter == 0);
+  session_service_destroy(&service);
+  JNXCHECK(service == NULL);
 }
 int main(int argc, char **argv) {
-  JNX_LOG(NULL,"Testing session");
-  session_create_destroy();
+
+  test_create_destroy();
+
   return 0;
 }
