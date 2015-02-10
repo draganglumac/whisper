@@ -83,6 +83,7 @@ session_state session_service_create_session(session_service *service, session *
   session *s = malloc(sizeof(session));
   s->keypair = asymmetrical_generate_key(2048);  
   jnx_guid_create(&s->local_guid);
+  generate_blank_guid(&s->remote_guid); 
   if(session_service_does_exist(service,&s->local_guid)){
     return SESSION_STATE_EXISTS;
   }
@@ -179,4 +180,13 @@ session_state session_service_unlink_sessions(session_service *s, jnx_guid *loca
   generate_blank_guid(&g);
   osession->remote_guid = g;
   JNXCHECK(is_guid_blank(&osession->remote_guid));
+}
+jnx_int session_service_session_is_linked(session_service *s, jnx_guid *local_guid) {
+  session *osession;
+  session_state e = session_service_fetch_session(s,local_guid,&osession);
+  if(e != SESSION_STATE_OKAY) {
+    JNX_LOG(NULL,"Could not retrieve session");
+    return 0;
+  }
+  return  is_guid_blank(&osession->remote_guid) ? 0 : 1;
 }

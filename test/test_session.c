@@ -54,14 +54,16 @@ void test_linking() {
   session_service *service = session_service_create();
   session *os;
   session_state e = session_service_create_session(service,&os);
+  JNXCHECK(session_service_session_is_linked(service,&os->local_guid) == 0); 
   //Lets generate the guid of some remote session
   jnx_guid h;
   jnx_guid_create(&h);
   e = session_service_link_sessions(service,&os->local_guid,&h);
   JNXCHECK(e == SESSION_STATE_OKAY);
   print_pair(&os->local_guid,&os->remote_guid);
+  JNXCHECK(session_service_session_is_linked(service,&os->local_guid) == 1); 
   session_service_unlink_sessions(service,&os->local_guid);
-  print_pair(&os->local_guid,&os->remote_guid);
+  JNXCHECK(session_service_session_is_linked(service,&os->local_guid) == 0); 
   session_service_destroy(&service);
   JNXCHECK(service == NULL);
 }
