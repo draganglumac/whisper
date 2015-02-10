@@ -18,7 +18,23 @@
 #include <stdlib.h>
 #include "session_service.h"
 #include "../util/utils.h"
+
 static void destroy_session(session *s);
+
+static void generate_blank_guid(jnx_guid *g) {
+  jnx_char *zero_out = "00000000000000000000000000000000";
+  jnx_guid_from_string(zero_out,g);
+}
+static int is_guid_blank(jnx_guid *g) {
+  jnx_int is_blank = 0;
+  jnx_guid local;
+  jnx_char *zero_out = "00000000000000000000000000000000";
+  jnx_guid_from_string(zero_out,&local);
+  if(jnx_guid_compare(&local,g) == JNX_GUID_STATE_SUCCESS) {
+    is_blank = 1;
+  }
+  return is_blank;
+}
 static int session_service_does_exist(session_service *service, jnx_guid *g) {
   jnx_int does_exist = 0;
   jnx_node *h = service->session_list->head,
@@ -159,8 +175,8 @@ session_state session_service_unlink_sessions(session_service *s, jnx_guid *loca
   if(e != SESSION_STATE_OKAY) {
     return e;
   }
-  jnx_char *zero_out = "00000000000000000000000000000000";
-  jnx_guid blnk;
-  jnx_guid_from_string(zero_out,&blnk);
-  osession->remote_guid = blnk;
+  jnx_guid g;
+  generate_blank_guid(&g);
+  osession->remote_guid = g;
+  JNXCHECK(is_guid_blank(&osession->remote_guid));
 }
