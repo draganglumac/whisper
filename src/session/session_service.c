@@ -143,3 +143,24 @@ session_state session_service_destroy_session(session_service *service, jnx_guid
   service->session_list = cl;
   return e;
 }
+session_state session_service_link_sessions(session_service *s, jnx_guid *local_guid, jnx_guid *foreign_guid) {
+  session *osession;
+  session_state e = session_service_fetch_session(s,local_guid,&osession);
+  if(e != SESSION_STATE_OKAY) {
+    return e;
+  }
+  jnx_guid new_remote_guid = *foreign_guid; 
+  osession->remote_guid = new_remote_guid;
+  return e;
+}
+session_state session_service_unlink_sessions(session_service *s, jnx_guid *local_guid) {
+  session *osession;
+  session_state e = session_service_fetch_session(s,local_guid,&osession);
+  if(e != SESSION_STATE_OKAY) {
+    return e;
+  }
+  jnx_char *zero_out = "00000000000000000000000000000000";
+  jnx_guid blnk;
+  jnx_guid_from_string(zero_out,&blnk);
+  osession->remote_guid = blnk;
+}

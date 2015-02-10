@@ -44,4 +44,7 @@ session_state session_service_fetch_all_sessions(session_service *service, jnx_l
 
 session_state session_service_destroy_session(session_service *service, jnx_guid *g);
 
+session_state session_service_link_sessions(session_service *s, jnx_guid *local_guid, jnx_guid *foreign_guid);
+
+session_state session_service_unlink_sessions(session_service *s, jnx_guid *local_guid);
 #endif
