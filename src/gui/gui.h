@@ -41,7 +41,7 @@ typedef struct data_transfer_obj {
 }data_transfer_obj;
 gui_object *gui_create();
 void gui_destroy(gui_object **g);
-char *get_message(gui_object *g);
+char *get_message(context_t *c);;
 void display_local_message(gui_object *g, char *msg);
 void display_remote_message(gui_object *g, char *msg);
 

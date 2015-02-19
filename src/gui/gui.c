@@ -77,11 +77,11 @@ void gui_destroy(gui_object **g) {
   free(*g);
   *g = NULL;
 }
-char *get_message(gui_object *g) {
+char *get_message(context_t *c){
   char *msg = malloc(1024);
-  wmove(g->ui_handle->prompt, 1, 4);
-  wgetstr(g->ui_handle->prompt, msg);
-  show_prompt(g->ui_handle);
+  wmove(c->ui->prompt, 1, 4);
+  wgetstr(c->ui->prompt, msg);
+  show_prompt(c->ui);
   return msg;
 }
 void update_next_line(ui_t *ui) {
@@ -116,31 +116,30 @@ void display_remote_message(gui_object *g, char *msg) {
   display_message(g->ui_handle, msg + 2, COL_REMOTE);
   free(msg);
 }
-void signal_message(gui_object *g) {
+void signal_message() {
   int retval;
   if ((retval = pthread_cond_signal(&output_cond)) != 0) {
     printf("Error in signaling arrival of the mesage, Error %d\n", retval);
   }
 }
-void wait_for_message(gui_object *g) {
+void wait_for_message() {
   int retval;
   if ((retval = pthread_cond_wait(&output_cond,&output_mutex)) != 0) {
     printf("Error in waiting for the mesage, Error %d\n", retval);
   }
 }
-void send_message_to_context(gui_object *g,context_t *context, char *message) {
+void send_message_to_context(context_t *context, char *message) {
   pthread_mutex_lock(&output_mutex);
   context->msg = message;
   pthread_mutex_unlock(&output_mutex);
-  signal_message(g);
+  signal_message();
 }
 
 void *read_loop(void *data) {
   context_t *context = (context_t *) data;
-  gui_object *g = context->g;
   while(TRUE) {
-    char *msg = get_message(g);
-    send_message_to_context(g,context, msg);
+    char *msg = get_message(context);
+    send_message_to_context(context, msg);
   }
   return NULL;
 }
