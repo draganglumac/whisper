@@ -23,6 +23,9 @@
 #define COL_LOCAL  2
 #define COL_REMOTE 3
 
+static pthread_mutex_t output_mutex;
+static pthread_cond_t output_cond;
+
 void init_colours() {
   if (has_colors() == FALSE) {
     endwin();
@@ -49,8 +52,8 @@ void display_logo() {
 gui_object *gui_create() {
 
   gui_object *g = malloc(sizeof(gui_object));
-  pthread_mutex_init(&(*g).output_mutex,NULL);
-  pthread_cond_init(&(*g).output_cond,NULL);
+  pthread_mutex_init(&output_mutex, NULL);
+  pthread_cond_init(&output_cond, NULL);
 
   ui_t *ui = malloc(sizeof(ui_t));
   initscr();
@@ -115,20 +118,20 @@ void display_remote_message(gui_object *g, char *msg) {
 }
 void signal_message(gui_object *g) {
   int retval;
-  if ((retval = pthread_cond_signal(&(*g).output_cond)) != 0) {
+  if ((retval = pthread_cond_signal(&output_cond)) != 0) {
     printf("Error in signaling arrival of the mesage, Error %d\n", retval);
   }
 }
 void wait_for_message(gui_object *g) {
   int retval;
-  if ((retval = pthread_cond_wait(&(*g).output_cond, &(*g).output_mutex)) != 0) {
+  if ((retval = pthread_cond_wait(&output_cond,&output_mutex)) != 0) {
     printf("Error in waiting for the mesage, Error %d\n", retval);
   }
 }
 void send_message_to_context(gui_object *g,context_t *context, char *message) {
-  pthread_mutex_lock(&(*g).output_mutex);
+  pthread_mutex_lock(&output_mutex);
   context->msg = message;
-  pthread_mutex_unlock(&(*g).output_mutex);
+  pthread_mutex_unlock(&output_mutex);
   signal_message(g);
 }
 
@@ -142,14 +145,13 @@ void *read_loop(void *data) {
   return NULL;
 }
 int output_next_message_in_context(context_t *context) {
- 
   gui_object *g = context->g;
-  pthread_mutex_lock(&(*g).output_mutex);	
+  pthread_mutex_lock(&output_mutex);	
   wait_for_message(context->g);
   ui_t *cui = context->ui;
   char *msg = context->msg;
   if (strcmp(msg, ":q") == 0) {
-    pthread_mutex_unlock(&(*g).output_mutex);
+    pthread_mutex_unlock(&output_mutex);
     return -1;
   }
   else if (strncmp(msg, "r/", 2) == 0) {
@@ -158,6 +160,6 @@ int output_next_message_in_context(context_t *context) {
   else {
     display_local_message(context->g, msg);
   }
-  pthread_mutex_unlock(&(*g).output_mutex);
+  pthread_mutex_unlock(&output_mutex);
   return 0;
 }

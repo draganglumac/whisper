@@ -26,10 +26,7 @@ typedef struct {
 } ui_t;
 
 typedef struct gui_object {
-  pthread_mutex_t output_mutex;
-  pthread_cond_t output_cond;
   ui_t *ui_handle;
-
 }gui_object;
 
 typedef struct {
