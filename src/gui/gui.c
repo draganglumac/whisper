@@ -49,12 +49,11 @@ void display_logo() {
   attroff(COLOR_PAIR(COL_LOGO) | A_BOLD);
   refresh();
 }
-gui_object *gui_create() {
+context_t *context_create() {
 
-  gui_object *g = malloc(sizeof(gui_object));
   pthread_mutex_init(&output_mutex, NULL);
   pthread_cond_init(&output_cond, NULL);
-
+  context_t *c = malloc(sizeof(context_t));
   ui_t *ui = malloc(sizeof(ui_t));
   initscr();
   init_colours();
@@ -67,15 +66,15 @@ gui_object *gui_create() {
   ui->prompt = newwin(4, COLS - 1, LINES - 5, 1);
   show_prompt(ui);
 
-  g->ui_handle = ui;
-  return g;
+  c->ui = ui;
+  c->msg = NULL;
+  return c;
 }
-void gui_destroy(gui_object **g) {
-  delwin((*g)->ui_handle->screen);
-  delwin((*g)->ui_handle->prompt);
+void context_destroy(context_t *c) {
+  delwin(c->ui->screen);
+  delwin(c->ui->prompt);
   endwin();
-  free(*g);
-  *g = NULL;
+  free(c);
 }
 char *get_message(context_t *c){
   char *msg = malloc(1024);
@@ -108,12 +107,12 @@ void display_message(ui_t *ui, char *msg, int col_flag) {
   wmove(ui->prompt, row, col);
   wrefresh(ui->prompt);
 }
-void display_local_message(gui_object *g, char *msg) {
-  display_message(g->ui_handle, msg, COL_LOCAL);
+void display_local_message(context_t *c, char *msg) {
+  display_message(c->ui, msg, COL_LOCAL);
   free(msg);
 }
-void display_remote_message(gui_object *g, char *msg) {
-  display_message(g->ui_handle, msg + 2, COL_REMOTE);
+void display_remote_message(context_t *c, char *msg) {
+  display_message(c->ui, msg + 2, COL_REMOTE);
   free(msg);
 }
 void signal_message() {
@@ -144,9 +143,8 @@ void *read_loop(void *data) {
   return NULL;
 }
 int output_next_message_in_context(context_t *context) {
-  gui_object *g = context->g;
   pthread_mutex_lock(&output_mutex);	
-  wait_for_message(context->g);
+  wait_for_message(context);
   ui_t *cui = context->ui;
   char *msg = context->msg;
   if (strcmp(msg, ":q") == 0) {
@@ -154,10 +152,10 @@ int output_next_message_in_context(context_t *context) {
     return -1;
   }
   else if (strncmp(msg, "r/", 2) == 0) {
-    display_remote_message(g, msg);
+    display_remote_message(context, msg);
   }
   else {
-    display_local_message(context->g, msg);
+    display_local_message(context, msg);
   }
   pthread_mutex_unlock(&output_mutex);
   return 0;

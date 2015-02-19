@@ -18,14 +18,9 @@
 #include <stdlib.h>
 #include "../gui/gui.h"
 
+void create_gui_session() {
 
-int main(int argc, char **argv) {
-
-  gui_object *g = gui_create();
-
-  context_t *c = malloc(sizeof(context_t));
-  c->ui = g->ui_handle;
-  c->msg = NULL;
+  context_t *c = context_create();
 
   pthread_t read_thread;
   pthread_create(&read_thread, 0,read_loop,(void*)c);
@@ -35,5 +30,11 @@ int main(int argc, char **argv) {
       break;
     }
   }
+  context_destroy(c);
+}
+int main(int argc, char **argv) {
+
+  create_gui_session();
+
   return 0;
 }
