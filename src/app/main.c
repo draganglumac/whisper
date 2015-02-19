@@ -16,9 +16,13 @@
  * =====================================================================================
  */
 #include <stdlib.h>
-
+#include "../gui/gui.h"
 int main(int argc, char **argv) {
 
+  gui_object *g = gui_create();
+  
+  while(1) {
 
+  }
   return 0;
 }
