@@ -17,6 +17,7 @@
  */
 #include <stdlib.h>
 #include "gui.h"
+#include <string.h>
 #include <pthread.h>
 #define COL_LOGO   1
 #define COL_LOCAL  2
@@ -111,4 +112,52 @@ void display_local_message(gui_object *g, char *msg) {
 void display_remote_message(gui_object *g, char *msg) {
   display_message(g->ui_handle, msg + 2, COL_REMOTE);
   free(msg);
+}
+void signal_message(gui_object *g) {
+  int retval;
+  if ((retval = pthread_cond_signal(&(*g).output_cond)) != 0) {
+    printf("Error in signaling arrival of the mesage, Error %d\n", retval);
+  }
+}
+void wait_for_message(gui_object *g) {
+  int retval;
+  if ((retval = pthread_cond_wait(&(*g).output_cond, &(*g).output_mutex)) != 0) {
+    printf("Error in waiting for the mesage, Error %d\n", retval);
+  }
+}
+void send_message_to_context(gui_object *g,context_t *context, char *message) {
+  pthread_mutex_lock(&(*g).output_mutex);
+  context->msg = message;
+  pthread_mutex_unlock(&(*g).output_mutex);
+  signal_message(g);
+}
+
+void *read_loop(void *data) {
+  context_t *context = (context_t *) data;
+  gui_object *g = context->g;
+  while(TRUE) {
+    char *msg = get_message(g);
+    send_message_to_context(g,context, msg);
+  }
+  return NULL;
+}
+int output_next_message_in_context(context_t *context) {
+ 
+  gui_object *g = context->g;
+  pthread_mutex_lock(&(*g).output_mutex);	
+  wait_for_message(context->g);
+  ui_t *cui = context->ui;
+  char *msg = context->msg;
+  if (strcmp(msg, ":q") == 0) {
+    pthread_mutex_unlock(&(*g).output_mutex);
+    return -1;
+  }
+  else if (strncmp(msg, "r/", 2) == 0) {
+    display_remote_message(g, msg);
+  }
+  else {
+    display_local_message(context->g, msg);
+  }
+  pthread_mutex_unlock(&(*g).output_mutex);
+  return 0;
 }

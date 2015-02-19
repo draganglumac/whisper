@@ -17,12 +17,23 @@
  */
 #include <stdlib.h>
 #include "../gui/gui.h"
+
+
 int main(int argc, char **argv) {
 
   gui_object *g = gui_create();
-  
-  while(1) {
 
+  context_t *c = malloc(sizeof(context_t));
+  c->ui = g->ui_handle;
+  c->msg = NULL;
+
+  pthread_t read_thread;
+  pthread_create(&read_thread, 0,read_loop,(void*)c);
+
+  while (TRUE) {
+    if (-1 == output_next_message_in_context(c)) {
+      break;
+    }
   }
   return 0;
 }
