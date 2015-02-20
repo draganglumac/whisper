@@ -17,8 +17,10 @@
  */
 #ifndef __GUI_H__
 #define __GUI_H__
+
 #include <pthread.h>
 #include <ncurses.h>
+
 typedef struct {
   WINDOW *prompt;
   WINDOW *screen;	
