@@ -21,28 +21,28 @@
 #include "app.h"
 
 int main(int argc, char **argv) {
-	char command[CMDLEN];
+  char command[CMDLEN];
 
-	intro();
-	while (1) {
-		prompt();
-		scanf("%s", command); 
+  intro();
+  while (1) {
+    prompt();
+    scanf("%s", command); 
 
-		switch(code_for_command(command)) {
-			case CMD_SESSION:
-				create_gui_session();
-				break;
-			case CMD_LIST:
-				list_active_peers();
-				break;
-			case CMD_HELP:
-				show_help();
-				break;
-			case CMD_QUIT:
-				quit_message();
-				return 0;
-		}
-	}
+    switch(code_for_command(command)) {
+      case CMD_SESSION:
+        create_gui_session();
+        break;
+      case CMD_LIST:
+        list_active_peers();
+        break;
+      case CMD_HELP:
+        show_help();
+        break;
+      case CMD_QUIT:
+        quit_message();
+        return 0;
+    }
+  }
 
-	return 0;
+  return 0;
 }

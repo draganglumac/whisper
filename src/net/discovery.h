@@ -26,17 +26,17 @@
 #include "data/peerstore.h"
 
 typedef struct {
-	int port;
-	unsigned int family;
-	jnx_socket *sock_send;
-	jnx_socket *sock_receive;
-	char *broadcast_group_address;
-	udp_socket_listener_callback_with_context receive_callback;
-	int isrunning;
-	peerstore *peers; // synchronised
-	jnx_thread *update_thread;	
-	time_t last_updated; // synchronised
-	jnx_thread_mutex *update_time_lock;
+  int port;
+  unsigned int family;
+  jnx_socket *sock_send;
+  jnx_socket *sock_receive;
+  char *broadcast_group_address;
+  udp_socket_listener_callback_with_context receive_callback;
+  int isrunning;
+  peerstore *peers; // synchronised
+  jnx_thread *update_thread;	
+  time_t last_updated; // synchronised
+  jnx_thread_mutex *update_time_lock;
 } discovery_service;
 
 typedef jnx_int32 (discovery_strategy)(discovery_service *);
