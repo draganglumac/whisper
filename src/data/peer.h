@@ -23,10 +23,10 @@
 #include <jnxc_headers/jnxguid.h>
 
 typedef struct {
-	jnx_guid guid;
-	char *host_address;
-	char *user_name;
-	time_t last_seen;
+  jnx_guid guid;
+  char *host_address;
+  char *user_name;
+  time_t last_seen;
 } peer;
 
 size_t peerton(peer *p, void **out);
