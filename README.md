@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/AlexsJones/whisper.svg?branch=master)](https://travis-ci.org/AlexsJones/whisper)
 whisper
 =======
 
