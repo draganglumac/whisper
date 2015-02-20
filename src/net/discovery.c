@@ -112,7 +112,7 @@ void *polling_update_loop(void *data) {
 	return NULL;
 }
 jnx_int32 polling_update_strategy(discovery_service *svc) {
-	svc->update_thread = jnx_thread_create_disposable(polling_update_loop, (void *) svc);
+	svc->update_thread = jnx_thread_create(polling_update_loop, (void *) svc);
 	return 0;
 }
 
@@ -133,7 +133,7 @@ void *broadcast_update_loop(void *data) {
 	return NULL;
 }
 jnx_int32 broadcast_update_strategy(discovery_service *svc) {
-	svc->update_thread = jnx_thread_create_disposable(broadcast_update_loop, (void *) svc);
+	svc->update_thread = jnx_thread_create(broadcast_update_loop, (void *) svc);
 	return 0;
 }
 
@@ -182,7 +182,7 @@ static void cancel_thread(jnx_thread **thr) {
 }
 static int stop_listening(discovery_service *svc) {
 	int dont_block = 1; 
-	return ioctl(svc->sock_receive, FIONBIO, (char *) &dont_block);
+	return ioctl(svc->sock_receive->socket, FIONBIO, (char *) &dont_block);
 }
 
 // Broadcast or Multicast - call the appropriate function
@@ -194,9 +194,9 @@ static void set_up_sockets_for_broadcast(discovery_service *svc) {
 }
 static void set_up_sockets_for_multicast(discovery_service *svc) {
 	svc->sock_receive = jnx_socket_udp_create(svc->family);
-	jnx_socket_udp_enable_multicast_listen(svc->sock_receive, "todo", 0);
+	jnx_socket_udp_enable_multicast_listen(svc->sock_receive, "todo", "todo");
 	svc->sock_send = jnx_socket_udp_create(svc->family);
-	jnx_socket_udp_enable_multicast_send(svc->sock_send, "todo", "todo");
+	jnx_socket_udp_enable_multicast_send(svc->sock_send, "todo", 1);
 }
 
 // Public interface functions
@@ -244,7 +244,7 @@ int discovery_service_stop(discovery_service *svc) {
 	svc->isrunning = 0;
 	stop_listening(svc);
 	if (svc->update_thread != NULL) {
-		cancel_thread(svc->update_thread);
+		cancel_thread(&svc->update_thread);
 	}
 	jnx_socket_destroy(&(svc->sock_receive));
 	jnx_socket_destroy(&(svc->sock_send));
