@@ -2,8 +2,7 @@ language: c
 compiler:
     - gcc
     - clang
-before_script: sudo apt-get install libprotobuf-c0-dev protobuf-c-compiler
-script: git submodule update --init && cmake . -DRUN_TESTS=ON && make
+script: sudo apt-get install libprotobuf-c0-dev protobuf-c-compiler && git submodule update --init && cmake . -DRUN_TESTS=ON && make
 notifications:
     email:
         recipients:
