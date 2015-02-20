@@ -1,0 +1,5 @@
+message peer {
+	required bytes guid=1;
+	required string host_address=2;
+	optional string user_name=3;
+}

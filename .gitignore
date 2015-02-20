@@ -4,3 +4,5 @@ CMakeCache*
 Makefile
 whisper
 CMakeFiles
+tags
+*.dSYM
