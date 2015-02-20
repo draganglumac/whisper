@@ -2,7 +2,7 @@ language: c
 compiler:
     - gcc
     - clang
-script: git submodule update --init && cmake .
+script: git submodule update --init && cmake . -DRUN_TESTS=ON && make
 notifications:
     email:
         recipients:
