@@ -45,12 +45,12 @@ void show_prompt(ui_t *ui) {
 }
 void display_logo() {
   attron(COLOR_PAIR(COL_LOGO) | A_BOLD);
-  printw("%s", " Whisper Chat ");
+	move(0,0);
+	printw("%s", " Whisper Chat ");
   attroff(COLOR_PAIR(COL_LOGO) | A_BOLD);
   refresh();
 }
 context_t *context_create() {
-
   pthread_mutex_init(&output_mutex, NULL);
   pthread_cond_init(&output_cond, NULL);
   context_t *c = malloc(sizeof(context_t));
@@ -139,6 +139,9 @@ void *read_loop(void *data) {
   while(TRUE) {
     char *msg = get_message(context);
     send_message_to_context(context, msg);
+		if (strcmp(msg, ":q") == 0) {
+			break;
+		}
   }
   return NULL;
 }

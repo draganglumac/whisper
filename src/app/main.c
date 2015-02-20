@@ -16,22 +16,33 @@
  * =====================================================================================
  */
 #include <stdlib.h>
-#include "../gui/gui.h"
+#include <stdio.h>
 
-void create_gui_session() {
-  context_t *c = context_create();
-  pthread_t read_thread;
-  pthread_create(&read_thread, 0,read_loop,(void*)c);
-  while (TRUE) {
-    if (-1 == output_next_message_in_context(c)) {
-      break;
-    }
-  }
-  context_destroy(c);
-}
+#include "app.h"
+
 int main(int argc, char **argv) {
+	char command[CMDLEN];
 
-  create_gui_session();
+	intro();
+	while (1) {
+		prompt();
+		scanf("%s", command); 
 
-  return 0;
+		switch(code_for_command(command)) {
+			case CMD_SESSION:
+				create_gui_session();
+				break;
+			case CMD_LIST:
+				list_active_peers();
+				break;
+			case CMD_HELP:
+				show_help();
+				break;
+			case CMD_QUIT:
+				quit_message();
+				return 0;
+		}
+	}
+
+	return 0;
 }
