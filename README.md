@@ -33,10 +33,10 @@ Components
 ==========
 ```
 session/
-  Session Service
-  Session Object
+  Session Service [WIP]
+  Session Object [WIP]
 net/
-  Discovery Service
+  Discovery Service [WIP]
   Multicast Service
   Secure/Non-Secure Socket interface
 

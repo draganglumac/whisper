@@ -1,3 +1,0 @@
-message session_object {
-  repeated uint32 guid=1;
-}

@@ -25,12 +25,12 @@ function test_against_file()
 {
   file=$1
   echo "Compiling $file"
-  `$COMPILER $file  ../src/data/*.c ../src/net/*.c ../src/session/*.c ../src/integrity/*.c ../src/crypto/*.c -I ../src/ -o ${file:0:${#file}-2} -pthread -w -rdynamic -lcrypto -lssl -ljnxc -luuid -lprotobuf-c`
+  `$COMPILER $file src/data/*.c src/net/*.c src/session/*.c src/integrity/*.c src/crypto/*.c -Isrc -o ${file:0:${#file}-2} -pthread -w -rdynamic -lcrypto -lssl -ljnxc -lprotobuf-c -luuid -g`
   ./$current
   out=$?
   if [ ! $out -eq 0 ]; then
     echo_red "Test failed"
-    rm $current
+#    rm $current
     exit 1
 
   else
@@ -41,7 +41,7 @@ function test_against_file()
 
 function run_full_suite()
 {
-  filelist=`ls *.c`
+  filelist=`ls test/*.c`
   for file in $filelist; do
     if [ "$file" == "run_tests" ] 
     then
@@ -59,13 +59,13 @@ function run_full_suite()
 
 function run_single_test()
 {
-  filelist=`ls *.c`
+  filelist=`ls test/*.c`
   for file in $filelist; do
     if [ "$file" == "$1"  ]; then
       echo "found match"
-      
+
       current=${file:0:${#file}-2}
-      
+
       if [ -e $current ]
       then
         rm $current

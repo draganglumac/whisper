@@ -32,9 +32,11 @@ void asymmetrical_destroy_key(RSA *key);
 
 jnx_char *asymmetrical_key_to_string(RSA *keypair,key_type type); 
 
-jnx_char *asymmetrical_encrypt(RSA *keypair, jnx_uint8 *message, jnx_size *out_len);
+jnx_char *asymmetrical_encrypt(RSA *keypair,
+    jnx_uint8 *message, jnx_size *out_len);
 
-jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, jnx_size in_len, jnx_size *out_len);
+jnx_char *asymmetrical_decrypt(RSA *keypair,
+    jnx_uint8 *message, jnx_size in_len, jnx_size *out_len);
 
 jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size);
 
