@@ -144,7 +144,7 @@ void *read_loop(void *data) {
 }
 int output_next_message_in_context(context_t *context) {
   pthread_mutex_lock(&output_mutex);	
-  wait_for_message(context);
+  wait_for_message();
   ui_t *cui = context->ui;
   char *msg = context->msg;
   if (strcmp(msg, ":q") == 0) {
