@@ -2,7 +2,7 @@ language: c
 compiler:
     - gcc
     - clang
-script: git submodule update --init && cd jnxlibc && cmake . && make && sudo make install && cd ../ && cmake .
+script: git submodule update --init && cmake .
 notifications:
     email:
         recipients:
