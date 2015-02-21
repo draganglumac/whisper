@@ -102,7 +102,7 @@ void show_help() {
 }
 void quit_message() {
   printf("\n");
-  printf("Shuttting down cleanly...\n");
+  printf("Shutting down cleanly...\n");
 }
 
 extern int peer_update_interval;
