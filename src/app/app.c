@@ -102,8 +102,7 @@ void show_help() {
 }
 void quit_message() {
   printf("\n");
-  printf("Leaving Whisper chat.\n");
-  printf("\n");
+  printf("Shuttting down cleanly...\n");
 }
 
 extern int peer_update_interval;

@@ -69,5 +69,6 @@ int main(int argc, char **argv) {
   run_app(app_context);
 	destroy_app_context(&app_context);
   jnx_hash_destroy(&config);
+	printf("Done.\n");
 	return 0;
 }
