@@ -61,21 +61,29 @@ void prompt() {
   printf("$> ");
   fflush(stdout);
 }
-void pretty_print_peer(peer *p) {
-
+static void pretty_print_peer(peer *p) {
+	char *guid;
+	jnx_guid_to_string(&p->guid, &guid);
+	printf("%-32s %-16s %s\n", guid, p->host_address, p->user_name);
+	free(guid);
+}
+static void show_active_peers(peerstore *ps) {
+  jnx_guid **active_guids;
+  int num_guids = peerstore_get_active_guids(ps, &active_guids);
+	int i;
+	for (i = 0; i < num_guids; i++) {
+		jnx_guid *next_guid = active_guids[i];
+		peer *p = peerstore_lookup(ps, next_guid);
+		pretty_print_peer(p);
+	}
 }
 void list_active_peers(app_context_t *context) {
   printf("\n");
   printf("Active Peers:\n");
   printf("%-32s %-16s %-16s\n", "UUID", "IP Address", "Username");
   printf("--------------------------------+----------------+----------------\n");
-  
-  peerstore *ps = context->discovery->peers;
-  jnx_guid **active_guids;
-  int num_guids = peerstore_get_active_guids(ps, active_guids);
-  printf("num_guids = %d\n", num_guids);
-   
-  printf("\n");
+	show_active_peers(context->discovery->peers);
+	printf("\n");
 }
 void intro() {
   printf("\n");
@@ -142,7 +150,7 @@ app_context_t *create_app_context(jnx_hashmap *config) {
 	return context;
 }
 void destroy_app_context(app_context_t **context) {
-//	discovery_service_cleanup(&context->discovery);
+	discovery_service_cleanup(&(*context)->discovery);
 	free(*context);
 	*context = NULL;
 }

@@ -79,17 +79,17 @@ peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
   jnx_thread_unlock(ps->store_lock);
   return p;
 }
-int peerstore_get_active_guids(peerstore *ps, jnx_guid *guids[]) {
+int peerstore_get_active_guids(peerstore *ps, jnx_guid ***guids) {
   jnx_thread_lock(ps->store_lock);
   jnx_hashmap *peers = PEERSTORE(ps->peers);
   const char **keys;
   int num_keys = jnx_hash_get_keys(peers, &keys); 
   int i, num_guids = 0;
-  guids = calloc(num_guids, sizeof(jnx_guid *));
+  *guids = calloc(num_keys, sizeof(jnx_guid *));
   for (i = 0; i < num_keys; i++) {
     peer *temp = jnx_hash_get(peers, *(keys + i));
     if (ps->is_active_peer(ps->last_update, temp)) {
-      guids[num_guids] = &temp->guid;
+      (*guids)[num_guids] = &temp->guid;
       num_guids++;
     }	
   }
