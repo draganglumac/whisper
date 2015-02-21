@@ -6,3 +6,6 @@ whisper
 CMakeFiles
 tags
 *.dSYM
+backtrace
+core
+seg_wrapper.sh

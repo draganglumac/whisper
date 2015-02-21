@@ -123,6 +123,12 @@ int is_active_peer_periodic_update(time_t last_update_time, peer *p) {
   return 0;
 }
 
+jnx_int32 send_stop_packet(discovery_service *svc) {
+  char *tmp = "STOP";
+  char *port = port_to_string(svc);
+  jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, (jnx_uint8 *) tmp, 5);
+  return 0;
+}
 jnx_int32 send_discovery_request(discovery_service *svc) {
   char *tmp = "LIST";
   char *port = port_to_string(svc);
@@ -198,6 +204,9 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
   else if (0 == strcmp(command, "PEER")) {
     handle_peer(svc, payload + 4, bytesread - 4);
   }
+  else if (0 == strcmp(command, "STOP")) {
+    return -1;
+  }
   else {
     JNX_LOG(0, "[DISCOVERY] Received unknown command. Ignoring the packet.");
   }
@@ -209,8 +218,8 @@ static void ensure_listening_on_port(int port) {
   sleep(1);
 }
 static void *discovery_loop(void* data) {
-  int old_cancel_state;
-  pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
+//  int old_cancel_state;
+//  pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
   discovery_service *svc = (discovery_service*) data;
   char *port = port_to_string(svc);
   jnx_socket_udp_listen_with_context(svc->sock_receive, port, 0, svc->receive_callback, data);
@@ -218,9 +227,9 @@ static void *discovery_loop(void* data) {
   return NULL;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
-  int retval = jnx_thread_create_disposable(discovery_loop, (void*) svc);
+  svc->listening_thread = jnx_thread_create(discovery_loop, (void*) svc);
   ensure_listening_on_port(svc->port);
-  return retval;
+  return 0;
 }
 static void cancel_thread(jnx_thread **thr) {
   jnx_thread *temp = *thr;
@@ -268,6 +277,7 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
   svc->isrunning = 0;
   svc->peers = peers;
   svc->update_thread = NULL;
+  svc->listening_thread = NULL;
   svc->last_updated = time(0);
   svc->update_time_lock = jnx_thread_mutex_create();	
   return svc;
@@ -305,6 +315,9 @@ int discovery_service_stop(discovery_service *svc) {
   if (svc->update_thread != NULL) {
     cancel_thread(&svc->update_thread);
   }
+  send_stop_packet(svc);
+  pthread_join(svc->listening_thread->system_thread, NULL);
+
   jnx_socket_destroy(&(svc->sock_receive));
   jnx_socket_destroy(&(svc->sock_send));
   return 0;

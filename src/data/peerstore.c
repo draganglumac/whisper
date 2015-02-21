@@ -62,7 +62,7 @@ void peerstore_destroy(peerstore **pps) {
   jnx_hash_destroy(&peers);
   jnx_thread_mutex_destroy(&ps->store_lock);
   free(ps);
-  pps = NULL;
+  *pps = NULL;
 }
 peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
   JNXCHECK(ps->is_active_peer);
