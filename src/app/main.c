@@ -51,7 +51,7 @@ int run_app(app_context_t *context) {
         create_gui_session();
         break;
       case CMD_LIST:
-        list_active_peers();
+        list_active_peers(context);
         break;
       case CMD_HELP:
         show_help();

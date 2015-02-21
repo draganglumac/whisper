@@ -59,6 +59,9 @@ static void send_peer_packet(discovery_service *svc) {
   safely_update_last_update_time(svc);
   free(message);
   free(buffer);
+#ifdef DEBUG  
+  JNX_LOG(0, "[DEBUG] Sent a PEER packet.");
+#endif
 }
 static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
   peer *p = ntopeer(payload, bytesread);
@@ -248,7 +251,7 @@ static void set_up_sockets_for_multicast(discovery_service *svc) {
 // Public interface functions
 void get_local_ip(char **local_ip) {
 	*local_ip = calloc(16, sizeof(char));
-	get_ip(*local_ip, filter_broadcast_address);
+	get_ip(*local_ip, filter_local_ip_address);
   JNX_LOG(0, "Local IP is %s", *local_ip); 
 }
 void get_broadcast_ip(char **broadcast_ip) {

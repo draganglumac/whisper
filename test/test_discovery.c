@@ -190,8 +190,8 @@ int main(int argc, char **argv) {
   JNX_LOG(NULL, "Test setting peer_update_interval global variable.");
   run_discovery_service_test(test_setting_peer_update_interval);
 
-  JNX_LOG(NULL, "Test polling update strategy.");
-  run_discovery_service_test(test_polling_update_strategy);
+//  JNX_LOG(NULL, "Test polling update strategy.");
+//  run_discovery_service_test(test_polling_update_strategy);
 
   JNX_LOG(NULL, "Test broadcast update strategy.");
   run_discovery_service_test(test_broadcast_update_strategy);

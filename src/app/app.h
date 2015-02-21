@@ -43,6 +43,6 @@ void show_help();
 void quit_message();
 int code_for_command(char *command);
 void create_gui_session();
-void list_active_peers();
+void list_active_peers(app_context_t *context);
 
 #endif // __APP_H__

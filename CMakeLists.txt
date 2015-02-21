@@ -14,6 +14,10 @@ if(RUN_TESTS)
   execute_process(COMMAND ./test/run_tests)
 endif()
 
+if(DEBUG)
+  add_definitions("-DDEBUG -g")
+endif()
+
 file(GLOB SRC "src/**/*.c")
 include_directories(src)
 add_executable(whisper ${SRC})

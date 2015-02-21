@@ -61,9 +61,20 @@ void prompt() {
   printf("$> ");
   fflush(stdout);
 }
-void list_active_peers() {
+void pretty_print_peer(peer *p) {
+
+}
+void list_active_peers(app_context_t *context) {
   printf("\n");
-  printf("Listing active peers (TODO)\n");
+  printf("Active Peers:\n");
+  printf("%-32s %-16s %-16s\n", "UUID", "IP Address", "Username");
+  printf("--------------------------------+----------------+----------------\n");
+  
+  peerstore *ps = context->discovery->peers;
+  jnx_guid **active_guids;
+  int num_guids = peerstore_get_active_guids(ps, active_guids);
+  printf("num_guids = %d\n", num_guids);
+   
   printf("\n");
 }
 void intro() {
@@ -116,10 +127,11 @@ static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context
 	context->discovery = discovery_service_create(port, AF_INET, broadcast_address, ps);
 	char *discovery_strategy = (char *) jnx_hash_get(config, "DISCOVERY_STRATEGY");
 	if (discovery_strategy == NULL) {
+    JNX_LOG(0, "Starting discovery service with heartbeat srategy.");
 		discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
-	}
-	else {
-		if (0 == strcmp(discovery_strategy, "heartbeat")) {
+	}	else {
+		if (0 == strcmp(discovery_strategy, "polling")) {
+      JNX_LOG(0, "Starting discovery service with polling srategy.");
 			discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
 		}
 	}
