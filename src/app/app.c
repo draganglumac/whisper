@@ -86,14 +86,47 @@ void quit_message() {
   printf("Leaving Whisper chat.\n");
   printf("\n");
 }
+
+extern int peer_update_interval;
+
+static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context) {
+	char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
+	if (user_name == NULL) {
+		JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
+		exit(1);
+	}
+	peerstore *ps = peerstore_init(local_peer_for_user(user_name));
+
+	int port = DEFAULT_BROADCAST_PORT;
+	char *disc_port = (char *) jnx_hash_get(config, "DISCOVERY_PORT");
+	if (disc_port != NULL) {
+		port = atoi(disc_port);
+	}
+	
+	char *broadcast_address = (char *) jnx_hash_get(config, "DISCOVERY_MULTICAST_IP");
+	if (broadcast_address == NULL) {
+		get_broadcast_ip(&broadcast_address);
+	}
+
+	char *discovery_interval = (char *) jnx_hash_get(config, "DISCOVERY_INTERVAL");
+	if (discovery_interval != NULL) {
+		peer_update_interval = atoi(discovery_interval);
+	}
+
+	context->discovery = discovery_service_create(port, AF_INET, broadcast_address, ps);
+	char *discovery_strategy = (char *) jnx_hash_get(config, "DISCOVERY_STRATEGY");
+	if (discovery_strategy == NULL) {
+		discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
+	}
+	else {
+		if (0 == strcmp(discovery_strategy, "heartbeat")) {
+			discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
+		}
+	}
+}
 app_context_t *create_app_context(jnx_hashmap *config) {
 	app_context_t *context = calloc(1, sizeof(app_context_t));
-
-	int port = atoi((char *) jnx_hash_get(config, "DISCOVERY_PORT"));
-	char *broadcast_address = (char *) jnx_hash_get(config, "DISCOVERY_MULTICAST_IP");
-	
-//	context->discovery = discovery_service_create(port, AF_INET, broadcast_address, );
-//	discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
+	set_up_discovery_service(config, context);
 	return context;
 }
 void destroy_app_context(app_context_t **context) {

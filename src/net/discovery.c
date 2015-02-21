@@ -87,7 +87,6 @@ static void get_ip(char *buffer, address_mapping filter) {
       }
       char *ip_str = inet_ntoa(((struct sockaddr_in *) filter(current))->sin_addr);
       strncpy(buffer, ip_str, strlen(ip_str) + 1);
-      free(ip_str);
 			break;
     } 
     current = current->ifa_next;
@@ -102,18 +101,10 @@ static struct sockaddr *filter_broadcast_address(struct ifaddrs *addr) {
   ((struct sockaddr_in *) ip)->sin_addr.s_addr |= ~(((struct sockaddr_in *) netmask)->sin_addr.s_addr);
 	return ip;
 }
-static void get_broadcast_ip(char *broadcast) {
-	get_ip(broadcast, filter_broadcast_address);
-	JNX_LOG(0, "Broadcast IP is %s", broadcast); 
-}
 // Local IP address IPv4
 static struct sockaddr *filter_local_ip_address(struct ifaddrs *addr) {
 	struct sockaddr *ip = addr->ifa_addr;
 	return ip;
-}
-static void get_local_ip(char *local_ip) {
-	get_ip(local_ip, filter_broadcast_address);
-  JNX_LOG(0, "Local IP is %s", local_ip); 
 }
 
 // *** Peer discovery strategies ***
@@ -255,6 +246,16 @@ static void set_up_sockets_for_multicast(discovery_service *svc) {
 }
 
 // Public interface functions
+void get_local_ip(char **local_ip) {
+	*local_ip = calloc(16, sizeof(char));
+	get_ip(*local_ip, filter_broadcast_address);
+  JNX_LOG(0, "Local IP is %s", *local_ip); 
+}
+void get_broadcast_ip(char **broadcast_ip) {
+	*broadcast_ip = calloc(16, sizeof(char));
+	get_ip(*broadcast_ip, filter_broadcast_address);
+	JNX_LOG(0, "Broadcast IP is %s", *broadcast_ip); 
+}
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers) {
   discovery_service *svc = calloc(1, sizeof(discovery_service));
   svc->port = port;

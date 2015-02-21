@@ -27,35 +27,8 @@
 #include <jnxc_headers/jnxcheck.h>
 #include <jnxc_headers/jnxlog.h>
 
-static char baddr[16];
-void get_broadcast_address(char *buffer) {
-  struct ifaddrs *ifap;
-  if (0 != getifaddrs(&ifap)) {
-    JNX_LOG(0, "[ERROR] Couldn't get descriptions of network interfaces.");
-    exit(1);
-  }
+static char *baddr = NULL;
 
-  struct ifaddrs *current = ifap;
-  while (0 != current) {
-    struct sockaddr *ip = current->ifa_addr;
-    if (ip->sa_family == AF_INET) {
-      struct sockaddr *netmask = current->ifa_netmask;
-      char *aip = inet_ntoa(((struct sockaddr_in *) ip)->sin_addr);
-      if (strcmp("127.0.0.1", aip) == 0) {
-        current = current->ifa_next;
-        continue;
-      }
-      ((struct sockaddr_in *) ip)->sin_addr.s_addr |= ~(((struct sockaddr_in *) netmask)->sin_addr.s_addr);
-      char *broadcast = inet_ntoa(((struct sockaddr_in *) ip)->sin_addr);
-      strncpy(buffer, broadcast, strlen(broadcast) + 1);
-      JNX_LOG(0, "Broadcast IP is %s", buffer); 
-      break;
-    } 
-    current = current->ifa_next;
-  }
-
-  freeifaddrs(ifap);
-}
 void update_time_checks(discovery_service *svc) {
   time_t last_update_time = get_last_update_time(svc);
   int i;
@@ -194,7 +167,7 @@ int test_broadcast_update_strategy(discovery_service *svc) {
   return CLEANUP;
 }
 int main(int argc, char **argv) {
-  get_broadcast_address(baddr);
+  get_broadcast_ip(&baddr);
 
   JNX_LOG(NULL,"Test service creation.");
   run_discovery_service_test(test_service_creation);
@@ -222,5 +195,7 @@ int main(int argc, char **argv) {
 
   JNX_LOG(NULL, "Test broadcast update strategy.");
   run_discovery_service_test(test_broadcast_update_strategy);
-  return 0;
+  
+	free(baddr);
+	return 0;
 }

@@ -49,6 +49,11 @@ extern int peer_update_interval; // seconds
 #define POLLING_UPDATE_STRATEGY polling_update_strategy
 #define BROADCAST_UPDATE_STRATEGY broadcast_update_strategy
 
+void get_local_ip(char **local_ip_buffer);
+void get_broadcast_ip(char **broadcast_ip_buffer);
+
+#define DEFAULT_BROADCAST_PORT 8704
+
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers);
 void discovery_service_cleanup(discovery_service **svc);
 int discovery_service_start(discovery_service *svc, discovery_strategy *strategy);
