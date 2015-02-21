@@ -86,4 +86,18 @@ void quit_message() {
   printf("Leaving Whisper chat.\n");
   printf("\n");
 }
+app_context_t *create_app_context(jnx_hashmap *config) {
+	app_context_t *context = calloc(1, sizeof(app_context_t));
 
+	int port = atoi((char *) jnx_hash_get(config, "DISCOVERY_PORT"));
+	char *broadcast_address = (char *) jnx_hash_get(config, "DISCOVERY_MULTICAST_IP");
+	
+//	context->discovery = discovery_service_create(port, AF_INET, broadcast_address, );
+//	discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
+	return context;
+}
+void destroy_app_context(app_context_t **context) {
+//	discovery_service_cleanup(&context->discovery);
+	free(*context);
+	*context = NULL;
+}

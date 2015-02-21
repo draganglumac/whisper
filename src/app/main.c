@@ -22,8 +22,10 @@
 
 int main(int argc, char **argv) {
   char command[CMDLEN];
-
-  intro();
+	
+//	app_context_t *app_context = create_app_context();
+  
+	intro();
   while (1) {
     prompt();
     scanf("%s", command); 
@@ -43,6 +45,8 @@ int main(int argc, char **argv) {
         return 0;
     }
   }
+
+//	destroy_app_context(&app_context);
 
   return 0;
 }

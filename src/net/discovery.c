@@ -16,6 +16,10 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxlog.h>
@@ -59,6 +63,57 @@ static void send_peer_packet(discovery_service *svc) {
 static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
   peer *p = ntopeer(payload, bytesread);
   peerstore_store_peer(svc->peers, p);	
+}
+
+// IP filtering function - say for filtering broadcast address, or local IP etc.
+typedef struct sockaddr*(*address_mapping)(struct ifaddrs *);
+
+static void get_ip(char *buffer, address_mapping filter) {
+  struct ifaddrs *ifap;
+  if (0 != getifaddrs(&ifap)) {
+    JNX_LOG(0, "[ERROR] Couldn't get descriptions of network interfaces.");
+    exit(1);
+  }
+
+  struct ifaddrs *current = ifap;
+  while (0 != current) {
+    struct sockaddr *ip = current->ifa_addr;
+    if (ip->sa_family == AF_INET) {
+      struct sockaddr *netmask = current->ifa_netmask;
+      char *aip = inet_ntoa(((struct sockaddr_in *) ip)->sin_addr);
+      if (strcmp("127.0.0.1", aip) == 0) { // skip loopback interface
+        current = current->ifa_next;
+        continue;
+      }
+      char *ip_str = inet_ntoa(((struct sockaddr_in *) filter(current))->sin_addr);
+      strncpy(buffer, ip_str, strlen(ip_str) + 1);
+      free(ip_str);
+			break;
+    } 
+    current = current->ifa_next;
+  }
+
+  freeifaddrs(ifap);
+}
+// Broadcast address IPv4
+static struct sockaddr *filter_broadcast_address(struct ifaddrs *addr) {
+	struct sockaddr *ip = addr->ifa_addr;
+	struct sockaddr *netmask = addr->ifa_netmask;
+  ((struct sockaddr_in *) ip)->sin_addr.s_addr |= ~(((struct sockaddr_in *) netmask)->sin_addr.s_addr);
+	return ip;
+}
+static void get_broadcast_ip(char *broadcast) {
+	get_ip(broadcast, filter_broadcast_address);
+	JNX_LOG(0, "Broadcast IP is %s", broadcast); 
+}
+// Local IP address IPv4
+static struct sockaddr *filter_local_ip_address(struct ifaddrs *addr) {
+	struct sockaddr *ip = addr->ifa_addr;
+	return ip;
+}
+static void get_local_ip(char *local_ip) {
+	get_ip(local_ip, filter_broadcast_address);
+  JNX_LOG(0, "Local IP is %s", local_ip); 
 }
 
 // *** Peer discovery strategies ***

@@ -19,12 +19,23 @@
 #ifndef __APP_H__
 #define __APP_H__
 
+#include <jnxc_headers/jnxhash.h>
+
+#include "../net/discovery.h"
+
 #define CMDLEN 64
 
 #define CMD_SESSION 1
 #define CMD_LIST    2
 #define CMD_HELP    3
 #define CMD_QUIT    4
+
+typedef struct {
+	discovery_service *discovery;
+} app_context_t;
+
+app_context_t *create_app_context(jnx_hashmap *config);
+void destroy_app_context(app_context_t **app_context);
 
 void intro();
 void prompt();
