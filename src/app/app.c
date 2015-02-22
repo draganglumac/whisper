@@ -52,6 +52,9 @@ int code_for_command(char *command) {
   else if (is_equivalent(command, "quit")) {
     return CMD_QUIT;
   }
+  else if (is_equivalent(command, "accept")) {
+    return CMD_ACCEPT;
+  }
   return CMD_HELP;
 }
 void prompt() {
