@@ -153,3 +153,8 @@ void destroy_app_context(app_context_t **context) {
 	free(*context);
 	*context = NULL;
 }
+void handle_connection_request(app_context_t *context) {
+  printf("\n");
+  printf("Handle connection request here.\n");
+  printf("\n");
+}
