@@ -16,6 +16,10 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxlog.h>
@@ -55,10 +59,55 @@ static void send_peer_packet(discovery_service *svc) {
   safely_update_last_update_time(svc);
   free(message);
   free(buffer);
+#ifdef DEBUG  
+  JNX_LOG(0, "[DEBUG] Sent a PEER packet.");
+#endif
 }
 static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
   peer *p = ntopeer(payload, bytesread);
   peerstore_store_peer(svc->peers, p);	
+}
+
+// IP filtering function - say for filtering broadcast address, or local IP etc.
+typedef struct sockaddr*(*address_mapping)(struct ifaddrs *);
+
+static void get_ip(char *buffer, address_mapping filter) {
+  struct ifaddrs *ifap;
+  if (0 != getifaddrs(&ifap)) {
+    JNX_LOG(0, "[ERROR] Couldn't get descriptions of network interfaces.");
+    exit(1);
+  }
+
+  struct ifaddrs *current = ifap;
+  while (0 != current) {
+    struct sockaddr *ip = current->ifa_addr;
+    if (ip->sa_family == AF_INET) {
+      struct sockaddr *netmask = current->ifa_netmask;
+      char *aip = inet_ntoa(((struct sockaddr_in *) ip)->sin_addr);
+      if (strcmp("127.0.0.1", aip) == 0) { // skip loopback interface
+        current = current->ifa_next;
+        continue;
+      }
+      char *ip_str = inet_ntoa(((struct sockaddr_in *) filter(current))->sin_addr);
+      strncpy(buffer, ip_str, strlen(ip_str) + 1);
+			break;
+    } 
+    current = current->ifa_next;
+  }
+
+  freeifaddrs(ifap);
+}
+// Broadcast address IPv4
+static struct sockaddr *filter_broadcast_address(struct ifaddrs *addr) {
+	struct sockaddr *ip = addr->ifa_addr;
+	struct sockaddr *netmask = addr->ifa_netmask;
+  ((struct sockaddr_in *) ip)->sin_addr.s_addr |= ~(((struct sockaddr_in *) netmask)->sin_addr.s_addr);
+	return ip;
+}
+// Local IP address IPv4
+static struct sockaddr *filter_local_ip_address(struct ifaddrs *addr) {
+	struct sockaddr *ip = addr->ifa_addr;
+	return ip;
 }
 
 // *** Peer discovery strategies ***
@@ -74,6 +123,12 @@ int is_active_peer_periodic_update(time_t last_update_time, peer *p) {
   return 0;
 }
 
+jnx_int32 send_stop_packet(discovery_service *svc) {
+  char *tmp = "STOP";
+  char *port = port_to_string(svc);
+  jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, (jnx_uint8 *) tmp, 5);
+  return 0;
+}
 jnx_int32 send_discovery_request(discovery_service *svc) {
   char *tmp = "LIST";
   char *port = port_to_string(svc);
@@ -149,6 +204,9 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
   else if (0 == strcmp(command, "PEER")) {
     handle_peer(svc, payload + 4, bytesread - 4);
   }
+  else if (0 == strcmp(command, "STOP")) {
+    return -1;
+  }
   else {
     JNX_LOG(0, "[DISCOVERY] Received unknown command. Ignoring the packet.");
   }
@@ -160,8 +218,8 @@ static void ensure_listening_on_port(int port) {
   sleep(1);
 }
 static void *discovery_loop(void* data) {
-  int old_cancel_state;
-  pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
+//  int old_cancel_state;
+//  pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
   discovery_service *svc = (discovery_service*) data;
   char *port = port_to_string(svc);
   jnx_socket_udp_listen_with_context(svc->sock_receive, port, 0, svc->receive_callback, data);
@@ -169,9 +227,9 @@ static void *discovery_loop(void* data) {
   return NULL;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
-  int retval = jnx_thread_create_disposable(discovery_loop, (void*) svc);
+  svc->listening_thread = jnx_thread_create(discovery_loop, (void*) svc);
   ensure_listening_on_port(svc->port);
-  return retval;
+  return 0;
 }
 static void cancel_thread(jnx_thread **thr) {
   jnx_thread *temp = *thr;
@@ -200,6 +258,16 @@ static void set_up_sockets_for_multicast(discovery_service *svc) {
 }
 
 // Public interface functions
+void get_local_ip(char **local_ip) {
+	*local_ip = calloc(16, sizeof(char));
+	get_ip(*local_ip, filter_local_ip_address);
+  JNX_LOG(0, "Local IP is %s", *local_ip); 
+}
+void get_broadcast_ip(char **broadcast_ip) {
+	*broadcast_ip = calloc(16, sizeof(char));
+	get_ip(*broadcast_ip, filter_broadcast_address);
+	JNX_LOG(0, "Broadcast IP is %s", *broadcast_ip); 
+}
 discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers) {
   discovery_service *svc = calloc(1, sizeof(discovery_service));
   svc->port = port;
@@ -209,6 +277,7 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
   svc->isrunning = 0;
   svc->peers = peers;
   svc->update_thread = NULL;
+  svc->listening_thread = NULL;
   svc->last_updated = time(0);
   svc->update_time_lock = jnx_thread_mutex_create();	
   return svc;
@@ -246,6 +315,9 @@ int discovery_service_stop(discovery_service *svc) {
   if (svc->update_thread != NULL) {
     cancel_thread(&svc->update_thread);
   }
+  send_stop_packet(svc);
+  pthread_join(svc->listening_thread->system_thread, NULL);
+
   jnx_socket_destroy(&(svc->sock_receive));
   jnx_socket_destroy(&(svc->sock_send));
   return 0;

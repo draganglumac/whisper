@@ -20,6 +20,7 @@
 #include <jnxc_headers/jnxlog.h>
 #include "peer.h"
 #include "peer.pb-c.h"
+#include "../net/discovery.h"
 
 size_t peerton(peer *p, void **out) {
   Peer msg = PEER__INIT;
@@ -84,4 +85,11 @@ void peer_free(peer **p) {
   }
   free(temp);
   *p = NULL;
+}
+peer *local_peer_for_user(char *user) {
+	peer *p = calloc(1, sizeof(peer));
+	jnx_guid_create(&p->guid);
+	get_local_ip(&p->host_address);
+	p->user_name = user;
+	return p;
 }

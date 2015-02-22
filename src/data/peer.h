@@ -33,5 +33,6 @@ size_t peerton(peer *p, void **out);
 peer *ntopeer(void *in, size_t len);
 void peer_free(peer **p);
 peer *peer_create(jnx_guid guid, char *host_address, char *user_name);
+peer *local_peer_for_user(char *username);
 
 #endif
