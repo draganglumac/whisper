@@ -42,6 +42,7 @@ void prompt();
 void show_help();
 void quit_message();
 int code_for_command(char *command);
+int code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam);
 void create_gui_session();
 void list_active_peers(app_context_t *context);
 

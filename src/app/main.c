@@ -43,11 +43,17 @@ int run_app(app_context_t *context) {
   intro();
   while (1) {
     prompt();
-    scanf("%s", command); 
-
-    switch(code_for_command(command)) {
+  
+    char *cmd_string = NULL;
+    jnx_size read_bytes;
+    jnx_size s = getline(&cmd_string,&read_bytes,stdin);
+    char *param = NULL;
+    switch(code_for_command_with_param(cmd_string,read_bytes,&param)) {
       case CMD_SESSION:
-        create_gui_session();
+        //peer *p = peerstore_lookup_with_name(context->??,param);     
+        if(param) {
+          free(param);
+        }
         break;
       case CMD_LIST:
         list_active_peers(context);

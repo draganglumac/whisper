@@ -79,6 +79,10 @@ peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
   jnx_thread_unlock(ps->store_lock);
   return p;
 }
+peer *peerstore_lookup_with_name(peerstore *ps, char *name) {
+
+  return NULL;
+}
 int peerstore_get_active_guids(peerstore *ps, jnx_guid ***guids) {
   jnx_thread_lock(ps->store_lock);
   jnx_hashmap *peers = PEERSTORE(ps->peers);

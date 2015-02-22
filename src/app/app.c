@@ -54,6 +54,23 @@ int code_for_command(char *command) {
   }
   return CMD_HELP;
 }
+int code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) {
+  *oparam = NULL;
+  char *raw_cmd = strtok(command," ");
+  char *extra_params = strtok(NULL," ");
+  if(is_equivalent(raw_cmd,"session")) {
+    if(!extra_params) {
+      printf("Requires name of peer as argument.\n");
+      return CMD_HELP;
+    }
+    printf("Creating session with peer %s.\n",extra_params);
+    *oparam = malloc(strlen(extra_params) + 1);
+    strcpy(*oparam,extra_params);
+    return CMD_SESSION;
+  }else {
+    return code_for_command(raw_cmd);
+  }
+}
 void prompt() {
   printf("Enter a command into the prompt.\n");
   printf("(For the list of commands type 'h' or 'help'.)\n");
