@@ -12,6 +12,9 @@
 #include "../util/utils.h"
 #include "auth_initiator.pb-c.h"
 #include "auth_receiver.pb-c.h"
+
+#define CHALLENGE_REQUEST_PUBLIC_KEY 1
+#define CHALLENGE_REQUEST_FINISH 0
 auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   auth_comms_service *ac = malloc(sizeof(auth_comms_service));
   ac->listener_thread = NULL; 
@@ -87,8 +90,8 @@ void auth_comms_start_listener(auth_comms_service *ac) {
   ac->listener_callback = auth_comms_listener_receive_handler;  
 }
 
-static int auth_comms_initiator_send_and_await_public_key(jnx_socket *s,\
-    jnx_char *hostname, jnx_char *port,session *ses) {
+static int auth_comms_initiator_send_and_await_challenge(jnx_socket *s,\
+    jnx_char *hostname, jnx_char *port,session *ses, jnx_int is_initial_challenge) {
   printf("Authentication comms initiating public key request...\n");
 
   jnx_uint8 *oreceipt;
@@ -105,8 +108,13 @@ static int auth_comms_initiator_send_and_await_public_key(jnx_socket *s,\
 
   AuthInitiator auth_parcel = AUTH_INITIATOR__INIT;
   auth_parcel.initiator_guid = malloc(sizeof(char) * len);
-  auth_parcel.is_requesting_public_key = 1;
-  auth_parcel.is_requesting_finish = 0;
+  if(is_initial_challenge) {
+    auth_parcel.is_requesting_public_key = 1;
+    auth_parcel.is_requesting_finish = 0;
+  }else {
+    auth_parcel.is_requesting_public_key = 0;
+    auth_parcel.is_requesting_finish = 1;
+  }
   memcpy(auth_parcel.initiator_guid,local_guid_str,len); 
   free(local_guid_str);
   jnx_int parcel_len = auth_initiator__get_packed_size(&auth_parcel);
@@ -114,8 +122,10 @@ static int auth_comms_initiator_send_and_await_public_key(jnx_socket *s,\
   jnx_char *obuffer = malloc(parcel_len);
   auth_initiator__pack(&auth_parcel,obuffer);
   free(auth_parcel.initiator_guid);
-  
+
   jnx_socket_tcp_send_with_receipt(s,hostname,port,obuffer,parcel_len,&oreceipt);
+
+
 }
 void auth_comms_initiate_handshake(auth_comms_service *ac,\
     discovery_service *ds, session *s) {
@@ -126,8 +136,8 @@ void auth_comms_initiate_handshake(auth_comms_service *ac,\
   JNXCHECK(remote_peer);
   print_peer(remote_peer);
   /* Let's make the assumption the remote peer will use the listener_port */
-  auth_comms_initiator_send_and_await_public_key(ac->comms_initiator_socket,
-      remote_peer->host_address,ac->listener_port,s);
+  auth_comms_initiator_send_and_await_challenge(ac->comms_initiator_socket,
+      remote_peer->host_address,ac->listener_port,s,CHALLENGE_REQUEST_PUBLIC_KEY);
 }
 void auth_comms_receive_handshake(auth_comms_service *ac,\
     discovery_service *ds, session *s) {
