@@ -119,21 +119,22 @@ static int auth_comms_initiator_send_and_await_challenge(jnx_socket *s,\
   memcpy(auth_parcel.initiator_guid,local_guid_str,len); 
   free(local_guid_str);
   
-  /* add initiator rsa public key */
-
   jnx_char *pub_key_str = asymmetrical_key_to_string(ses->keypair,PUBLIC);
   jnx_size pub_len = strlen(pub_key_str);
   auth_parcel.initiator_public_key = malloc(sizeof(char*) * pub_len);
+  
   memcpy(auth_parcel.initiator_public_key,pub_key_str,pub_len);
   free(pub_key_str);
+  
   jnx_int parcel_len = auth_initiator__get_packed_size(&auth_parcel);
-
   jnx_char *obuffer = malloc(parcel_len);
   auth_initiator__pack(&auth_parcel,obuffer);
+
+  JNX_LOG(0,"-----\nSending request with flags\nis_requesting_public_key=%d\nis_requesting_finish=%d\n-----",
+      auth_parcel.is_requesting_public_key,auth_parcel.is_requesting_finish);
   free(auth_parcel.initiator_guid);
-
+  free(auth_parcel.initiator_public_key);
   jnx_socket_tcp_send_with_receipt(s,hostname,port,obuffer,parcel_len,&oreceipt);
-
 
 }
 void auth_comms_initiate_handshake(auth_comms_service *ac,\
