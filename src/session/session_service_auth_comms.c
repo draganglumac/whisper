@@ -86,7 +86,8 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
 static void *auth_comms_listener_loop(void *data) {
   auth_comms_service *ac = (auth_comms_service*)data;
   ac->comms_listener_socket = jnx_socket_tcp_create(ac->listener_family); 
-  jnx_socket_tcp_listen_with_context(ac->comms_listener_socket,ac->listener_port,0,ac->listener_callback,ac); 
+  jnx_socket_tcp_listen_with_context(ac->comms_listener_socket,ac->listener_port,
+      100,ac->listener_callback,ac); 
 }
 void auth_comms_start_listener(auth_comms_service *ac) {
   JNXCHECK(ac->comms_listener_socket != NULL);
@@ -102,6 +103,7 @@ static int auth_comms_initiator_send_and_await_public_key(jnx_socket *s,jnx_char
   jnx_char *msg = "STOP";
   jnx_size msg_len = 5;
   /* This is not the final command to send */
+  JNX_LOG(0,"Host %s Port %s",hostname,port);
   jnx_socket_tcp_send_with_receipt(s,hostname,port,msg,msg_len,&oreceipt);
 }
 void auth_comms_initiate_handshake(auth_comms_service *ac,discovery_service *ds, session *s) {
