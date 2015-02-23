@@ -96,18 +96,16 @@ peer *peerstore_lookup_by_username(peerstore *ps, char *username) {
   if (p == NULL) {
     jnx_hash_delete_value(NAMESTORE(ps->namestore), username);
     free(guid_str);
-    if(!guid_str) {
-      printf("No matching guid found for the peer provided.\n");
-      return NULL;
-    }
-    if (p != NULL && !ps->is_active_peer(ps->last_update, p)) {
-      jnx_hash_delete_value(PEERSTORE(ps->peers), guid_str);
-      peer_free(&p);
-      p = NULL;
-    }
     jnx_thread_unlock(ps->store_lock);
-    return p;
+    return NULL;
   }
+  if (p != NULL && !ps->is_active_peer(ps->last_update, p)) {
+    jnx_hash_delete_value(PEERSTORE(ps->peers), guid_str);
+    peer_free(&p);
+    p = NULL;
+  }
+  jnx_thread_unlock(ps->store_lock);
+  return p;
 }
 int peerstore_get_active_guids(peerstore *ps, jnx_guid ***guids) {
   jnx_thread_lock(ps->store_lock);
