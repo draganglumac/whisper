@@ -20,3 +20,4 @@
 #define ERR_DISCOVERY_START 11
 
 // Session errors 20 to ?? range
+#define PEER_NOT_FOUND_EXCEPTION (-1)

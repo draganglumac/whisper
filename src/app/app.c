@@ -63,7 +63,6 @@ int code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) 
       printf("Requires name of peer as argument.\n");
       return CMD_HELP;
     }
-    printf("Creating session with peer %s.\n",extra_params);
     *oparam = malloc(strlen(extra_params) + 1);
     strcpy(*oparam,extra_params);
     return CMD_SESSION;

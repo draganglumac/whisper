@@ -17,7 +17,8 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-
+#include "../err/whisper_errors.h"
+#include <jnxc_headers/jnxcheck.h>
 #include "app.h"
 
 jnx_hashmap *load_config(int argc, char **argv) {
@@ -43,14 +44,15 @@ int run_app(app_context_t *context) {
   intro();
   while (1) {
     prompt();
-  
+
     char *cmd_string = NULL;
     jnx_size read_bytes;
     jnx_size s = getline(&cmd_string,&read_bytes,stdin);
     char *param = NULL;
     switch(code_for_command_with_param(cmd_string,read_bytes,&param)) {
       case CMD_SESSION:
-        //peer *p = peerstore_lookup_with_name(context->??,param);     
+        printf("Looking up peer...\n");
+        peer *p = peerstore_lookup_with_name(context->discovery->peers, param);
         if(param) {
           free(param);
         }
@@ -65,6 +67,7 @@ int run_app(app_context_t *context) {
         quit_message();
         return 0;
     }
+    free(cmd_string);
   }
   return 0;
 }
