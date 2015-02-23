@@ -9,6 +9,7 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
+#include "../crypto/cryptography.h"
 #include "../util/utils.h"
 #include "auth_initiator.pb-c.h"
 #include "auth_receiver.pb-c.h"
@@ -117,6 +118,14 @@ static int auth_comms_initiator_send_and_await_challenge(jnx_socket *s,\
   }
   memcpy(auth_parcel.initiator_guid,local_guid_str,len); 
   free(local_guid_str);
+  
+  /* add initiator rsa public key */
+
+  jnx_char *pub_key_str = asymmetrical_key_to_string(ses->keypair,PUBLIC);
+  jnx_size pub_len = strlen(pub_key_str);
+  auth_parcel.initiator_public_key = malloc(sizeof(char*) * pub_len);
+  memcpy(auth_parcel.initiator_public_key,pub_key_str,pub_len);
+  free(pub_key_str);
   jnx_int parcel_len = auth_initiator__get_packed_size(&auth_parcel);
 
   jnx_char *obuffer = malloc(parcel_len);
