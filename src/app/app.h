@@ -31,7 +31,7 @@
 #define CMD_QUIT    4
 
 typedef struct {
-	discovery_service *discovery;
+  discovery_service *discovery;
 } app_context_t;
 
 app_context_t *create_app_context(jnx_hashmap *config);

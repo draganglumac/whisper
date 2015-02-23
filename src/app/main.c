@@ -21,27 +21,26 @@
 #include "app.h"
 
 jnx_hashmap *load_config(int argc, char **argv) {
-	if (argc > 1) {
-		int i = 1;
-		while (i < argc) {
-			if (0 == strncmp("--config=", argv[i], 9)) {
-				char *path = argv[i] + 9;
-				jnx_hashmap *config = jnx_file_read_kvp(path, 80, "="); 
-				if (config != NULL) {
-					return config;
-				}
-			}
-			i++;
-		}
-	}
-
-	JNX_LOG(0, "[ERROR] You must supply a valid configuration file on the command line. Pass it using --config=PATH_TO_CONFIG_FILE command line option.");
-	exit (1);
+  if (argc > 1) {
+    int i = 1;
+    while (i < argc) {
+      if (0 == strncmp("--config=", argv[i], 9)) {
+        char *path = argv[i] + 9;
+        jnx_hashmap *config = jnx_file_read_kvp(path, 80, "="); 
+        if (config != NULL) {
+          return config;
+        }
+      }
+      i++;
+    }
+  }
+  JNX_LOG(0, "[ERROR] You must supply a valid configuration file on the command line. Pass it using --config=PATH_TO_CONFIG_FILE command line option.");
+  exit (1);
 }
 int run_app(app_context_t *context) {
-	char command[CMDLEN];
-	
-	intro();
+  char command[CMDLEN];
+
+  intro();
   while (1) {
     prompt();
     scanf("%s", command); 
@@ -61,14 +60,14 @@ int run_app(app_context_t *context) {
         return 0;
     }
   }
-	return 0;
+  return 0;
 }
 int main(int argc, char **argv) {
-	jnx_hashmap *config = load_config(argc, argv);
-	app_context_t *app_context = create_app_context(config);
+  jnx_hashmap *config = load_config(argc, argv);
+  app_context_t *app_context = create_app_context(config);
   run_app(app_context);
-	destroy_app_context(&app_context);
+  destroy_app_context(&app_context);
   jnx_hash_destroy(&config);
-	printf("Done.\n");
-	return 0;
+  printf("Done.\n");
+  return 0;
 }
