@@ -10,21 +10,11 @@
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include "../util/utils.h"
+#include "auth_initiator.pb-c.h"
+#include "auth_receiver.pb-c.h"
 auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   auth_comms_service *ac = malloc(sizeof(auth_comms_service));
   ac->listener_thread = NULL; 
-  jnx_unsigned_int init_family = AF_INET;
-  jnx_char *conf_init_family = jnx_hash_get(config,"AUTH_COMMS_INITIATOR_FAMILY");
-  if(conf_init_family != NULL) {
-    JNX_LOG(0,"Using user defined address family for initiator socket");
-    init_family = atoi(conf_init_family);
-  }
-  jnx_char *init_port = "6361";
-  jnx_char *conf_init_port = jnx_hash_get(config,"AUTH_COMMS_INITIATOR_PORT");
-  if(conf_init_port != NULL) {
-    init_port = conf_init_port;
-    JNX_LOG(0,"Using user defined port for initiator socket [%d]",init_port);
-  }
   jnx_unsigned_int list_family = AF_INET;
   jnx_char *conf_list_family = jnx_hash_get(config,"AUTH_COMMS_LISTENER_FAMILY");
   if(conf_list_family != NULL) {
@@ -37,12 +27,10 @@ auth_comms_service *auth_comms_create(jnx_hashmap *config) {
     JNX_LOG(0,"Using user defined port for listener socket [%d]",list_port);
     list_port = conf_list_port;
   }
-  ac->initiator_port = init_port;
-  ac->initiator_family = init_family;
   ac->listener_port = list_port;
   ac->listener_family = list_family;
 
-  JNX_LOG(0,"\nInitiator port: %s\nInitiator family: %d\nListener port: %s\nListener family: %d ",ac->initiator_port,ac->initiator_family,
+  JNX_LOG(0,"\nListener port: %s\nListener family: %d ",\
       ac->listener_port,ac->listener_family);
   auth_comms_start_listener(ac);
   JNX_LOG(0,"Started auth comms listener thread");
@@ -73,6 +61,9 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
 
   JNX_LOG(0,"auth_comms_listener_receive_handler raw input: [%dbytes] -%s",bytesread,payload);
 
+
+
+
   char command[5];
   memset(command, 0, 5);
   memcpy(command, payload, 4);
@@ -96,7 +87,8 @@ void auth_comms_start_listener(auth_comms_service *ac) {
   ac->listener_callback = auth_comms_listener_receive_handler;  
 }
 
-static int auth_comms_initiator_send_and_await_public_key(jnx_socket *s,jnx_char *hostname, jnx_char *port) {
+static int auth_comms_initiator_send_and_await_public_key(jnx_socket *s,\
+    jnx_char *hostname, jnx_char *port,session *ses) {
   printf("Authentication comms initiating public key request...\n");
 
   jnx_uint8 *oreceipt;
@@ -104,21 +96,41 @@ static int auth_comms_initiator_send_and_await_public_key(jnx_socket *s,jnx_char
   jnx_size msg_len = 5;
   /* This is not the final command to send */
   JNX_LOG(0,"Host %s Port %s",hostname,port);
-  jnx_socket_tcp_send_with_receipt(s,hostname,port,msg,msg_len,&oreceipt);
-}
-void auth_comms_initiate_handshake(auth_comms_service *ac,discovery_service *ds, session *s) {
 
-  ac->comms_initiator_socket = jnx_socket_tcp_create(ac->initiator_family);
+  /* send the local initiator guid */
+  jnx_char *local_guid_str;
+  jnx_guid_to_string(&(*ses).local_peer_guid,&local_guid_str);
+  JNX_LOG(0,"Packing initiator guid %s",local_guid_str);
+  jnx_size len = strlen(local_guid_str);
+
+  AuthInitiator auth_parcel = AUTH_INITIATOR__INIT;
+  auth_parcel.initiator_guid = malloc(sizeof(char) * len);
+  auth_parcel.is_requesting_public_key = 1;
+  auth_parcel.is_requesting_finish = 0;
+  memcpy(auth_parcel.initiator_guid,local_guid_str,len); 
+  free(local_guid_str);
+  jnx_int parcel_len = auth_initiator__get_packed_size(&auth_parcel);
+
+  jnx_char *obuffer = malloc(parcel_len);
+  auth_initiator__pack(&auth_parcel,obuffer);
+  free(auth_parcel.initiator_guid);
   
+  jnx_socket_tcp_send_with_receipt(s,hostname,port,obuffer,parcel_len,&oreceipt);
+}
+void auth_comms_initiate_handshake(auth_comms_service *ac,\
+    discovery_service *ds, session *s) {
+
+  ac->comms_initiator_socket = jnx_socket_tcp_create(ac->listener_family);
   /* Retrieve our remote peer */
   peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
   JNXCHECK(remote_peer);
   print_peer(remote_peer);
   /* Let's make the assumption the remote peer will use the listener_port */
   auth_comms_initiator_send_and_await_public_key(ac->comms_initiator_socket,
-      remote_peer->host_address,ac->listener_port);    
-
+      remote_peer->host_address,ac->listener_port,s);
 }
-void auth_comms_receive_handshake(auth_comms_service *ac,discovery_service *ds, session *s) {
+void auth_comms_receive_handshake(auth_comms_service *ac,\
+    discovery_service *ds, session *s) {
+
 
 }

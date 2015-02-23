@@ -13,8 +13,6 @@
 #include <jnxc_headers/jnxthread.h>
 typedef struct auth_comms_service {
   jnx_socket *comms_initiator_socket;
-  jnx_unsigned_int initiator_family;
-  jnx_char *initiator_port;
 
   jnx_socket *comms_listener_socket;
   jnx_unsigned_int listener_family;
