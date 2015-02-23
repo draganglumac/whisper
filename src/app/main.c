@@ -76,12 +76,20 @@ int run_app(app_context_t *context) {
               local_peer,remote_peer);
           printf("Created and linked session.\n");
 
-          while(session_service_fetch_session_state(context->session_serv,&(*s).session_guid) \
-              != SESSION_HANDSHAKE_FINISH) {
+          session_handshake_state e;
+          while((e = session_service_fetch_session_state(context->session_serv,\
+                &(*s).session_guid)) != SESSION_HANDSHAKE_FINISH) {
 
-            session_service_tick_session(context->session_serv,&(*s).session_guid);
+            session_service_tick_session(context->session_serv,\
+                &(*s).session_guid);
+            if(e == SESSION_HANDSHAKE_FAIL) {
+              printf("Sorry there was an error handshaking.\n");
+              break;
+            }
           }
           printf("Handshaking complete.\nLaunching GUI.\n");
+          
+          /* start gui */
 
         }else {
           printf("Session could not be started.\nDid you spell your target \

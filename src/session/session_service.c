@@ -134,8 +134,13 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
   return SESSION_STATE_NOT_FOUND;
 }
 session_handshake_state session_service_fetch_session_state(session_service *service, jnx_guid *session_guid) {
-
-  return SESSION_HANDSHAKE_FINISH;
+  
+  session *s;
+  session_state e = session_service_fetch_session(service,session_guid,&s);
+  if(e == SESSION_STATE_OKAY) {
+    return s->handshake_state;
+  }
+  return SESSION_HANDSHAKE_FAIL; 
 }
 session_state session_service_tick_session(session_service *service,\
     jnx_guid *session_guid) {

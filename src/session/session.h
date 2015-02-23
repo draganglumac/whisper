@@ -23,7 +23,8 @@ typedef enum session_handshake_state {
   SESSION_HANDSHAKE_START,
   SESSION_HANDSHAKE_RETURN_PUBLIC,
   SESSION_HANDSHAKE_SEND_SHARED,
-  SESSION_HANDSHAKE_FINISH
+  SESSION_HANDSHAKE_FINISH,
+  SESSION_HANDSHAKE_FAIL
 }session_handshake_state;
 
 typedef struct session {
