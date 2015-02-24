@@ -93,3 +93,11 @@ peer *local_peer_for_user(char *user) {
 	p->user_name = user;
 	return p;
 }
+peer_compare_status peers_compare(peer *p1, peer *p2) {
+  peer_compare_status status = PEERS_EQUIVALENT;
+  status |= jnx_guid_compare(&p1->guid, &p2->guid);
+  status |= strcmp(p1->host_address, p2->host_address);
+  status |= strcmp(p1->user_name, p2->user_name);
+  status &= 1;
+  return status;
+}

@@ -34,7 +34,7 @@ typedef struct {
   void *peers;
 } peerstore;
 
-peerstore *peerstore_init(peer *local_peer);
+peerstore *peerstore_init(peer *local_peer, is_active_peer_t is_active_peer);
 peer *peerstore_get_local_peer(peerstore *ps);
 void peerstore_store_peer(peerstore *ps, peer *p);
 void peerstore_destroy(peerstore **ps);

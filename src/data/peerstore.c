@@ -23,14 +23,19 @@
 #define PEERSTORE(x) ((jnx_hashmap *) x)
 #define NAMESTORE(x) ((jnx_hashmap *) x)
 
-peerstore *peerstore_init(peer *local_peer) {
+static int always_active(time_t lut, peer *p) {
+  return 1;
+}
+peerstore *peerstore_init(peer *local_peer, is_active_peer_t is_active_peer) {
   peerstore *store = malloc(sizeof(peerstore));
   store->local_peer = local_peer;
   store->store_lock = jnx_thread_mutex_create();
   store->peers = (void *) jnx_hash_create(1024);
   store->namestore = (void *) jnx_hash_create(1024);
   store->last_update = time(0);
-  store->is_active_peer = NULL;
+  if (is_active_peer == NULL) {
+    store->is_active_peer = always_active;
+  }
   return (peerstore *) store;
 }
 peer *peerstore_get_local_peer(peerstore *ps) {

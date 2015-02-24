@@ -113,7 +113,7 @@ static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context
 		JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
 		exit(1);
 	}
-	peerstore *ps = peerstore_init(local_peer_for_user(user_name));
+	peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
 
 	int port = DEFAULT_BROADCAST_PORT;
 	char *disc_port = (char *) jnx_hash_get(config, "DISCOVERY_PORT");
