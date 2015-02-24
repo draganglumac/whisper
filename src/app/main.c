@@ -53,7 +53,14 @@ int run_app(app_context_t *context) {
     switch(app_code_for_command_with_param(cmd_string,read_bytes,&param)) {
       case CMD_SESSION:
         printf("Looking up peer...\n");
-        //peer *p = peerstore_lookup_with_name(context->discovery->peers, param);
+        if(!param) {
+          printf("Session requires a username to connect to.\n");
+          break;
+        }
+        peer *p = peerstore_lookup_by_username(context->discovery->peers,param);
+        if(p) {
+          printf("Found peer.\n");
+        }
         if(param) {
           free(param);
         }
