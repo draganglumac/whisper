@@ -17,7 +17,15 @@
  */
 #ifndef __COMMUNICATIONS_H__
 #define __COMMUNICATIONS_H__
+#include <jnxc_headers/jnxcheck.h>
 #include "../session/session.h"
 
+typedef struct communication_service {
+
+}communication_service;
+
+communication_service *communication_service_create();
+
+void communication_service_destroy(communication_service **cs);
 
 #endif

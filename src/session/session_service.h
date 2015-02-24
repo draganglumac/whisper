@@ -24,6 +24,7 @@
 #include "../net/communications.h"
 typedef struct session_service {
   jnx_list *session_list;
+  communication_service *communication;
 }session_service;
 
 typedef enum session_state {

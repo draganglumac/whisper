@@ -16,4 +16,14 @@
  * =====================================================================================
  */
 #include <stdlib.h>
+#include "communications.h"
+communication_service *communication_service_create() {
+  communication_service *cs = malloc(sizeof(communication_service));
 
+  return cs;
+}
+void communication_service_destroy(communication_service **cs) {
+  JNXCHECK(*cs);
+  free(*cs);
+  *cs = NULL;
+}

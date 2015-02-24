@@ -16,9 +16,8 @@
  */
 #ifndef __SESSION_H__
 #define __SESSION_H__
-
 #include "../crypto/cryptography.h"
-
+#include <jnxc_headers/jnxguid.h>
 typedef struct session {
   jnx_guid local_guid;
   jnx_guid remote_guid;
