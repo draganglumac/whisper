@@ -21,12 +21,14 @@
 #include "peerstore.h"
 
 #define PEERSTORE(x) ((jnx_hashmap *) x)
+#define NAMESTORE(x) ((jnx_hashmap *) x)
 
 peerstore *peerstore_init(peer *local_peer) {
   peerstore *store = malloc(sizeof(peerstore));
   store->local_peer = local_peer;
   store->store_lock = jnx_thread_mutex_create();
   store->peers = (void *) jnx_hash_create(1024);
+  store->namestore = (void *) jnx_hash_create(1024);
   store->last_update = time(0);
   store->is_active_peer = NULL;
   return (peerstore *) store;
@@ -44,7 +46,7 @@ void peerstore_store_peer(peerstore *ps, peer *p) {
     peer_free(&old);
   }
   jnx_hash_put(PEERSTORE(ps->peers), guid_str, (void *) p);
-  free(guid_str);
+  jnx_hash_put(NAMESTORE(ps->namestore), p->user_name, (void *) guid_str);
   jnx_thread_unlock(ps->store_lock);
 }
 void peerstore_destroy(peerstore **pps) {
@@ -52,6 +54,7 @@ void peerstore_destroy(peerstore **pps) {
   peer_free(&(ps->local_peer));
 
   jnx_hashmap *peers = PEERSTORE(ps->peers);
+  jnx_hashmap *namestore = NAMESTORE(ps->namestore);
   const char **keys;
   int num_keys = jnx_hash_get_keys(peers, &keys); 
   int i;
@@ -60,6 +63,7 @@ void peerstore_destroy(peerstore **pps) {
     peer_free(&temp);
   }
   jnx_hash_destroy(&peers);
+  jnx_hash_destroy(&namestore);
   jnx_thread_mutex_destroy(&ps->store_lock);
   free(ps);
   *pps = NULL;
@@ -76,6 +80,25 @@ peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
     p = NULL;
   }
   free(guid_str);
+  jnx_thread_unlock(ps->store_lock);
+  return p;
+}
+peer *peerstore_lookup_by_username(peerstore *ps, char *username) {
+  JNXCHECK(ps->is_active_peer);
+  jnx_thread_lock(ps->store_lock);
+  char *guid_str = (char *) jnx_hash_get(NAMESTORE(ps->namestore), username);
+  peer *p = (peer *) jnx_hash_get(PEERSTORE(ps->peers), guid_str);
+  if (p == NULL) {
+    jnx_hash_delete_value(NAMESTORE(ps->namestore), username);
+    free(guid_str);
+    jnx_thread_unlock(ps->store_lock);
+    return NULL;
+  }
+  if (p != NULL && !ps->is_active_peer(ps->last_update, p)) {
+    jnx_hash_delete_value(PEERSTORE(ps->peers), guid_str);
+    peer_free(&p);
+    p = NULL;
+  }
   jnx_thread_unlock(ps->store_lock);
   return p;
 }
