@@ -22,7 +22,7 @@
 #include "app.h"
 #include "../gui/gui.h"
 
-void create_gui_session(){
+void app_create_gui_session(){
   context_t *c = context_create();
   pthread_t read_thread;
   pthread_create(&read_thread, 0,read_loop,(void*)c);
@@ -54,7 +54,7 @@ int code_for_command(char *command) {
   }
   return CMD_HELP;
 }
-int code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) {
+int app_code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) {
   *oparam = NULL;
   char *raw_cmd = strtok(command," ");
   char *extra_params = strtok(NULL," ");
@@ -70,7 +70,7 @@ int code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) 
     return code_for_command(raw_cmd);
   }
 }
-void prompt() {
+void app_prompt() {
   printf("Enter a command into the prompt.\n");
   printf("(For the list of commands type 'h' or 'help'.)\n");
   printf("\n");
@@ -93,7 +93,7 @@ static void show_active_peers(peerstore *ps) {
     pretty_print_peer(p);
   }
 }
-void list_active_peers(app_context_t *context) {
+void app_list_active_peers(app_context_t *context) {
   printf("\n");
   printf("Active Peers:\n");
   printf("%-32s %-16s %-16s\n", "UUID", "IP Address", "Username");
@@ -101,12 +101,12 @@ void list_active_peers(app_context_t *context) {
   show_active_peers(context->discovery->peers);
   printf("\n");
 }
-void intro() {
+void app_intro() {
   printf("\n");
   printf("Welcome to Whisper Chat\n");
   printf("\n");
 }
-void show_help() {
+void app_show_help() {
   printf("\n");
   printf("Valid commands are:\n");
   printf("\n");
@@ -116,7 +116,7 @@ void show_help() {
   printf("\tq or quit    - quit the program\n");
   printf("\n");
 }
-void quit_message() {
+void app_quit_message() {
   printf("\n");
   printf("Shutting down cleanly...\n");
 }
@@ -159,12 +159,12 @@ static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context
     }
   }
 }
-app_context_t *create_app_context(jnx_hashmap *config) {
+app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));
   set_up_discovery_service(config, context);
   return context;
 }
-void destroy_app_context(app_context_t **context) {
+void app_destroy_context(app_context_t **context) {
   discovery_service_cleanup(&(*context)->discovery);
   free(*context);
   *context = NULL;

@@ -34,15 +34,16 @@ typedef struct {
   discovery_service *discovery;
 } app_context_t;
 
-app_context_t *create_app_context(jnx_hashmap *config);
-void destroy_app_context(app_context_t **app_context);
+app_context_t *app_create_context(jnx_hashmap *config);
+void app_destroy_context(app_context_t **app_context);
 
-void intro();
-void prompt();
-void show_help();
-void quit_message();
-int code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam);
-void create_gui_session();
-void list_active_peers(app_context_t *context);
+void app_intro();
+void app_prompt();
+void app_show_help();
+void app_quit_message();
+int app_code_for_command_with_param(char *command,\
+    jnx_size cmd_len, char **oparam);
+void app_create_gui_session();
+void app_list_active_peers(app_context_t *context);
 
 #endif // __APP_H__
