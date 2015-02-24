@@ -22,6 +22,11 @@
 #include <time.h>
 #include <jnxc_headers/jnxguid.h>
 
+typedef enum {
+  PEERS_EQUIVALENT,
+  PEERS_DIFFERENT
+} peer_compare_status;
+
 typedef struct {
   jnx_guid guid;
   char *host_address;
@@ -34,5 +39,6 @@ peer *ntopeer(void *in, size_t len);
 void peer_free(peer **p);
 peer *peer_create(jnx_guid guid, char *host_address, char *user_name);
 peer *local_peer_for_user(char *username);
+peer_compare_status peers_compare(peer *p1, peer *p2);
 
 #endif

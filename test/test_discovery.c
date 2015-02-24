@@ -71,7 +71,7 @@ void run_discovery_service_test(discovery_test test) {
   for (i = 0; i < 16; i++) {
     guid.guid[i] = 1;
   }
-  peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "UserName"));
+  peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "UserName"), 0);
   discovery_service *svc = discovery_service_create(1234, AF_INET, baddr, store);
   int retval = test(svc);
   if (retval == CLEANUP) {

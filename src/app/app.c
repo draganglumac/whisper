@@ -108,12 +108,12 @@ void quit_message() {
 extern int peer_update_interval;
 
 static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context) {
-  char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
-  if (user_name == NULL) {
-    JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
-    exit(1);
-  }
-  peerstore *ps = peerstore_init(local_peer_for_user(user_name));
+	char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
+	if (user_name == NULL) {
+		JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
+		exit(1);
+	}
+	peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
 
   int port = DEFAULT_BROADCAST_PORT;
   char *disc_port = (char *) jnx_hash_get(config, "DISCOVERY_PORT");
