@@ -26,6 +26,8 @@ typedef struct communication_service {
 
 communication_service *communication_service_create();
 
+void communication_service_push(communication_service *cs,session *s);
+
 void communication_service_destroy(communication_service **cs);
 
 #endif
