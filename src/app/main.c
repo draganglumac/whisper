@@ -49,16 +49,20 @@ int run_app(app_context_t *context) {
     jnx_size read_bytes;
     jnx_size s = getline(&cmd_string,&read_bytes,stdin);
     char *param = NULL;
+    jnx_vector *active_peers = NULL;
     switch(app_code_for_command_with_param(cmd_string,read_bytes,&param)) {
       case CMD_SESSION:
         printf("Looking up peer...\n");
-        peer *p = peerstore_lookup_with_name(context->discovery->peers, param);
+        
+        //peer *p = peerstore_lookup_with_name(context->discovery->peers, param);
+        
         if(param) {
           free(param);
         }
         break;
       case CMD_LIST:
-        app_list_active_peers(context);
+        active_peers = jnx_vector_create();
+        app_list_active_peers(context,active_peers);
         break;
       case CMD_HELP:
         app_show_help();

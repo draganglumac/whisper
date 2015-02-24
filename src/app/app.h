@@ -20,7 +20,7 @@
 #define __APP_H__
 
 #include <jnxc_headers/jnxhash.h>
-
+#include <jnxc_headers/jnxvector.h>
 #include "../net/discovery.h"
 
 #define CMDLEN 64
@@ -44,6 +44,6 @@ void app_quit_message();
 int app_code_for_command_with_param(char *command,\
     jnx_size cmd_len, char **oparam);
 void app_create_gui_session();
-void app_list_active_peers(app_context_t *context);
+void app_list_active_peers(app_context_t *context,jnx_vector *v);
 
 #endif // __APP_H__
