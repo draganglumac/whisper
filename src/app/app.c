@@ -83,7 +83,7 @@ static void pretty_print_peer(peer *p) {
   printf("%-32s %-16s %s\n", guid, p->host_address, p->user_name);
   free(guid);
 }
-static void show_active_peers(peerstore *ps,jnx_vector *v) {
+static void show_active_peers(peerstore *ps) {
   jnx_guid **active_guids;
   int num_guids = peerstore_get_active_guids(ps, &active_guids);
   int i;
@@ -91,15 +91,14 @@ static void show_active_peers(peerstore *ps,jnx_vector *v) {
     jnx_guid *next_guid = active_guids[i];
     peer *p = peerstore_lookup(ps, next_guid);
     pretty_print_peer(p);
-    jnx_vector_insert(v,p);
   }
 }
-void app_list_active_peers(app_context_t *context,jnx_vector *v) {
+void app_list_active_peers(app_context_t *context) {
   printf("\n");
   printf("Active Peers:\n");
   printf("%-32s %-16s %-16s\n", "UUID", "IP Address", "Username");
   printf("--------------------------------+----------------+----------------\n");
-  show_active_peers(context->discovery->peers,v);
+  show_active_peers(context->discovery->peers);
   printf("\n");
 }
 void app_intro() {
