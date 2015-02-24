@@ -21,6 +21,7 @@
 #include <jnxc_headers/jnxlist.h>
 #include <jnxc_headers/jnxcheck.h>
 #include "session.h"
+#include "../net/communications.h"
 typedef struct session_service {
   jnx_list *session_list;
 }session_service;
