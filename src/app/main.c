@@ -17,7 +17,8 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-
+#include "../err/whisper_errors.h"
+#include <jnxc_headers/jnxcheck.h>
 #include "app.h"
 
 jnx_hashmap *load_config(int argc, char **argv) {
@@ -40,33 +41,49 @@ jnx_hashmap *load_config(int argc, char **argv) {
 int run_app(app_context_t *context) {
   char command[CMDLEN];
 
-  intro();
+  app_intro();
   while (1) {
-    prompt();
-    scanf("%s", command); 
+    app_prompt();
 
-    switch(code_for_command(command)) {
+    char *cmd_string = NULL;
+    jnx_size read_bytes;
+    jnx_size s = getline(&cmd_string,&read_bytes,stdin);
+    char *param = NULL;
+    jnx_vector *active_peers = NULL;
+    switch(app_code_for_command_with_param(cmd_string,read_bytes,&param)) {
       case CMD_SESSION:
-        create_gui_session();
+        printf("Looking up peer...\n");
+        if(!param) {
+          printf("Session requires a username to connect to.\n");
+          break;
+        }
+        peer *p = peerstore_lookup_by_username(context->discovery->peers,param);
+        if(p) {
+          printf("Found peer.\n");
+        }
+        if(param) {
+          free(param);
+        }
         break;
       case CMD_LIST:
-        list_active_peers(context);
+        app_list_active_peers(context);
         break;
       case CMD_HELP:
-        show_help();
+        app_show_help();
         break;
       case CMD_QUIT:
-        quit_message();
+        app_quit_message();
         return 0;
     }
+    free(cmd_string);
   }
   return 0;
 }
 int main(int argc, char **argv) {
   jnx_hashmap *config = load_config(argc, argv);
-  app_context_t *app_context = create_app_context(config);
+  app_context_t *app_context = app_create_context(config);
   run_app(app_context);
-  destroy_app_context(&app_context);
+  app_destroy_context(&app_context);
   jnx_hash_destroy(&config);
   printf("Done.\n");
   return 0;

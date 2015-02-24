@@ -21,8 +21,10 @@
 #include <jnxc_headers/jnxlist.h>
 #include <jnxc_headers/jnxcheck.h>
 #include "session.h"
+#include "../net/communications.h"
 typedef struct session_service {
   jnx_list *session_list;
+  communication_service *communication;
 }session_service;
 
 typedef enum session_state {
@@ -31,6 +33,13 @@ typedef enum session_state {
   SESSION_STATE_NOT_FOUND,
   SESSION_STATE_EXISTS
 }session_state;
+
+typedef enum session_handshake_state {
+  SESSION_HANDSHAKE_START,
+  SESSION_HANDSHAKE_RETURN_PUBLIC,
+  SESSION_HANDSHAKE_SEND_SHARED,
+  SESSION_HANDSHAKE_FINISH
+}session_handshake_state;
 
 session_service *session_service_create();
 
