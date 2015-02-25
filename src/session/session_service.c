@@ -41,7 +41,7 @@ static int session_service_does_exist(session_service *service, jnx_guid *g) {
            *r = service->session_list->head;
   while(h) {
     session *retrieved_session = h->_data;
-    jnx_guid *retrieved_guid = &retrieved_session->local_guid;
+    jnx_guid *retrieved_guid = &retrieved_session->session_guid;
     if(jnx_guid_compare_raw(g->guid,retrieved_guid->guid) == JNX_GUID_STATE_SUCCESS) {
       does_exist = 1;
     }
@@ -69,7 +69,7 @@ void session_service_destroy(session_service **service) {
              *r = sessions_list->head;
     while(h) {
       session *s = h->_data;
-      session_service_destroy_session(*service,&s->local_guid);
+      session_service_destroy_session(*service,&s->session_guid);
       h = h->next_node;
     }
     h = r;
@@ -83,9 +83,10 @@ void session_service_destroy(session_service **service) {
 session_state session_service_create_session(session_service *service, session **osession) {
   session *s = malloc(sizeof(session));
   s->keypair = asymmetrical_generate_key(2048);  
-  jnx_guid_create(&s->local_guid);
-  generate_blank_guid(&s->remote_guid); 
-  if(session_service_does_exist(service,&s->local_guid)){
+  jnx_guid_create(&s->session_guid);
+  generate_blank_guid(&s->local_peer_guid); 
+  generate_blank_guid(&s->local_peer_guid); 
+  if(session_service_does_exist(service,&s->session_guid)){
     return SESSION_STATE_EXISTS;
   }
   session_service_add_session(service,s);
@@ -122,7 +123,7 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
            *r = service->session_list->head;
   while(h) {
     session *s = h->_data;
-    if(jnx_guid_compare(g,&s->local_guid) == JNX_GUID_STATE_SUCCESS) {
+    if(jnx_guid_compare(g,&s->session_guid) == JNX_GUID_STATE_SUCCESS) {
       *osession = s;
       return SESSION_STATE_OKAY;
     }
@@ -145,7 +146,7 @@ session_state session_service_destroy_session(session_service *service, jnx_guid
   session *retrieved_session = NULL;
   while(h) {
     session *s = h->_data;
-    if(jnx_guid_compare(g,&s->local_guid) == JNX_GUID_STATE_SUCCESS) {
+    if(jnx_guid_compare(g,&s->session_guid) == JNX_GUID_STATE_SUCCESS) {
       retrieved_session = s;
       e = SESSION_STATE_OKAY;
     }else {
@@ -161,34 +162,38 @@ session_state session_service_destroy_session(session_service *service, jnx_guid
   service->session_list = cl;
   return e;
 }
-session_state session_service_link_sessions(session_service *s, jnx_guid *local_guid, jnx_guid *foreign_guid) {
+session_state session_service_link_sessions(session_service *s,jnx_guid *session_guid,jnx_guid *local_peer_guid, jnx_guid *remote_peer_guid) {
   session *osession;
-  session_state e = session_service_fetch_session(s,local_guid,&osession);
+  session_state e = session_service_fetch_session(s,session_guid,&osession);
   if(e != SESSION_STATE_OKAY) {
     return e;
   }
-  jnx_guid new_remote_guid = *foreign_guid; 
-  osession->remote_guid = new_remote_guid;
+  jnx_guid new_remote_guid = *remote_peer_guid; 
+  jnx_guid new_local_guid = *local_peer_guid;
+  osession->local_peer_guid = new_local_guid;
+  osession->remote_peer_guid = new_remote_guid;
   return e;
 }
-session_state session_service_unlink_sessions(session_service *s, jnx_guid *local_guid) {
+session_state session_service_unlink_sessions(session_service *s, jnx_guid *session_guid) {
   session *osession;
-  session_state e = session_service_fetch_session(s,local_guid,&osession);
+  session_state e = session_service_fetch_session(s,session_guid,&osession);
   if(e != SESSION_STATE_OKAY) {
     return e;
   }
   jnx_guid g;
   generate_blank_guid(&g);
-  osession->remote_guid = g;
-  JNXCHECK(is_guid_blank(&osession->remote_guid));
+  osession->local_peer_guid = g;
+  osession->remote_peer_guid = g;
+  JNXCHECK(is_guid_blank(&osession->local_peer_guid));
+  JNXCHECK(is_guid_blank(&osession->remote_peer_guid));
   return SESSION_STATE_OKAY;
 }
-jnx_int session_service_session_is_linked(session_service *s, jnx_guid *local_guid) {
+jnx_int session_service_session_is_linked(session_service *s, jnx_guid *session_guid) {
   session *osession;
-  session_state e = session_service_fetch_session(s,local_guid,&osession);
+  session_state e = session_service_fetch_session(s,session_guid,&osession);
   if(e != SESSION_STATE_OKAY) {
     JNX_LOG(NULL,"Could not retrieve session");
     return 0;
   }
-  return  is_guid_blank(&osession->remote_guid) ? 0 : 1;
+  return  is_guid_blank(&osession->remote_peer_guid) ? 0 : 1;
 }

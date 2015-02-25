@@ -21,6 +21,7 @@
 #include <jnxc_headers/jnxlist.h>
 #include <jnxc_headers/jnxcheck.h>
 #include "session.h"
+#include "../data/peer.h"
 #include "../net/communications.h"
 typedef struct session_service {
   jnx_list *session_list;
@@ -47,15 +48,15 @@ void session_service_destroy(session_service **service);
 
 session_state session_service_create_session(session_service *service, session **osession);
 
-session_state session_service_fetch_session(session_service *service, jnx_guid *g, session **osession);
+session_state session_service_fetch_session(session_service *service, jnx_guid *session_guid, session **osession);
 
 session_state session_service_fetch_all_sessions(session_service *service, jnx_list **olist);
 
-session_state session_service_destroy_session(session_service *service, jnx_guid *g);
+session_state session_service_destroy_session(session_service *service, jnx_guid *session_guid);
 
-session_state session_service_link_sessions(session_service *s, jnx_guid *local_guid, jnx_guid *foreign_guid);
+session_state session_service_link_sessions(session_service *s, jnx_guid *session_guid, jnx_guid *local_peer_guid, jnx_guid *remote_peer_guid);
 
-session_state session_service_unlink_sessions(session_service *s, jnx_guid *local_guid);
+session_state session_service_unlink_sessions(session_service *s, jnx_guid *session_guid);
 
-jnx_int session_service_session_is_linked(session_service *, jnx_guid *local_guid);
+jnx_int session_service_session_is_linked(session_service *, jnx_guid *session_guid);
 #endif

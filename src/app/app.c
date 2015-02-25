@@ -184,10 +184,12 @@ peer *app_peer_from_input(app_context_t *context, char *param) {
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));
   set_up_discovery_service(config, context);
+  context->session_serv = session_service_create();
   return context;
 }
 void app_destroy_context(app_context_t **context) {
   discovery_service_cleanup(&(*context)->discovery);
+  session_service_destroy(&(*context)->session_serv);
   free(*context);
   *context = NULL;
 }

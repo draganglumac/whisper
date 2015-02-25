@@ -19,8 +19,9 @@
 #include "../crypto/cryptography.h"
 #include <jnxc_headers/jnxguid.h>
 typedef struct session {
-  jnx_guid local_guid;
-  jnx_guid remote_guid;
+  jnx_guid session_guid;
+  jnx_guid local_peer_guid;
+  jnx_guid remote_peer_guid;
   RSA *keypair;
 }session;
 
