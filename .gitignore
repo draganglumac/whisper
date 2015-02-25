@@ -9,3 +9,5 @@ tags
 backtrace
 core
 seg_wrapper.sh
+*.pb-c.c
+*.pg-c.h

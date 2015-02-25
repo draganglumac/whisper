@@ -99,6 +99,10 @@ void app_list_active_peers(app_context_t *context) {
   printf("%-32s %-16s %-16s\n", "UUID", "IP Address", "Username");
   printf("--------------------------------+----------------+----------------\n");
   show_active_peers(context->discovery->peers);
+  peer *local = peerstore_lookup_by_username(context->discovery->peers, peerstore_get_local_peer(context->discovery->peers)->user_name);
+  printf("\n");
+  printf("Local peer:\n");
+  pretty_print_peer(local);
   printf("\n");
 }
 void app_intro() {

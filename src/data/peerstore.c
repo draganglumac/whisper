@@ -92,6 +92,9 @@ peer *peerstore_lookup_by_username(peerstore *ps, char *username) {
   JNXCHECK(ps->is_active_peer);
   jnx_thread_lock(ps->store_lock);
   char *guid_str = (char *) jnx_hash_get(NAMESTORE(ps->namestore), username);
+  if (guid_str == NULL) {
+    return NULL;
+  }
   peer *p = (peer *) jnx_hash_get(PEERSTORE(ps->peers), guid_str);
   if (p == NULL) {
     jnx_hash_delete_value(NAMESTORE(ps->namestore), username);

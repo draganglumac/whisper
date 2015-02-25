@@ -18,6 +18,7 @@ if(DEBUG)
   add_definitions("-DDEBUG -g")
 endif()
 
+execute_process(COMMAND ./tools/generate_protobuf)
 file(GLOB SRC "src/**/*.c")
 include_directories(src)
 add_executable(whisper ${SRC})
