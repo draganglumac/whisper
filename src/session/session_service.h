@@ -59,7 +59,7 @@ session_state session_service_destroy_session(session_service *service,jnx_guid 
     *session_guid);
 
 session_state session_service_link_sessions(session_service *s,jnx_guid \
-    *session_guid, jnx_guid *local_peer_guid,jnx_guid *remote_peer_guid);
+    *session_guid, peer *local_peer, peer *remote_peer);
 
 session_state session_service_unlink_sessions(session_service *s,jnx_guid \
     *session_guid);

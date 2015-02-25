@@ -49,6 +49,7 @@ void test_heavy_load() {
   session_service_destroy(&service);
   JNXCHECK(service == NULL);
 }
+
 void test_linking() {
   JNX_LOG(NULL,"test_linking");
   session_service *service = session_service_create();
@@ -58,9 +59,12 @@ void test_linking() {
   //Lets generate the guid of some remote session
   jnx_guid h;
   jnx_guid_create(&h);
-  e = session_service_link_sessions(service,&os->session_guid,&h,&h);
+ 
+  peer *l = peer_create(h,"N/A","Bob");
+  peer *n = peer_create(h,"N/A","Bob");
+  
+  e = session_service_link_sessions(service,&os->session_guid,l,n);
   JNXCHECK(e == SESSION_STATE_OKAY);
-  print_pair(&os->local_peer_guid,&os->remote_peer_guid);
   JNXCHECK(session_service_session_is_linked(service,&os->session_guid) == 1); 
   e = session_service_unlink_sessions(service,&os->session_guid);
   JNXCHECK(e == SESSION_STATE_OKAY);

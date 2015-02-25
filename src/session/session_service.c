@@ -162,19 +162,19 @@ session_state session_service_destroy_session(session_service *service, jnx_guid
   service->session_list = cl;
   return e;
 }
-session_state session_service_link_sessions(session_service *s,jnx_guid *session_guid,jnx_guid *local_peer_guid, jnx_guid *remote_peer_guid) {
+session_state session_service_link_sessions(session_service *s,\
+    jnx_guid *session_guid,peer *local_peer, peer *remote_peer) {
   session *osession;
   session_state e = session_service_fetch_session(s,session_guid,&osession);
   if(e != SESSION_STATE_OKAY) {
     return e;
   }
-  jnx_guid new_remote_guid = *remote_peer_guid; 
-  jnx_guid new_local_guid = *local_peer_guid;
-  osession->local_peer_guid = new_local_guid;
-  osession->remote_peer_guid = new_remote_guid;
+  osession->local_peer_guid = local_peer->guid;
+  osession->remote_peer_guid = remote_peer->guid;
   return e;
 }
-session_state session_service_unlink_sessions(session_service *s, jnx_guid *session_guid) {
+session_state session_service_unlink_sessions(session_service *s,\
+    jnx_guid *session_guid) {
   session *osession;
   session_state e = session_service_fetch_session(s,session_guid,&osession);
   if(e != SESSION_STATE_OKAY) {
@@ -188,7 +188,8 @@ session_state session_service_unlink_sessions(session_service *s, jnx_guid *sess
   JNXCHECK(is_guid_blank(&osession->remote_peer_guid));
   return SESSION_STATE_OKAY;
 }
-jnx_int session_service_session_is_linked(session_service *s, jnx_guid *session_guid) {
+jnx_int session_service_session_is_linked(session_service *s,\
+    jnx_guid *session_guid) {
   session *osession;
   session_state e = session_service_fetch_session(s,session_guid,&osession);
   if(e != SESSION_STATE_OKAY) {

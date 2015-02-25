@@ -58,21 +58,25 @@ int run_app(app_context_t *context) {
           break;
         }
 
-        peer *p = app_peer_from_input(context,param);
-        if(p) {
+        peer *remote_peer = app_peer_from_input(context,param);
+        if(remote_peer) {
           printf("Found peer-----\n");
-          printf("Host address: %s\n",p->host_address);
-          printf("User name: %s\n",p->user_name);
+          printf("Host address: %s\n",remote_peer->host_address);
+          printf("User name: %s\n",remote_peer->user_name);
           printf("---------------\n");;
           /*
            * Version 1.0
            */
+
+        peer *local_peer = peerstore_get_local_peer(context->discovery->peers);
         session *s;
         session_service_create_session(context->session_serv,&s);
-
-
-
         
+        session_service_link_sessions(context->session_serv,&(*s).session_guid,
+            local_peer,remote_peer);
+        printf("Created and linked session.\n");
+       
+
         }else {
           printf("Session could not be started.\nDid you spell your target \
               username correctly?\n");
