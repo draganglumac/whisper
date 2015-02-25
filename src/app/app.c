@@ -128,12 +128,12 @@ void app_quit_message() {
 extern int peer_update_interval;
 
 static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context) {
-	char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
-	if (user_name == NULL) {
-		JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
-		exit(1);
-	}
-	peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
+  char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
+  if (user_name == NULL) {
+    JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
+    exit(1);
+  }
+  peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
 
   int port = DEFAULT_BROADCAST_PORT;
   char *disc_port = (char *) jnx_hash_get(config, "DISCOVERY_PORT");
@@ -162,6 +162,24 @@ static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context
       discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
     }
   }
+}
+int app_is_input_guid_size(char *input) {
+  if((strlen(input) / 2) == 16) {
+    return 1;
+  }
+  return 0;
+}
+peer *app_peer_from_input(app_context_t *context, char *param) {
+  if(app_is_input_guid_size(param)) {
+    jnx_guid g;
+    jnx_guid_from_string(param,&g);
+    peer *p = peerstore_lookup(context->discovery->peers,&g);
+    return p;
+  }else {
+    peer *p = peerstore_lookup_by_username(context->discovery->peers,param);
+    return p;
+  }
+  return NULL;
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));

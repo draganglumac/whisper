@@ -52,14 +52,18 @@ int run_app(app_context_t *context) {
     jnx_vector *active_peers = NULL;
     switch(app_code_for_command_with_param(cmd_string,read_bytes,&param)) {
       case CMD_SESSION:
-        printf("Looking up peer...\n");
         if(!param) {
           printf("Session requires a username to connect to.\n");
           break;
         }
-        peer *p = peerstore_lookup_by_username(context->discovery->peers,param);
+        peer *p = app_peer_from_input(context,param);
         if(p) {
-          printf("Found peer.\n");
+          printf("Found peer-----\n");
+          printf("Host address: %s\n",p->host_address);
+          printf("User name: %s\n",p->user_name);
+          printf("---------------\n");;
+        }else {
+          printf("Session could not be started.\nDid you spell your target username correctly?\n");
         }
         if(param) {
           free(param);
