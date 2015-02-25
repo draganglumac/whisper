@@ -45,8 +45,8 @@ void show_prompt(ui_t *ui) {
 }
 void display_logo() {
   attron(COLOR_PAIR(COL_LOGO) | A_BOLD);
-	move(0,0);
-	printw("%s", " Whisper Chat ");
+  move(0,0);
+  printw("%s", " Whisper Chat ");
   attroff(COLOR_PAIR(COL_LOGO) | A_BOLD);
   refresh();
 }
@@ -139,9 +139,9 @@ void *read_loop(void *data) {
   while(TRUE) {
     char *msg = get_message(context);
     send_message_to_context(context, msg);
-		if (strcmp(msg, ":q") == 0) {
-			break;
-		}
+    if (strcmp(msg, ":q") == 0) {
+      break;
+    }
   }
   return NULL;
 }

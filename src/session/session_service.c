@@ -58,6 +58,7 @@ static void session_service_add_session(session_service *service, session *s) {
 session_service *session_service_create() {
   session_service *s = malloc(sizeof(session_service));
   s->session_list = jnx_list_create();
+  s->communication = communication_service_create();
   return s;
 }
 void session_service_destroy(session_service **service) {
