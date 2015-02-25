@@ -140,6 +140,9 @@ session_state session_service_tick_session(session_service *service,\
     jnx_guid *session_guid) {
 
 
+
+
+
   return SESSION_STATE_OKAY;
 }
 static void destroy_session(session *s) {
