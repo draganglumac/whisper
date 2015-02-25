@@ -35,12 +35,6 @@ typedef enum session_state {
   SESSION_STATE_EXISTS
 }session_state;
 
-typedef enum session_handshake_state {
-  SESSION_HANDSHAKE_START,
-  SESSION_HANDSHAKE_RETURN_PUBLIC,
-  SESSION_HANDSHAKE_SEND_SHARED,
-  SESSION_HANDSHAKE_FINISH
-}session_handshake_state;
 
 session_service *session_service_create();
 

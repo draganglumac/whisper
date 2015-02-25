@@ -83,6 +83,7 @@ void session_service_destroy(session_service **service) {
 session_state session_service_create_session(session_service *service, session **osession) {
   session *s = malloc(sizeof(session));
   s->keypair = asymmetrical_generate_key(2048);  
+  s->handshake_state = SESSION_HANDSHAKE_DORMANT;
   jnx_guid_create(&s->session_guid);
   generate_blank_guid(&s->local_peer_guid); 
   generate_blank_guid(&s->local_peer_guid); 
