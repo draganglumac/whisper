@@ -79,7 +79,8 @@ int run_app(app_context_t *context) {
 
           while(session_service_fetch_session_state(context->session_serv,&(*s).session_guid) \
               != SESSION_HANDSHAKE_FINISH) {
-
+          
+            session_service_tick_session(context->session_serv,&(*s).session_guid);
           }
           printf("Handshaking complete.\nLaunching GUI.\n");
 

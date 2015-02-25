@@ -54,6 +54,9 @@ session_state session_service_fetch_session(session_service *service,jnx_guid \
 
 session_handshake_state session_service_fetch_session_state(session_service *service, jnx_guid *session_guid);
 
+session_state session_service_tick_session(session_service *service,\
+    jnx_guid *session_guid);
+
 session_state session_service_fetch_all_sessions(session_service *service,\
     jnx_list **olist);
 
