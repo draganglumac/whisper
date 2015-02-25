@@ -45,7 +45,8 @@ jnx_char *asymmetrical_key_to_string(RSA *keypair,key_type type) {
   BIO_free(key);
   return skey;
 }
-jnx_char *asymmetrical_encrypt(RSA *keypair, jnx_uint8 *message, jnx_size *out_len) {
+jnx_char *asymmetrical_encrypt(RSA *keypair, jnx_uint8 *message, jnx_size \
+    *out_len) {
   jnx_char *encrypted_message = malloc(RSA_size(keypair));
   bzero(encrypted_message, RSA_size(keypair));
   char *err = malloc(30);
@@ -61,7 +62,8 @@ jnx_char *asymmetrical_encrypt(RSA *keypair, jnx_uint8 *message, jnx_size *out_l
   free(err);
   return encrypted_message;
 }
-jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, jnx_size in_len, jnx_size *out_len) {
+jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, \
+    jnx_size in_len, jnx_size *out_len) {
   jnx_char *decrypted_message = malloc(RSA_size(keypair));
   bzero(decrypted_message, RSA_size(keypair));
   char *err = malloc(30);
