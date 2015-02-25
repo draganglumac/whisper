@@ -21,6 +21,9 @@
 #include "data/peer.h"
 #include "data/peerstore.h"
 
+int inactive(time_t ts, peer *p) {
+  return 0;
+}
 peer *local_test_peer() {
   jnx_guid guid;
   int i;
@@ -55,9 +58,29 @@ void test_peerstore_lookup_by_username() {
   JNXCHECK(status == PEERS_EQUIVALENT);
   peerstore_destroy(&ps);
 }
+void test_peerstore_lookup_for_non_existant_username() {
+  peerstore *ps = create_test_peerstore();
+  peer *missing = peerstore_lookup_by_username(ps, "MissingUser");
+  JNXCHECK(NULL == missing);
+  peerstore_destroy(&ps);
+}
+void test_peerstore_lookup_for_inactive_username() {
+  peerstore *ps = create_test_peerstore();
+  peerstore_store_peer(ps, other_test_peer());
+  ps->is_active_peer = inactive;
+  peer *other = peerstore_lookup_by_username(ps, "OtherUser");
+  JNXCHECK(NULL == other);
+  peerstore_destroy(&ps);
+}
 int main() {
   JNX_LOG(0, "test_peerstore_lookup_by_username");
   test_peerstore_lookup_by_username();
   
+  JNX_LOG(0, "test_peerstore_lookup_for_non_existant_username");
+  test_peerstore_lookup_for_non_existant_username();
+  
+  JNX_LOG(0, "test_peerstore_lookup_for_inactive_username");
+  test_peerstore_lookup_for_inactive_username();
+
   return 0;
 }
