@@ -210,5 +210,11 @@ jnx_int session_service_session_is_linked(session_service *s,\
     JNX_LOG(NULL,"Could not retrieve session");
     return 0;
   }
-  return  is_guid_blank(&osession->remote_peer_guid) ? 0 : 1;
+  int a = is_guid_blank(&osession->remote_peer_guid),
+      b = is_guid_blank(&osession->local_peer_guid);
+
+  if(a && b) {
+    return 0;
+  }
+  return 1;
 }

@@ -37,19 +37,6 @@ void test_create_destroy() {
   session_service_destroy(&service);
   JNXCHECK(service == NULL);
 }
-void test_heavy_load() {
-  JNX_LOG(NULL,"test_heavy_load");
-  session_service *service = session_service_create();
-  jnx_int c = 20,d;
-  for(d=0;d<c;++d) {
-    session *os;
-    session_state e = session_service_create_session(service,&os);
-    JNXCHECK(service->session_list->counter == d + 1);
-  }
-  session_service_destroy(&service);
-  JNXCHECK(service == NULL);
-}
-
 void test_linking() {
   JNX_LOG(NULL,"test_linking");
   session_service *service = session_service_create();
@@ -58,23 +45,25 @@ void test_linking() {
   JNXCHECK(session_service_session_is_linked(service,&os->session_guid) == 0); 
   //Lets generate the guid of some remote session
   jnx_guid h;
+  jnx_guid g;
   jnx_guid_create(&h);
+  jnx_guid_create(&g);
  
   peer *l = peer_create(h,"N/A","Bob");
-  peer *n = peer_create(h,"N/A","Bob");
+  peer *n = peer_create(g,"N/A","Bob");
   
   e = session_service_link_sessions(service,&os->session_guid,l,n);
   JNXCHECK(e == SESSION_STATE_OKAY);
   JNXCHECK(session_service_session_is_linked(service,&os->session_guid) == 1); 
   e = session_service_unlink_sessions(service,&os->session_guid);
   JNXCHECK(e == SESSION_STATE_OKAY);
-  JNXCHECK(session_service_session_is_linked(service,&os->session_guid) == 0); 
+  int r = session_service_session_is_linked(service,&os->session_guid);
+  JNXCHECK(r == 0);
   session_service_destroy(&service);
   JNXCHECK(service == NULL);
 }
 int main(int argc, char **argv) {
   test_create_destroy();
-  test_heavy_load();
   test_linking();
   return 0;
 }
