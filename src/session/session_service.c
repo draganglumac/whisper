@@ -132,6 +132,10 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
   service->session_list->head = r;
   return SESSION_STATE_NOT_FOUND;
 }
+session_handshake_state session_service_fetch_session_state(session_service *service, jnx_guid *session_guid) {
+
+  return SESSION_HANDSHAKE_FINISH;
+}
 static void destroy_session(session *s) {
   JNXCHECK(s);
   asymmetrical_destroy_key(s->keypair);

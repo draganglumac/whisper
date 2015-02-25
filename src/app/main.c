@@ -68,14 +68,20 @@ int run_app(app_context_t *context) {
            * Version 1.0
            */
 
-        peer *local_peer = peerstore_get_local_peer(context->discovery->peers);
-        session *s;
-        session_service_create_session(context->session_serv,&s);
-        
-        session_service_link_sessions(context->session_serv,&(*s).session_guid,
-            local_peer,remote_peer);
-        printf("Created and linked session.\n");
-       
+          peer *local_peer = peerstore_get_local_peer(context->discovery->peers);
+          session *s;
+          /* create session */
+          session_service_create_session(context->session_serv,&s);
+          /* link our peers to our session information */
+          session_service_link_sessions(context->session_serv,&(*s).session_guid,
+              local_peer,remote_peer);
+          printf("Created and linked session.\n");
+
+          while(session_service_fetch_session_state(context->session_serv,&(*s).session_guid) \
+              != SESSION_HANDSHAKE_FINISH) {
+
+          }
+          printf("Handshaking complete.\nLaunching GUI.\n");
 
         }else {
           printf("Session could not be started.\nDid you spell your target \
