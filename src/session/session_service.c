@@ -181,6 +181,7 @@ session_state session_service_unlink_sessions(session_service *s, jnx_guid *loca
   generate_blank_guid(&g);
   osession->remote_guid = g;
   JNXCHECK(is_guid_blank(&osession->remote_guid));
+  return SESSION_STATE_OKAY;
 }
 jnx_int session_service_session_is_linked(session_service *s, jnx_guid *local_guid) {
   session *osession;

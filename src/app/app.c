@@ -56,8 +56,8 @@ int code_for_command(char *command) {
 }
 int app_code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) {
   *oparam = NULL;
-  char *raw_cmd = strtok(command," ");
-  char *extra_params = strtok(NULL," ");
+  char *raw_cmd = strtok(command," \n\r\t");
+  char *extra_params = strtok(NULL," \n\r\t");
   if(is_equivalent(raw_cmd,"session")) {
     if(!extra_params) {
       printf("Requires name of peer as argument.\n");
