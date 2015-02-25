@@ -28,10 +28,10 @@ void test_create_destroy() {
   //Pulling out that session guid lets get a handle on our session
   session *retrieved = NULL;
   //Lets test we can retrieve our session by giving our service the guid
-  e = session_service_fetch_session(service,&os->local_guid,&retrieved);
+  e = session_service_fetch_session(service,&os->session_guid,&retrieved);
   JNXCHECK(e == SESSION_STATE_OKAY);
-  JNXCHECK(jnx_guid_compare(&os->local_guid,&retrieved->local_guid) == JNX_GUID_STATE_SUCCESS);
-  e = session_service_destroy_session(service,&os->local_guid);
+  JNXCHECK(jnx_guid_compare(&os->session_guid,&retrieved->session_guid) == JNX_GUID_STATE_SUCCESS);
+  e = session_service_destroy_session(service,&os->session_guid);
   JNXCHECK(e == SESSION_STATE_OKAY);
   JNXCHECK(service->session_list->counter == 0);
   session_service_destroy(&service);
@@ -54,16 +54,17 @@ void test_linking() {
   session_service *service = session_service_create();
   session *os;
   session_state e = session_service_create_session(service,&os);
-  JNXCHECK(session_service_session_is_linked(service,&os->local_guid) == 0); 
+  JNXCHECK(session_service_session_is_linked(service,&os->session_guid) == 0); 
   //Lets generate the guid of some remote session
   jnx_guid h;
   jnx_guid_create(&h);
-  e = session_service_link_sessions(service,&os->local_guid,&h);
+  e = session_service_link_sessions(service,&os->session_guid,&h,&h);
   JNXCHECK(e == SESSION_STATE_OKAY);
-  print_pair(&os->local_guid,&os->remote_guid);
-  JNXCHECK(session_service_session_is_linked(service,&os->local_guid) == 1); 
-  session_service_unlink_sessions(service,&os->local_guid);
-  JNXCHECK(session_service_session_is_linked(service,&os->local_guid) == 0); 
+  print_pair(&os->local_peer_guid,&os->remote_peer_guid);
+  JNXCHECK(session_service_session_is_linked(service,&os->session_guid) == 1); 
+  e = session_service_unlink_sessions(service,&os->session_guid);
+  JNXCHECK(e == SESSION_STATE_OKAY);
+  JNXCHECK(session_service_session_is_linked(service,&os->session_guid) == 0); 
   session_service_destroy(&service);
   JNXCHECK(service == NULL);
 }
