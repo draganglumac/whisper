@@ -127,7 +127,8 @@ void app_quit_message() {
 
 extern int peer_update_interval;
 
-static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context) {
+static void set_up_discovery_service(app_context_t *context) {
+  jnx_hashmap *config = context->config;
 	char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
 	if (user_name == NULL) {
 		JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
@@ -165,7 +166,8 @@ static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));
-  set_up_discovery_service(config, context);
+  context->config = config;
+  set_up_discovery_service(context);
   return context;
 }
 void app_destroy_context(app_context_t **context) {
