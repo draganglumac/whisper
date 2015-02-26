@@ -35,7 +35,8 @@ jnx_hashmap *load_config(int argc, char **argv) {
       i++;
     }
   }
-  JNX_LOG(0, "[ERROR] You must supply a valid configuration file on the command line. Pass it using --config=PATH_TO_CONFIG_FILE command line option.");
+  JNX_LOG(0, "[ERROR] You must supply a valid configuration file on the command \
+      line. Pass it using --config=PATH_TO_CONFIG_FILE command line option.");
   exit (1);
 }
 int run_app(app_context_t *context) {
@@ -52,14 +53,36 @@ int run_app(app_context_t *context) {
     jnx_vector *active_peers = NULL;
     switch(app_code_for_command_with_param(cmd_string,read_bytes,&param)) {
       case CMD_SESSION:
-        printf("Looking up peer...\n");
         if(!param) {
           printf("Session requires a username to connect to.\n");
           break;
         }
-        peer *p = peerstore_lookup_by_username(context->discovery->peers,param);
-        if(p) {
-          printf("Found peer.\n");
+
+        peer *remote_peer = app_peer_from_input(context,param);
+        if(remote_peer) {
+          printf("Found peer-----\n");
+          printf("Host address: %s\n",remote_peer->host_address);
+          printf("User name: %s\n",remote_peer->user_name);
+          printf("---------------\n");;
+          /*
+           * Version 1.0
+           */
+          peer *local_peer = peerstore_get_local_peer(context->discovery->peers);
+          session *s;
+          /* create session */
+          session_service_create_session(context->session_serv,&s);
+          /* link our peers to our session information */
+          session_service_link_sessions(context->session_serv,&(*s).session_guid,
+              local_peer,remote_peer);
+          printf("Created and linked session.\n");
+
+          printf("Handshaking complete.\nLaunching GUI.\n");
+          
+          /* start gui */
+
+        }else {
+          printf("Session could not be started.\nDid you spell your target \
+              username correctly?\n");
         }
         if(param) {
           free(param);

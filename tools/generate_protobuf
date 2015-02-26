@@ -1,3 +1,4 @@
+#!/bin/bash
 filelist=`ls src/**/*.proto`
 
 

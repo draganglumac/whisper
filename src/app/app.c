@@ -18,7 +18,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
 #include "app.h"
 #include "../gui/gui.h"
 
@@ -164,14 +163,34 @@ static void set_up_discovery_service(app_context_t *context) {
     }
   }
 }
+int app_is_input_guid_size(char *input) {
+  if((strlen(input) / 2) == 16) {
+    return 1;
+  }
+  return 0;
+}
+peer *app_peer_from_input(app_context_t *context, char *param) {
+  if(app_is_input_guid_size(param)) {
+    jnx_guid g;
+    jnx_guid_from_string(param,&g);
+    peer *p = peerstore_lookup(context->discovery->peers,&g);
+    return p;
+  }else {
+    peer *p = peerstore_lookup_by_username(context->discovery->peers,param);
+    return p;
+  }
+  return NULL;
+}
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));
   context->config = config;
   set_up_discovery_service(context);
+  context->session_serv = session_service_create();
   return context;
 }
 void app_destroy_context(app_context_t **context) {
   discovery_service_cleanup(&(*context)->discovery);
+  session_service_destroy(&(*context)->session_serv);
   free(*context);
   *context = NULL;
 }

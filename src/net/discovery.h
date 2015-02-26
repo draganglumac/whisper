@@ -22,8 +22,8 @@
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxthread.h>
 #include <time.h>
-#include "data/peer.h"
-#include "data/peerstore.h"
+#include "../data/peer.h"
+#include "../data/peerstore.h"
 
 typedef struct {
   int port;
