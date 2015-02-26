@@ -181,11 +181,18 @@ peer *app_peer_from_input(app_context_t *context, char *param) {
   }
   return NULL;
 }
+void set_up_session_service(app_context_t *context){
+  context->session_serv = session_service_create();
+}
+void set_up_auth_comms_service(app_context_t *context) {
+
+}
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));
   context->config = config;
   set_up_discovery_service(context);
-  context->session_serv = session_service_create();
+  set_up_auth_comms_service(context);
+  set_up_session_service(context);
   return context;
 }
 void app_destroy_context(app_context_t **context) {

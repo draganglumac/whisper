@@ -23,6 +23,7 @@
 #include <jnxc_headers/jnxvector.h>
 #include "../net/discovery.h"
 #include "../session/session_service.h"
+#include "../session/session_service_auth_comms.h"
 #define CMDLEN 64
 
 #define CMD_SESSION 1
@@ -34,6 +35,7 @@ typedef struct {
   jnx_hashmap *config;
   discovery_service *discovery;
   session_service *session_serv;
+  auth_comms_service *auth_comms;
 } app_context_t;
 
 app_context_t *app_create_context(jnx_hashmap *config);
