@@ -31,6 +31,7 @@
 #define CMD_QUIT    4
 
 typedef struct {
+  jnx_hashmap *config;
   discovery_service *discovery;
   session_service *session_serv;
 } app_context_t;

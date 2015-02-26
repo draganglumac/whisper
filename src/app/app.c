@@ -126,13 +126,14 @@ void app_quit_message() {
 
 extern int peer_update_interval;
 
-static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context) {
-  char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
-  if (user_name == NULL) {
-    JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
-    exit(1);
-  }
-  peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
+static void set_up_discovery_service(app_context_t *context) {
+  jnx_hashmap *config = context->config;
+	char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
+	if (user_name == NULL) {
+		JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
+		exit(1);
+	}
+	peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
 
   int port = DEFAULT_BROADCAST_PORT;
   char *disc_port = (char *) jnx_hash_get(config, "DISCOVERY_PORT");
@@ -182,7 +183,8 @@ peer *app_peer_from_input(app_context_t *context, char *param) {
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));
-  set_up_discovery_service(config, context);
+  context->config = config;
+  set_up_discovery_service(context);
   context->session_serv = session_service_create();
   return context;
 }
