@@ -18,7 +18,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
 #include "app.h"
 #include "../gui/gui.h"
 

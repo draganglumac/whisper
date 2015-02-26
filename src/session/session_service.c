@@ -42,7 +42,8 @@ static int session_service_does_exist(session_service *service, jnx_guid *g) {
   while(h) {
     session *retrieved_session = h->_data;
     jnx_guid *retrieved_guid = &retrieved_session->session_guid;
-    if(jnx_guid_compare_raw(g->guid,retrieved_guid->guid) == JNX_GUID_STATE_SUCCESS) {
+    if(jnx_guid_compare_raw(g->guid,retrieved_guid->guid)\
+        == JNX_GUID_STATE_SUCCESS) {
       does_exist = 1;
     }
     h = h->next_node;
@@ -58,7 +59,6 @@ static void session_service_add_session(session_service *service, session *s) {
 session_service *session_service_create() {
   session_service *s = malloc(sizeof(session_service));
   s->session_list = jnx_list_create();
-  s->communication = communication_service_create();
   return s;
 }
 void session_service_destroy(session_service **service) {
@@ -133,7 +133,8 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
   service->session_list->head = r;
   return SESSION_STATE_NOT_FOUND;
 }
-session_handshake_state session_service_fetch_session_state(session_service *service, jnx_guid *session_guid) {
+session_handshake_state session_service_fetch_session_state(session_service *service,\
+    jnx_guid *session_guid) {
   
   session *s;
   session_state e = session_service_fetch_session(service,session_guid,&s);
@@ -145,18 +146,19 @@ session_handshake_state session_service_fetch_session_state(session_service *ser
 session_state session_service_tick_session(session_service *service,\
     jnx_guid *session_guid) {
 
-
-
-
-
-  return SESSION_STATE_OKAY;
+  session *osession; 
+  session_state e = session_service_fetch_session(service,session_guid,\
+      &osession);
+  session_service_auth_tick(osession);
+  return e;
 }
 static void destroy_session(session *s) {
   JNXCHECK(s);
   asymmetrical_destroy_key(s->keypair);
   free(s);
 }
-session_state session_service_destroy_session(session_service *service, jnx_guid *g) {
+session_state session_service_destroy_session(session_service *service,\
+    jnx_guid *g) {
   JNXCHECK(service);
   session_state e = SESSION_STATE_NOT_FOUND;
   jnx_node *h = service->session_list->head,

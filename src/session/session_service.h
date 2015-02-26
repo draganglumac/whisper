@@ -21,22 +21,12 @@
 #include <jnxc_headers/jnxlist.h>
 #include <jnxc_headers/jnxcheck.h>
 #include "session.h"
+#include "session_service_auth_comms.h"
 #include "../data/peer.h"
-#include "../net/communications.h"
+
 typedef struct session_service {
   jnx_list *session_list;
-  communication_service *communication;
 }session_service;
-
-typedef enum session_state {
-  SESSION_STATE_OKAY,
-  SESSION_STATE_FAIL,
-  SESSION_STATE_NOT_FOUND,
-  SESSION_STATE_EXISTS
-}session_state;
-
-
-session_service *session_service_create();
 
 void session_service_destroy(session_service **service);
 

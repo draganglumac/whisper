@@ -27,6 +27,13 @@ typedef enum session_handshake_state {
   SESSION_HANDSHAKE_FAIL
 }session_handshake_state;
 
+typedef enum session_state {
+  SESSION_STATE_OKAY,
+  SESSION_STATE_FAIL,
+  SESSION_STATE_NOT_FOUND,
+  SESSION_STATE_EXISTS
+}session_state;
+
 typedef struct session {
   jnx_guid session_guid;
   jnx_guid local_peer_guid;
