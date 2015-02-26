@@ -28,6 +28,8 @@ typedef struct session_service {
   jnx_list *session_list;
 }session_service;
 
+session_service *session_service_create();
+
 void session_service_destroy(session_service **service);
 
 session_state session_service_create_session(session_service *service,session \
@@ -35,12 +37,6 @@ session_state session_service_create_session(session_service *service,session \
 
 session_state session_service_fetch_session(session_service *service,jnx_guid \
     *session_guid, session **osession);
-
-session_handshake_state session_service_fetch_session_state(session_service *service,\
-    jnx_guid *session_guid);
-
-session_state session_service_tick_session(session_service *service,\
-    jnx_guid *session_guid);
 
 session_state session_service_fetch_all_sessions(session_service *service,\
     jnx_list **olist);

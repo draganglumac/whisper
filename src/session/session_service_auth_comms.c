@@ -7,8 +7,4 @@
 
 #include "session_service_auth_comms.h"
 
-void session_service_auth_tick(session *s) {
-
-}
-
 

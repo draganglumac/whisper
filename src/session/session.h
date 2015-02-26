@@ -18,14 +18,16 @@
 #define __SESSION_H__
 #include "../crypto/cryptography.h"
 #include <jnxc_headers/jnxguid.h>
-typedef enum session_handshake_state {
-  SESSION_HANDSHAKE_DORMANT,
-  SESSION_HANDSHAKE_START,
-  SESSION_HANDSHAKE_RETURN_PUBLIC,
-  SESSION_HANDSHAKE_SEND_SHARED,
-  SESSION_HANDSHAKE_FINISH,
-  SESSION_HANDSHAKE_FAIL
-}session_handshake_state;
+
+typedef enum session_handshake_sender {
+  SENDER_AWAIT_PUB,
+  SENDER_AWAIT_FINISH
+}session_handshake_sender;
+
+typedef enum session_handshake_receiver {
+  RECEIVER_START,
+  RECEIVER_SHARED
+}session_handshake_receiver;
 
 typedef enum session_state {
   SESSION_STATE_OKAY,
@@ -39,7 +41,6 @@ typedef struct session {
   jnx_guid local_peer_guid;
   jnx_guid remote_peer_guid;
   RSA *keypair;
-  session_handshake_state handshake_state;
 }session;
 
 #endif

@@ -9,6 +9,5 @@
 #define SESSION_SERVICE_AUTH_COMMS_H
 #include "session.h"
 
-void session_service_auth_tick(session *s); 
 
 #endif /* !SESSION_SERVICE_AUTH_COMMS_H */

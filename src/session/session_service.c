@@ -83,7 +83,6 @@ void session_service_destroy(session_service **service) {
 session_state session_service_create_session(session_service *service, session **osession) {
   session *s = malloc(sizeof(session));
   s->keypair = asymmetrical_generate_key(2048);  
-  s->handshake_state = SESSION_HANDSHAKE_DORMANT;
   jnx_guid_create(&s->session_guid);
   generate_blank_guid(&s->local_peer_guid); 
   generate_blank_guid(&s->local_peer_guid); 
@@ -132,25 +131,6 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
   }
   service->session_list->head = r;
   return SESSION_STATE_NOT_FOUND;
-}
-session_handshake_state session_service_fetch_session_state(session_service *service,\
-    jnx_guid *session_guid) {
-  
-  session *s;
-  session_state e = session_service_fetch_session(service,session_guid,&s);
-  if(e == SESSION_STATE_OKAY) {
-    return s->handshake_state;
-  }
-  return SESSION_HANDSHAKE_FAIL; 
-}
-session_state session_service_tick_session(session_service *service,\
-    jnx_guid *session_guid) {
-
-  session *osession; 
-  session_state e = session_service_fetch_session(service,session_guid,\
-      &osession);
-  session_service_auth_tick(osession);
-  return e;
 }
 static void destroy_session(session *s) {
   JNXCHECK(s);
