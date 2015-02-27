@@ -63,11 +63,26 @@ static void send_peer_packet(discovery_service *svc) {
   JNX_LOG(0, "[DEBUG] Sent a PEER packet.");
 #endif
 }
+static void send_stop_packet(discovery_service *svc) {
+  void *buffer;
+  size_t len = peerton(peerstore_get_local_peer(svc->peers), &buffer);
+  jnx_uint8 *message = malloc(4 + len);
+  memcpy(message, "STOP", 4);
+  memcpy(message + 4, buffer, len);
+  
+  jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
+}
 static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
   peer *p = ntopeer(payload, bytesread);
   peerstore_store_peer(svc->peers, p);	
 }
-
+static jnx_int32 handle_stop(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
+  peer *p = ntopeer(payload, bytesread);
+  if (PEERS_EQUIVALENT == peers_compare(p, peerstore_get_local_peer(svc->peers))) {
+    return -1;
+  }  
+  return 0;
+}
 // IP filtering function - say for filtering broadcast address, or local IP etc.
 typedef struct sockaddr*(*address_mapping)(struct ifaddrs *);
 
@@ -123,12 +138,6 @@ int is_active_peer_periodic_update(time_t last_update_time, peer *p) {
   return 0;
 }
 
-jnx_int32 send_stop_packet(discovery_service *svc) {
-  char *tmp = "STOP";
-  char *port = port_to_string(svc);
-  jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, (jnx_uint8 *) tmp, 5);
-  return 0;
-}
 jnx_int32 send_discovery_request(discovery_service *svc) {
   char *tmp = "LIST";
   char *port = port_to_string(svc);
@@ -205,7 +214,7 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
     handle_peer(svc, payload + 4, bytesread - 4);
   }
   else if (0 == strcmp(command, "STOP")) {
-    return -1;
+    return handle_stop(svc, payload + 4, bytesread - 4);
   }
   else {
     JNX_LOG(0, "[DISCOVERY] Received unknown command. Ignoring the packet.");
