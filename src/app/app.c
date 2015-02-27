@@ -199,6 +199,7 @@ app_context_t *app_create_context(jnx_hashmap *config) {
 void app_destroy_context(app_context_t **context) {
   discovery_service_cleanup(&(*context)->discovery);
   session_service_destroy(&(*context)->session_serv);
+  auth_comms_destroy(&(*context)->auth_comms);
   free(*context);
   *context = NULL;
 }

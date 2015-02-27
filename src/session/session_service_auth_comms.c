@@ -6,7 +6,9 @@
  */
 #include <jnxc_headers/jnxlog.h>
 #include "session_service_auth_comms.h"
-
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <sys/ioctl.h>
 auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   auth_comms_service *ac = malloc(sizeof(auth_comms_service));
   ac->listener_thread = NULL; 
@@ -38,26 +40,43 @@ auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   ac->initiator_family = init_family;
   ac->listener_port = list_port;
   ac->listener_family = list_family;
+
+  JNX_LOG(0,"\nInitiator port: %s\nInitiator family: %d\nListener port: %s\nListener family: %d ",ac->initiator_port,ac->initiator_family,
+      ac->listener_port,ac->listener_family);
   auth_comms_start_listener(ac);
   JNX_LOG(0,"Started auth comms listener thread");
 
   return ac;
 }
+static int stop_listening(auth_comms_service *ac) {
+  int dont_block = 1; 
+  return ioctl(ac->comms_listener_socket->socket, FIONBIO, (char *) &dont_block);
+}
+jnx_int32 auth_comms_send_stop_packet(auth_comms_service *ac) {
+  char *tmp = "STOP";
+  jnx_socket *temp = jnx_socket_tcp_create(ac->listener_family);
+  jnx_socket_tcp_send(temp,"127.0.0.1",ac->listener_port, (jnx_uint8 *) tmp, 5);
+  jnx_socket_destroy(&temp);
+  return 0;
+}
 void auth_comms_destroy(auth_comms_service **ac) {
-
+  JNXCHECK(*ac);
+  cancel_thread(&(*ac)->listener_thread);
+  auth_comms_send_stop_packet(*ac);
   free(*ac);
   *ac = NULL;
 }
 static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
     jnx_size bytesread, jnx_socket *s, void *context) {
   auth_comms_service *ac = (auth_comms_service*)context;
-  
+
   JNX_LOG(0,"auth_comms_listener_receive_handler raw input: [%dbytes] -%s",bytesread,payload);
 
   char command[5];
   memset(command, 0, 5);
   memcpy(command, payload, 4);
   if(0 == strcmp(command,"STOP")){
+    JNX_LOG(0,"Terminating auth comms listener");
     return -1;
   }
   free(payload);
@@ -65,6 +84,7 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
 }
 static void *auth_comms_listener_loop(void *data) {
   auth_comms_service *ac = (auth_comms_service*)data;
+  ac->comms_listener_socket = jnx_socket_tcp_create(ac->listener_family); 
   jnx_socket_tcp_listen_with_context(ac->comms_listener_socket,ac->listener_port,0,ac->listener_callback,ac); 
 }
 void auth_comms_start_listener(auth_comms_service *ac) {
