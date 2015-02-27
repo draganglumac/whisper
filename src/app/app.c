@@ -185,6 +185,7 @@ void set_up_session_service(app_context_t *context){
   context->session_serv = session_service_create();
 }
 void set_up_auth_comms_service(app_context_t *context) {
+
   context->auth_comms = auth_comms_create(context->config);
 }
 app_context_t *app_create_context(jnx_hashmap *config) {

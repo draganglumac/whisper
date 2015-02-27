@@ -19,6 +19,8 @@ typedef struct auth_comms_service {
   jnx_socket *comms_listener_socket;
   jnx_unsigned_int listener_family;
   jnx_int listener_port;
+  jnx_thread *listener_thread;
+  tcp_socket_listener_callback_with_context listener_callback;
 
 }auth_comms_service;
 
