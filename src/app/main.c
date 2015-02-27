@@ -79,7 +79,7 @@ int run_app(app_context_t *context) {
           printf("Handshaking complete.\nLaunching GUI.\n");
 
           /* start gui */
-
+          app_create_gui_session();
         }else {
           printf("Session could not be started.\nDid you spell your target \
               username correctly?\n");
