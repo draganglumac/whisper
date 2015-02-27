@@ -9,6 +9,7 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
+#include "../util/utils.h"
 auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   auth_comms_service *ac = malloc(sizeof(auth_comms_service));
   ac->listener_thread = NULL; 
@@ -93,6 +94,16 @@ void auth_comms_start_listener(auth_comms_service *ac) {
   ac->listener_thread = jnx_thread_create(auth_comms_listener_loop, (void*) ac);
   ac->listener_callback = auth_comms_listener_receive_handler;  
 }
+
+static int auth_comms_initiator_send_and_await_public_key(jnx_socket *s,jnx_char *hostname, jnx_char *port) {
+  printf("Authentication comms initiating public key request...\n");
+
+  jnx_uint8 *oreceipt;
+  jnx_char *msg = "STOP";
+  jnx_size msg_len = 5;
+  /* This is not the final command to send */
+  jnx_socket_tcp_send_with_receipt(s,hostname,port,msg,msg_len,&oreceipt);
+}
 void auth_comms_initiate_handshake(auth_comms_service *ac,discovery_service *ds, session *s) {
 
   ac->comms_initiator_socket = jnx_socket_tcp_create(ac->initiator_family);
@@ -100,7 +111,11 @@ void auth_comms_initiate_handshake(auth_comms_service *ac,discovery_service *ds,
   /* Retrieve our remote peer */
   peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
   JNXCHECK(remote_peer);
-  print_peer(remote_peer); 
+  print_peer(remote_peer);
+  /* Let's make the assumption the remote peer will use the listener_port */
+  auth_comms_initiator_send_and_await_public_key(ac->comms_initiator_socket,
+      remote_peer->host_address,ac->listener_port);    
+
 }
 void auth_comms_receive_handshake(auth_comms_service *ac,discovery_service *ds, session *s) {
 
