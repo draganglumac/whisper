@@ -85,7 +85,7 @@ session_state session_service_create_session(session_service *service, session *
   s->keypair = asymmetrical_generate_key(2048);  
   jnx_guid_create(&s->session_guid);
   generate_blank_guid(&s->local_peer_guid); 
-  generate_blank_guid(&s->local_peer_guid); 
+  generate_blank_guid(&s->remote_peer_guid); 
   if(session_service_does_exist(service,&s->session_guid)){
     return SESSION_STATE_EXISTS;
   }
