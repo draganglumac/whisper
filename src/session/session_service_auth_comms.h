@@ -8,6 +8,7 @@
 #ifndef SESSION_SERVICE_AUTH_COMMS_H
 #define SESSION_SERVICE_AUTH_COMMS_H
 #include "session.h"
+#include "../net/discovery.h"
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxthread.h>
 

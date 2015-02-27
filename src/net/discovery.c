@@ -231,7 +231,7 @@ static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
   ensure_listening_on_port(svc->port);
   return 0;
 }
-static void cancel_thread(jnx_thread **thr) {
+void cancel_thread(jnx_thread **thr) {
   jnx_thread *temp = *thr;
   pthread_cancel(temp->system_thread);
   pthread_join(temp->system_thread, NULL);

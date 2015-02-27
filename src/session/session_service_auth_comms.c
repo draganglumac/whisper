@@ -51,7 +51,17 @@ void auth_comms_destroy(auth_comms_service **ac) {
 static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
     jnx_size bytesread, jnx_socket *s, void *context) {
   auth_comms_service *ac = (auth_comms_service*)context;
+  
+  JNX_LOG(0,"auth_comms_listener_receive_handler raw input: [%dbytes] -%s",bytesread,payload);
 
+  char command[5];
+  memset(command, 0, 5);
+  memcpy(command, payload, 4);
+  if(0 == strcmp(command,"STOP")){
+    return -1;
+  }
+  free(payload);
+  return 0;
 }
 static void *auth_comms_listener_loop(void *data) {
   auth_comms_service *ac = (auth_comms_service*)data;
