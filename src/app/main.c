@@ -77,8 +77,7 @@ int run_app(app_context_t *context) {
           printf("Created and linked session.\n");
 
           
-          session_service_perform_handshake(context->session_serv,
-              context->auth_comms);
+          session_service_perform_handshake(s,context->auth_comms,context->discovery);
   
 
           printf("Handshaking complete.\nLaunching GUI.\n");

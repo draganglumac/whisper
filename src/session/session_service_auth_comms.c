@@ -93,6 +93,14 @@ void auth_comms_start_listener(auth_comms_service *ac) {
   ac->listener_thread = jnx_thread_create(auth_comms_listener_loop, (void*) ac);
   ac->listener_callback = auth_comms_listener_receive_handler;  
 }
-void auth_comms_stop_listener(auth_comms_service *ac) {
+void auth_comms_initiate_handshake(auth_comms_service *ac,discovery_service *ds, session *s) {
+
+  ac->comms_initiator_socket = jnx_socket_tcp_create(ac->initiator_family);
+  
+  /* Retrieve our remote peer */
+
+
+}
+void auth_comms_receive_handshake(auth_comms_service *ac,discovery_service *ds, session *s) {
 
 }

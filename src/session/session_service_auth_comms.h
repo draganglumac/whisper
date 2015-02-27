@@ -11,7 +11,6 @@
 #include "../net/discovery.h"
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxthread.h>
-
 typedef struct auth_comms_service {
   jnx_socket *comms_initiator_socket;
   jnx_unsigned_int initiator_family;
@@ -33,4 +32,7 @@ void auth_comms_start_listener(auth_comms_service *ac);
 
 void auth_comms_stop_listener(auth_comms_service *ac);
 
+void auth_comms_initiate_handshake(auth_comms_service *ac,discovery_service *ds, session *s);
+
+void auth_comms_receive_handshake(auth_comms_service *ac,discovery_service *ds, session *s);
 #endif /* !SESSION_SERVICE_AUTH_COMMS_H */
