@@ -77,7 +77,7 @@ int run_app(app_context_t *context) {
           printf("Created and linked session.\n");
 
           printf("Handshaking complete.\nLaunching GUI.\n");
-          
+
           /* start gui */
 
         }else {

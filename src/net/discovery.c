@@ -25,8 +25,8 @@
 #include <jnxc_headers/jnxlog.h>
 #include <jnxc_headers/jnxcheck.h>
 #include "discovery.h"
-#include "data/peer.h"
-#include "err/whisper_errors.h"
+#include "../data/peer.h"
+#include "../err/whisper_errors.h"
 
 typedef struct {
   jnx_socket *sock;
