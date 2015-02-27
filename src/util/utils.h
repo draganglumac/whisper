@@ -18,6 +18,7 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 #include <jnxc_headers/jnxguid.h>
+#include "../data/peer.h"
 #include <jnxc_headers/jnxlog.h>
 void print_guid(jnx_guid *g) {
   jnx_char *str;
@@ -32,5 +33,15 @@ void print_pair(jnx_guid *a, jnx_guid *b) {
   JNX_LOG(NULL,"[%s] [%s]",str,str2);
   free(str);
   free(str2);
+}
+void print_peer(peer *p) {
+  printf("----------\n");
+  jnx_char *str;
+  jnx_guid_to_string(&(*p).guid,&str);
+  printf("Peer guid => %s\n",str);
+  free(str);
+  printf("Peer host_addres => %s\n",p->host_address);
+  printf("Peer user_name => %s\n",p->user_name);
+  printf("Peer last seen => %ld\n",p->last_seen);
 }
 #endif

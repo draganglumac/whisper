@@ -98,8 +98,9 @@ void auth_comms_initiate_handshake(auth_comms_service *ac,discovery_service *ds,
   ac->comms_initiator_socket = jnx_socket_tcp_create(ac->initiator_family);
   
   /* Retrieve our remote peer */
-
-
+  peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
+  JNXCHECK(remote_peer);
+  print_peer(remote_peer); 
 }
 void auth_comms_receive_handshake(auth_comms_service *ac,discovery_service *ds, session *s) {
 
