@@ -76,6 +76,11 @@ int run_app(app_context_t *context) {
               local_peer,remote_peer);
           printf("Created and linked session.\n");
 
+          
+          session_service_perform_handshake(context->session_serv,
+              context->auth_comms);
+  
+
           printf("Handshaking complete.\nLaunching GUI.\n");
 
           /* start gui */

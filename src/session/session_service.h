@@ -52,4 +52,6 @@ session_state session_service_unlink_sessions(session_service *s,jnx_guid \
 
 jnx_int session_service_session_is_linked(session_service *,jnx_guid \
     *session_guid);
+
+void session_service_perform_handshake(session_service *ss, auth_comms_service *ac);
 #endif
