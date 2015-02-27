@@ -8,15 +8,24 @@
 #ifndef SESSION_SERVICE_AUTH_COMMS_H
 #define SESSION_SERVICE_AUTH_COMMS_H
 #include "session.h"
+#include "../net/discovery.h"
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxthread.h>
 
 typedef struct auth_comms_service {
   jnx_socket *comms_initiator_socket;
+  jnx_unsigned_int initiator_family;
+  jnx_char *initiator_port;
+
   jnx_socket *comms_listener_socket;
+  jnx_unsigned_int listener_family;
+  jnx_char *listener_port;
+  jnx_thread *listener_thread;
+  tcp_socket_listener_callback_with_context listener_callback;
+
 }auth_comms_service;
 
-auth_comms_service *auth_comms_create();
+auth_comms_service *auth_comms_create(jnx_hashmap *config);
 
 void auth_comms_destroy(auth_comms_service **ac);
 

@@ -181,10 +181,11 @@ session_state session_service_unlink_sessions(session_service *s,\
   if(e != SESSION_STATE_OKAY) {
     return e;
   }
-  jnx_guid g;
+  jnx_guid g,h;
   generate_blank_guid(&g);
+  generate_blank_guid(&h);
   osession->local_peer_guid = g;
-  osession->remote_peer_guid = g;
+  osession->remote_peer_guid = h;
   JNXCHECK(is_guid_blank(&osession->local_peer_guid));
   JNXCHECK(is_guid_blank(&osession->remote_peer_guid));
   return SESSION_STATE_OKAY;
