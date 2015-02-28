@@ -40,7 +40,7 @@ int handshake_did_receive_receiver_request(jnx_uint8 *obuffer,
 }
 int handshake_initiator_command_generate(session *ses,\
     handshake_initiator_state state,\
-    jnx_uint8 *shared_secret,
+    jnx_uint8 *shared_secret,jnx_size secret_len,
     jnx_uint8 **onetbuffer) {
 
   jnx_char *local_guid_str;
@@ -66,6 +66,9 @@ int handshake_initiator_command_generate(session *ses,\
       jnx_size slen = strlen(shared_secret);
       auth_parcel.shared_secret = malloc(sizeof(char) * slen + 1);
       memcpy(auth_parcel.shared_secret,shared_secret,slen + 1);
+      auth_parcel.shared_secret_len = secret_len;
+      printf("Setting shared secret len in proto to %d\n",
+          auth_parcel.shared_secret_len);
       break;
   }
 
@@ -149,13 +152,13 @@ int handshake_receiver_command_generate(session *ses, \
 int handshake_generate_public_key_request(session *ses,\
     jnx_uint8 **onetbuffer) {
   return handshake_initiator_command_generate(ses,
-      CHALLENGE_PUBLIC_KEY,NULL,onetbuffer);
+      CHALLENGE_PUBLIC_KEY,NULL,0,onetbuffer);
 }
 int handshake_generate_finish_request(session *ses,\
-    jnx_uint8 *shared_secret,
+    jnx_uint8 *shared_secret,jnx_size len,
     jnx_uint8 **onetbuffer) {
   return handshake_initiator_command_generate(ses,
-      CHALLENGE_FINISH,shared_secret,onetbuffer);
+      CHALLENGE_FINISH,shared_secret,len,onetbuffer);
 }
 int handshake_generate_public_key_response(session *ses,\
     jnx_uint8 **onetbuffer) {

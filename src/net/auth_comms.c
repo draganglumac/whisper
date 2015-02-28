@@ -74,19 +74,39 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       printf("About to generate handshake.\n");
       int bytes = handshake_generate_public_key_response(osession,
           &onetbuffer);
-      printf("About to write reply.\n");
       write(connected_socket,onetbuffer,bytes);
       free(onetbuffer);    
       return 0;
     }else {
        printf("Did receive encrypted shared secret.\n"); 
+      session *osession;
+      jnx_guid g;
+      jnx_guid_from_string(a->session_guid,&g);
+      session_service_fetch_session(t->ss,
+          &g,&osession);
 
+       jnx_uint8 *onetbuffer;
+       int bytes = handshake_generate_finish_response(osession,
+           &onetbuffer);
+      write(connected_socket,onetbuffer,bytes);
+      free(onetbuffer);    
 
-       write(connected_socket,"Got it",7);
+      /* The last thing to do is to decrypt the shared secret and store it in
+       * the session */
+  
+      printf("Received secret length: %d\n",a->shared_secret_len);
+      jnx_size olen;
+    //  jnx_char *decrypted_shared_secret = 
+      //  asymmetrical_decrypt(osession->keypair,a->shared_secret,
+        //    strlen(a->shared_secret),
+        //  &olen);
+
+      //DEBUG ONLY
+    //  printf("DEBUG!!! -> Peer B says the shared secret is %s\n",
+      //    decrypted_shared_secret);
+      //
     }
   } 
-
-
 
   char command[5];
   bzero(command,5);
@@ -148,22 +168,30 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   jnx_uint8 *secret;
   jnx_size s_len = generate_shared_secret(&secret);
 
+  session_add_shared_secret(s,secret);
   /* wrap this secret in the public key of B */
   jnx_size encrypted_secret_len;
   jnx_char *encrypted_secret = asymmetrical_encrypt(s->keypair,
       secret, &encrypted_secret_len);
+  printf("Encrypted secret length: %d\n",encrypted_secret_len);
 
   jnx_uint8 *fbuffer;
-  bytes_read = handshake_generate_finish_request(s,encrypted_secret,&fbuffer);
+  bytes_read = handshake_generate_finish_request(s,encrypted_secret,
+      encrypted_secret_len,&fbuffer);
 
   jnx_size replysizetwo;
   reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
       ac->listener_family,
       fbuffer,bytes_read,&replysizetwo);
 
-  printf("Finish reponse: %s\n",reply);
-
-
+  void *finish_object;
+  if(handshake_did_receive_receiver_request(reply,replysizetwo,&finish_object)){
+    AuthReceiver *r = (AuthReceiver *)object;
+    if(r->is_receiving_finish && !r->is_receiving_public_key) {
+  
+      printf("Handshake complete.\n");
+    }
+  }
   free(encrypted_secret);
   free(secret);
   free(obuffer);
