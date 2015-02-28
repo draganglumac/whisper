@@ -142,8 +142,7 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
   return SESSION_STATE_NOT_FOUND;
 }
 static void destroy_session(session *s) {
-  asymmetrical_destroy_key(s->keypair);
-  free(s);
+  printf("Destroying session not implemented!\n");
 }
 session_state session_service_destroy_session(session_service *service,\
     jnx_guid *g) {

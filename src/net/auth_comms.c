@@ -96,7 +96,6 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       /* The last thing to do is to decrypt the shared secret and store it in
        * the session */
   
-      printf("receiver len : %d\n",strlen(a->shared_secret));
       jnx_size olen;
  
       jnx_size decoded_len;
@@ -112,7 +111,9 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
 
       //DEBUG ONLY
       printf("DEBUG!!! -> Peer B says the shared secret is %s\n", decrypted_shared_secret);
+      session_add_shared_secret(osession,decrypted_shared_secret);
       //
+      jnx_encoder_destroy(&encoder);
     }
   } 
 
@@ -189,8 +190,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
       encrypted_secret,encrypted_secret_len,
       &encoded_len);
 
-  printf("Encrypted secret length: %d\n",encoded_len);
-
+  jnx_encoder_destroy(&encoder);
   jnx_uint8 *fbuffer;
   bytes_read = handshake_generate_finish_request(s,encoded_secret,encoded_len,&fbuffer);
 
