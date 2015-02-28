@@ -87,7 +87,8 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
     
     printf("Recieved incoming handshake parcel.\n");
     printf("Initiator guid = %s\n",incoming_parcel->initiator_guid);
-    printf("Flags: requesting_public_key=%d requesting_finish=%d\n",incoming_parcel->is_requesting_public_key,
+    printf("Flags: requesting_public_key=%d requesting_finish=%d\n", \
+        incoming_parcel->is_requesting_public_key,
         incoming_parcel->is_requesting_finish);
     auth_initiator__free_unpacked(incoming_parcel,NULL);
   }
@@ -105,7 +106,7 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
 }
 static void *auth_comms_listener_loop(void *data) {
   auth_comms_service *ac = (auth_comms_service*)data;
-  ac->comms_listener_socket = jnx_socket_udp_create(ac->listener_family); 
+  ac->comms_listener_socket = TRANSPORT_CREATE(ac->listener_family); 
   TRANSPORT_LISTEN(ac->comms_listener_socket,ac->listener_port,
       100,ac->listener_callback,ac); 
 }
