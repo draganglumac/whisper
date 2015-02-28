@@ -16,6 +16,12 @@
 
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
+
+#define TRANSPORT_CREATE jnx_socket_udp_create
+#define TRANSPORT_LISTEN jnx_socket_udp_listen_with_context
+#define TRANSPORT_SEND jnx_socket_udp_send
+#define TRANSPORT_DESTROY jnx_socket_destroy
+
 auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   auth_comms_service *ac = malloc(sizeof(auth_comms_service));
   ac->listener_thread = NULL; 
@@ -28,7 +34,7 @@ auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   jnx_char *list_port = "6362";
   jnx_char *conf_list_port = jnx_hash_get(config,"AUTH_COMMS_LISTENER_PORT");
   if(conf_list_port != NULL) {
-    JNX_LOG(0,"Using user defined port for listener socket [%d]",list_port);
+    JNX_LOG(0,"Using user defined port for listener socket [%s]",list_port);
     list_port = conf_list_port;
   }
   ac->listener_port = list_port;
@@ -47,9 +53,9 @@ static int stop_listening(auth_comms_service *ac) {
 }
 jnx_int32 auth_comms_send_stop_packet(auth_comms_service *ac) {
   char *tmp = "STOP";
-  jnx_socket *temp = jnx_socket_tcp_create(ac->listener_family);
-  jnx_socket_tcp_send(temp,"127.0.0.1",ac->listener_port, (jnx_uint8 *) tmp, 5);
-  jnx_socket_destroy(&temp);
+  jnx_socket *temp = TRANSPORT_CREATE(ac->listener_family);
+  TRANSPORT_SEND(temp,"127.0.0.1",ac->listener_port, (jnx_uint8 *) tmp, 5);
+  TRANSPORT_DESTROY(&temp);
   return 0;
 }
 void auth_comms_destroy(auth_comms_service **ac) {
@@ -65,9 +71,6 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
 
   JNX_LOG(0,"auth_comms_listener_receive_handler raw input: [%dbytes] -%s",bytesread,payload);
 
-
-
-
   char command[5];
   memset(command, 0, 5);
   memcpy(command, payload, 4);
@@ -80,8 +83,8 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
 }
 static void *auth_comms_listener_loop(void *data) {
   auth_comms_service *ac = (auth_comms_service*)data;
-  ac->comms_listener_socket = jnx_socket_tcp_create(ac->listener_family); 
-  jnx_socket_tcp_listen_with_context(ac->comms_listener_socket,ac->listener_port,
+  ac->comms_listener_socket = jnx_socket_udp_create(ac->listener_family); 
+  TRANSPORT_LISTEN(ac->comms_listener_socket,ac->listener_port,
       100,ac->listener_callback,ac); 
 }
 void auth_comms_start_listener(auth_comms_service *ac) {
@@ -134,13 +137,13 @@ static int auth_comms_initiator_send_and_await_challenge(jnx_socket *s,\
       auth_parcel.is_requesting_public_key,auth_parcel.is_requesting_finish);
   free(auth_parcel.initiator_guid);
   free(auth_parcel.initiator_public_key);
-  jnx_socket_tcp_send_with_receipt(s,hostname,port,obuffer,parcel_len,&oreceipt);
-
+  
+  TRANSPORT_SEND(s,hostname,port,obuffer,parcel_len);
 }
 void auth_comms_initiate_handshake(auth_comms_service *ac,\
     discovery_service *ds, session *s) {
 
-  ac->comms_initiator_socket = jnx_socket_tcp_create(ac->listener_family);
+  ac->comms_initiator_socket = TRANSPORT_CREATE(ac->listener_family);
   /* Retrieve our remote peer */
   peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
   JNXCHECK(remote_peer);
