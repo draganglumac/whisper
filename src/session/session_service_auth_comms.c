@@ -110,8 +110,6 @@ static void *auth_comms_listener_loop(void *data) {
       100,ac->listener_callback,ac); 
 }
 void auth_comms_start_listener(auth_comms_service *ac) {
-  JNXCHECK(ac->comms_listener_socket != NULL);
-  JNXCHECK(ac->listener_thread == NULL);
   ac->listener_thread = jnx_thread_create(auth_comms_listener_loop, (void*) ac);
   ac->listener_callback = auth_comms_listener_receive_handler;  
 }
