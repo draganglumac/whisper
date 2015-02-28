@@ -56,6 +56,9 @@ int code_for_command(char *command) {
 int app_code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) {
   *oparam = NULL;
   char *raw_cmd = strtok(command," \n\r\t");
+  if(!raw_cmd) {
+    return CMD_HELP;
+  }
   char *extra_params = strtok(NULL," \n\r\t");
   if(is_equivalent(raw_cmd,"session")) {
     if(!extra_params) {
@@ -128,12 +131,12 @@ extern int peer_update_interval;
 
 static void set_up_discovery_service(app_context_t *context) {
   jnx_hashmap *config = context->config;
-	char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
-	if (user_name == NULL) {
-		JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
-		exit(1);
-	}
-	peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
+  char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
+  if (user_name == NULL) {
+    JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
+    exit(1);
+  }
+  peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
 
   int port = DEFAULT_BROADCAST_PORT;
   char *disc_port = (char *) jnx_hash_get(config, "DISCOVERY_PORT");
