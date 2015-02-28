@@ -5,6 +5,7 @@
  * Distributed under terms of the MIT license.
  */
 #include <jnxc_headers/jnxlog.h>
+#include <jnxc_headers/jnxencoder.h>
 #include "auth_comms.h"
 #include <ifaddrs.h>
 #include <arpa/inet.h>
@@ -77,7 +78,8 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       write(connected_socket,onetbuffer,bytes);
       free(onetbuffer);    
       return 0;
-    }else {
+    }
+    if(!a->is_requesting_public_key && a->is_requesting_finish){
        printf("Did receive encrypted shared secret.\n"); 
       session *osession;
       jnx_guid g;
@@ -94,16 +96,22 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       /* The last thing to do is to decrypt the shared secret and store it in
        * the session */
   
-      printf("Received secret length: %d\n",a->shared_secret_len);
+      printf("receiver len : %d\n",strlen(a->shared_secret));
       jnx_size olen;
-    //  jnx_char *decrypted_shared_secret = 
-      //  asymmetrical_decrypt(osession->keypair,a->shared_secret,
-        //    strlen(a->shared_secret),
-        //  &olen);
+ 
+      jnx_size decoded_len;
+      jnx_encoder *encoder = jnx_encoder_create();
+      jnx_uint8 *decoded_secret = 
+        jnx_encoder_b64_decode(encoder,a->shared_secret,
+            strlen(a->shared_secret),&decoded_len);
+      
+      jnx_char *decrypted_shared_secret = 
+        asymmetrical_decrypt(osession->keypair,decoded_secret,
+            decoded_len,
+          &olen);
 
       //DEBUG ONLY
-    //  printf("DEBUG!!! -> Peer B says the shared secret is %s\n",
-      //    decrypted_shared_secret);
+      printf("DEBUG!!! -> Peer B says the shared secret is %s\n", decrypted_shared_secret);
       //
     }
   } 
@@ -173,11 +181,18 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   jnx_size encrypted_secret_len;
   jnx_char *encrypted_secret = asymmetrical_encrypt(s->keypair,
       secret, &encrypted_secret_len);
-  printf("Encrypted secret length: %d\n",encrypted_secret_len);
+
+  /* the shared secret needs to encoded */
+  jnx_size encoded_len;
+  jnx_encoder *encoder = jnx_encoder_create();
+  jnx_uint8 *encoded_secret = jnx_encoder_b64_encode(encoder,
+      encrypted_secret,encrypted_secret_len,
+      &encoded_len);
+
+  printf("Encrypted secret length: %d\n",encoded_len);
 
   jnx_uint8 *fbuffer;
-  bytes_read = handshake_generate_finish_request(s,encrypted_secret,
-      encrypted_secret_len,&fbuffer);
+  bytes_read = handshake_generate_finish_request(s,encoded_secret,encoded_len,&fbuffer);
 
   jnx_size replysizetwo;
   reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
