@@ -50,3 +50,12 @@ usr/
 ```
 
 Tests for each module are included
+
+
+Flags
+======
+
+```
+cmake . -DAUTH_COMMS_TCP
+```
+This will use TCP auth comms transport

@@ -17,11 +17,17 @@
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
 
+#ifndef AUTH_COMMS_TCP
 #define TRANSPORT_CREATE jnx_socket_udp_create
 #define TRANSPORT_LISTEN jnx_socket_udp_listen_with_context
 #define TRANSPORT_SEND jnx_socket_udp_send
 #define TRANSPORT_DESTROY jnx_socket_destroy
-
+#else 
+#define TRANSPORT_CREATE jnx_socket_tcp_create
+#define TRANSPORT_LISTEN jnx_socket_tcp_listen_with_context
+#define TRANSPORT_SEND jnx_socket_tcp_send
+#define TRANSPORT_DESTROY jnx_socket_destroy
+#endif
 auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   auth_comms_service *ac = malloc(sizeof(auth_comms_service));
   ac->listener_thread = NULL; 
@@ -121,14 +127,14 @@ static int auth_comms_initiator_send_and_await_challenge(jnx_socket *s,\
   }
   memcpy(auth_parcel.initiator_guid,local_guid_str,len); 
   free(local_guid_str);
-  
+
   jnx_char *pub_key_str = asymmetrical_key_to_string(ses->keypair,PUBLIC);
   jnx_size pub_len = strlen(pub_key_str);
   auth_parcel.initiator_public_key = malloc(sizeof(char*) * pub_len);
-  
+
   memcpy(auth_parcel.initiator_public_key,pub_key_str,pub_len);
   free(pub_key_str);
-  
+
   jnx_int parcel_len = auth_initiator__get_packed_size(&auth_parcel);
   jnx_char *obuffer = malloc(parcel_len);
   auth_initiator__pack(&auth_parcel,obuffer);
@@ -137,7 +143,7 @@ static int auth_comms_initiator_send_and_await_challenge(jnx_socket *s,\
       auth_parcel.is_requesting_public_key,auth_parcel.is_requesting_finish);
   free(auth_parcel.initiator_guid);
   free(auth_parcel.initiator_public_key);
-  
+
   TRANSPORT_SEND(s,hostname,port,obuffer,parcel_len);
 }
 void auth_comms_initiate_handshake(auth_comms_service *ac,\
