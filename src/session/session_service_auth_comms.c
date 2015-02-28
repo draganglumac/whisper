@@ -82,8 +82,16 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
     jnx_size bytesread, jnx_socket *s, void *context) {
   auth_comms_service *ac = (auth_comms_service*)context;
 
-  JNX_LOG(0,"auth_comms_listener_receive_handler raw input: [%dbytes] -%s",bytesread,payload);
-
+  AuthInitiator *incoming_parcel = auth_initiator__unpack(NULL,bytesread,payload);
+  if(incoming_parcel != NULL) {
+    
+    printf("Recieved incoming handshake parcel.\n");
+    printf("Initiator guid = %s\n",incoming_parcel->initiator_guid);
+    printf("Flags: requesting_public_key=%d requesting_finish=%d\n",incoming_parcel->is_requesting_public_key,
+        incoming_parcel->is_requesting_finish);
+    auth_initiator__free_unpacked(incoming_parcel,NULL);
+  }
+  /* Listener exit strategy */
   char command[5];
   memset(command, 0, 5);
   memcpy(command, payload, 4);
@@ -91,6 +99,7 @@ static jnx_int32 auth_comms_listener_receive_handler(jnx_uint8 *payload,\
     JNX_LOG(0,"Terminating auth comms listener");
     return -1;
   }
+  /*                        */
   free(payload);
   return 0;
 }
