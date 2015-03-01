@@ -69,25 +69,6 @@ static int connect_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) 
   freeaddrinfo(res);
   return s->socket;
 }
-typedef struct {
-  jnx_int sockfd;
-  session *s;
-}secure_comms_dto;
-void *comms_listener_bootrap(void *args) {
-  secure_comms_dto *d = (secure_comms_dto*)args;
-
-  jnx_char buffer[1024];
-  while(d->s->is_connected) {
-    memset(buffer,0,1024);
-    jnx_int bytes_read = read(d->sockfd,buffer,1024);
-    if(bytes_read > 0) {
-      jnx_size len = strlen(buffer);
-      jnx_char *decrypted = symmetrical_decrypt(d->s->shared_secret,buffer,len);
-      printf("Decrypted message => %s\n",decrypted);
-    }
-  }
-  free(d);
-}
 void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
   JNXCHECK(s->is_connected);
@@ -124,22 +105,6 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   JNXCHECK(sockfd != -1);
   // At this point both the initiator and receiver are equal and have fd's relevent to them 
   //  that are connected *
-
-  secure_comms_dto *dto = malloc(sizeof(secure_comms_dto));
-  dto->sockfd = sockfd;
-  dto->s = s;
-  jnx_thread_create_disposable(comms_listener_bootrap,(void*)dto);
-  sleep(3);
-  char buffer[256];
-  bzero(buffer,256);
-  strcpy(buffer,"Hello from ");
-  strcat(buffer,local_peer->host_address);
-
-  jnx_size len = strlen(buffer);
-  jnx_char *encrypted_string = symmetrical_encrypt(s->shared_secret,buffer,len); 
-
-  write(s->secure_comms_fd,encrypted_string,len);
-  free(encrypted_string);
 } 
 void secure_comms_receiver_start(discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
