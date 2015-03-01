@@ -29,22 +29,19 @@ auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   jnx_unsigned_int list_family = AF_INET;
   jnx_char *conf_list_family = jnx_hash_get(config,"AUTH_COMMS_LISTENER_FAMILY");
   if(conf_list_family != NULL) {
-    JNX_LOG(0,"Using user definate address family for listener socket");
     list_family = atoi(conf_list_family);
   }
   jnx_char *list_port = "6362";
   jnx_char *conf_list_port = jnx_hash_get(config,"AUTH_COMMS_LISTENER_PORT");
   if(conf_list_port != NULL) {
-    JNX_LOG(0,"Using user defined port for listener socket [%s]",list_port);
     list_port = conf_list_port;
   }
   ac->listener_port = list_port;
   ac->listener_family = list_family;
   
-  JNX_LOG(0,"\nListener port: %s\nListener family: %d ",\
-      ac->listener_port,ac->listener_family);
+  JNXCHECK(ac->listener_family == AF_INET || ac->listener_family == AF_INET6);
+
   auth_comms_start_listener(ac);
-  JNX_LOG(0,"Started auth comms listener thread");
 
   return ac;
 }
