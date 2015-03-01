@@ -17,7 +17,7 @@
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
 
-#ifndef AUTH_COMMS_TCP
+#ifdef AUTH_COMMS_UDP
 #define TRANSPORT_CREATE jnx_socket_udp_create
 #define TRANSPORT_LISTEN jnx_socket_udp_listen_with_context
 #define TRANSPORT_SEND jnx_socket_udp_send
