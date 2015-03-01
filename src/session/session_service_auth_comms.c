@@ -41,13 +41,6 @@ auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   ac->listener_port = list_port;
   ac->listener_family = list_family;
   
-#ifndef AUTH_COMMS_TCP
-  printf("Using UDP\n");
-#else
-  printf("Using TCP\n");
-#endif
-
-
   JNX_LOG(0,"\nListener port: %s\nListener family: %d ",\
       ac->listener_port,ac->listener_family);
   auth_comms_start_listener(ac);
