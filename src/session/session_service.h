@@ -21,7 +21,7 @@
 #include <jnxc_headers/jnxlist.h>
 #include <jnxc_headers/jnxcheck.h>
 #include "session.h"
-#include "session_service_auth_comms.h"
+#include "handshake_control.h"
 #include "../data/peer.h"
 
 typedef struct session_service {
@@ -53,5 +53,4 @@ session_state session_service_unlink_sessions(session_service *s,jnx_guid \
 jnx_int session_service_session_is_linked(session_service *,jnx_guid \
     *session_guid);
 
-void session_service_perform_handshake(session *s, auth_comms_service *ac, discovery_service *ds);
 #endif

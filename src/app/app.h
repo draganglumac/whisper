@@ -22,8 +22,8 @@
 #include <jnxc_headers/jnxhash.h>
 #include <jnxc_headers/jnxvector.h>
 #include "../net/discovery.h"
+#include "../net/auth_comms.h"
 #include "../session/session_service.h"
-#include "../session/session_service_auth_comms.h"
 #define CMDLEN 64
 
 #define CMD_SESSION 1

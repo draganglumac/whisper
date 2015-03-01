@@ -206,6 +206,3 @@ jnx_int session_service_session_is_linked(session_service *s,\
   }
   return 1;
 }
-void session_service_perform_handshake(session *s, auth_comms_service *ac, discovery_service *ds) {
-  auth_comms_initiate_handshake(ac,ds,s);
-}

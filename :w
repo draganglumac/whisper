@@ -188,10 +188,8 @@ void set_up_session_service(app_context_t *context){
   context->session_serv = session_service_create();
 }
 void set_up_auth_comms(app_context_t *context) {
-  context->auth_comms = auth_comms_create();
-  context->auth_comms->listener_port = "9991";
-  context->auth_comms->listener_family = AF_INET;
-  context->auth_comms->listener_socket = jnx_socket_tcp_create(AF_INET);
+  context->auth_comms = auth_comms_create(context->config);
+
 
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
