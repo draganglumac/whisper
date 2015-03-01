@@ -17,17 +17,12 @@
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
 
-#ifdef AUTH_COMMS_UDP
-#define TRANSPORT_CREATE jnx_socket_udp_create
-#define TRANSPORT_LISTEN jnx_socket_udp_listen_with_context
-#define TRANSPORT_SEND jnx_socket_udp_send
-#define TRANSPORT_DESTROY jnx_socket_destroy
-#else 
 #define TRANSPORT_CREATE jnx_socket_tcp_create
 #define TRANSPORT_LISTEN jnx_socket_tcp_listen_with_context
 #define TRANSPORT_SEND jnx_socket_tcp_send
 #define TRANSPORT_DESTROY jnx_socket_destroy
-#endif
+
+
 auth_comms_service *auth_comms_create(jnx_hashmap *config) {
   auth_comms_service *ac = malloc(sizeof(auth_comms_service));
   ac->listener_thread = NULL; 
