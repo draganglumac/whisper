@@ -53,8 +53,6 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
 
 	peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
 
-	jnx_socket *sender = jnx_socket_tcp_create(ac->listener_family);
-
 	jnx_uint8 *obuffer;
 	jnx_int bytes_read = handshake_generate_public_key_request(s,&obuffer);
 
