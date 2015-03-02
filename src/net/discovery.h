@@ -22,8 +22,8 @@
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxthread.h>
 #include <time.h>
-#include "data/peer.h"
-#include "data/peerstore.h"
+#include "../data/peer.h"
+#include "../data/peerstore.h"
 
 typedef struct {
   int port;
@@ -61,4 +61,5 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
 int discovery_service_stop(discovery_service *svc);
 time_t get_last_update_time(discovery_service *svc);
 
+void cancel_thread(jnx_thread **thr);
 #endif

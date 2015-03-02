@@ -93,6 +93,7 @@ peer *peerstore_lookup_by_username(peerstore *ps, char *username) {
   jnx_thread_lock(ps->store_lock);
   char *guid_str = (char *) jnx_hash_get(NAMESTORE(ps->namestore), username);
   if (guid_str == NULL) {
+    jnx_thread_unlock(ps->store_lock);
     return NULL;
   }
   peer *p = (peer *) jnx_hash_get(PEERSTORE(ps->peers), guid_str);

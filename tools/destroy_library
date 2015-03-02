@@ -1,0 +1,4 @@
+sudo rm -rf /usr/lib/libjnc*
+sudo rm -rf /usr/include/jnxc_headers/
+sudo rm -rf /usr/local/lib/libjnc*
+sudo rm -rf /usr/local/include/jnxc_headers/

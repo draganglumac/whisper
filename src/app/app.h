@@ -22,7 +22,8 @@
 #include <jnxc_headers/jnxhash.h>
 #include <jnxc_headers/jnxvector.h>
 #include "../net/discovery.h"
-
+#include "../net/auth_comms.h"
+#include "../session/session_service.h"
 #define CMDLEN 64
 
 #define CMD_SESSION 1
@@ -31,7 +32,10 @@
 #define CMD_QUIT    4
 
 typedef struct {
+  jnx_hashmap *config;
   discovery_service *discovery;
+  session_service *session_serv;
+  auth_comms_service *auth_comms;
 } app_context_t;
 
 app_context_t *app_create_context(jnx_hashmap *config);
@@ -45,5 +49,6 @@ int app_code_for_command_with_param(char *command,\
     jnx_size cmd_len, char **oparam);
 void app_create_gui_session();
 void app_list_active_peers(app_context_t *context);
-
+peer *app_peer_from_input(app_context_t *context,char *param);
+void app_initiate_handshake(app_context_t *context,session *s);
 #endif // __APP_H__

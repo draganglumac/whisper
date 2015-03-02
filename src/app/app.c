@@ -18,10 +18,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
 #include "app.h"
 #include "../gui/gui.h"
-
+#include "../net/auth_comms.h"
 void app_create_gui_session(){
   context_t *c = context_create();
   pthread_t read_thread;
@@ -56,8 +55,11 @@ int code_for_command(char *command) {
 }
 int app_code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) {
   *oparam = NULL;
-  char *raw_cmd = strtok(command," ");
-  char *extra_params = strtok(NULL," ");
+  char *raw_cmd = strtok(command," \n\r\t");
+  if(!raw_cmd) {
+    return CMD_HELP;
+  }
+  char *extra_params = strtok(NULL," \n\r\t");
   if(is_equivalent(raw_cmd,"session")) {
     if(!extra_params) {
       printf("Requires name of peer as argument.\n");
@@ -127,13 +129,14 @@ void app_quit_message() {
 
 extern int peer_update_interval;
 
-static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context) {
-	char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
-	if (user_name == NULL) {
-		JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
-		exit(1);
-	}
-	peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
+static void set_up_discovery_service(app_context_t *context) {
+  jnx_hashmap *config = context->config;
+  char *user_name = (char *) jnx_hash_get(config, "USER_NAME");
+  if (user_name == NULL) {
+    JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
+    exit(1);
+  }
+  peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
 
   int port = DEFAULT_BROADCAST_PORT;
   char *disc_port = (char *) jnx_hash_get(config, "DISCOVERY_PORT");
@@ -163,13 +166,52 @@ static void set_up_discovery_service(jnx_hashmap *config, app_context_t *context
     }
   }
 }
+int app_is_input_guid_size(char *input) {
+  if((strlen(input) / 2) == 16) {
+    return 1;
+  }
+  return 0;
+}
+peer *app_peer_from_input(app_context_t *context, char *param) {
+  if(app_is_input_guid_size(param)) {
+    jnx_guid g;
+    jnx_guid_from_string(param,&g);
+    peer *p = peerstore_lookup(context->discovery->peers,&g);
+    return p;
+  }else {
+    peer *p = peerstore_lookup_by_username(context->discovery->peers,param);
+    return p;
+  }
+  return NULL;
+}
+void app_initiate_handshake(app_context_t *context,session *s) {
+
+  auth_comms_initiator_start(context->auth_comms,context->discovery,
+    s);
+
+}
+void set_up_session_service(app_context_t *context){
+  context->session_serv = session_service_create();
+}
+void set_up_auth_comms(app_context_t *context) {
+  context->auth_comms = auth_comms_create();
+  context->auth_comms->listener_port = "9991";
+  context->auth_comms->listener_family = AF_INET;
+  context->auth_comms->listener_socket = jnx_socket_tcp_create(AF_INET);
+  auth_comms_listener_start(context->auth_comms,context->discovery);
+}
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));
-  set_up_discovery_service(config, context);
+  context->config = config;
+  set_up_discovery_service(context);
+  set_up_session_service(context);
+  set_up_auth_comms(context);
   return context;
 }
 void app_destroy_context(app_context_t **context) {
   discovery_service_cleanup(&(*context)->discovery);
+  session_service_destroy(&(*context)->session_serv);
+  auth_comms_destroy(&(*context)->auth_comms);
   free(*context);
   *context = NULL;
 }
