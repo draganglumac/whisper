@@ -13,7 +13,7 @@
 #include "../util/utils.h"
 #include "../session/handshake_control.h"
 
-#define CHALLENGE_REQUEST_PUBL IC_KEY 1
+#define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
 
 /* Listener Thread */
@@ -32,18 +32,26 @@ static void send_stop_packet(auth_comms_service *ac) {
 static jnx_int32 listener_callback(jnx_uint8 *payload,
     jnx_size bytes_read, jnx_socket *s) {
 
-  printf("Read data on auth comms\n");
+  handshake_initiator_state ostate;
+  if(handshake_did_receive_initiator_request(payload,bytes_read,&ostate)) {
+    switch(ostate) {
+      case CHALLENGE_PUBLIC_KEY:
 
-  
+        break;
+      case CHALLENGE_FINISH:
+
+        break;
+    } 
+  } 
+
   char command[5];
-  memset(command,0,5);
+  bzero(command,5);
   memcpy(command,payload,4);
   if(strcmp(command,"STOP") == 0) {
     printf("Stopping auth comms listener...\n");
     return -1;
   }
 
-  free(payload);
   return 0;
 }
 static void *listener_bootstrap(void *args) {

@@ -14,11 +14,16 @@
 #include "auth_initiator.pb-c.h"
 #include "auth_receiver.pb-c.h"
 
-#define CHALLENGE_REQUEST_PUBLIC_KEY 1
-#define CHALLENGE_REQUEST_FINISH 0
 
+int handshake_did_receive_initiator_request(jnx_uint8 *obuffer,
+    jnx_size bytes_read,
+    handshake_initiator_state *ostate) {
+  ostate = CHALLENGE_FAIL;
+
+  return 0;
+}
 int handshake_initiator_command_generate(session *ses,\
-    jnx_int is_initial_challenge,\
+    handshake_initiator_state state,\
     jnx_uint8 **onetbuffer) {
 
   jnx_char *local_guid_str;
@@ -27,14 +32,17 @@ int handshake_initiator_command_generate(session *ses,\
 
   AuthInitiator auth_parcel = AUTH_INITIATOR__INIT;
   auth_parcel.initiator_guid = malloc(sizeof(char) * len);
-  if(is_initial_challenge) {
-    printf("Generating initial challenge flags.\n");
-    auth_parcel.is_requesting_public_key = 1;
-    auth_parcel.is_requesting_finish = 0;
-  }else {
-    printf("Generating finish request flags.\n");
-    auth_parcel.is_requesting_public_key = 0;
-    auth_parcel.is_requesting_finish = 1;
+  switch(state) {
+    case CHALLENGE_PUBLIC_KEY:
+      printf("Generating initial challenge flags.\n");
+      auth_parcel.is_requesting_public_key = 1;
+      auth_parcel.is_requesting_finish = 0;
+      break;
+    case CHALLENGE_FINISH:
+      printf("Generating finish request flags.\n");
+      auth_parcel.is_requesting_public_key = 0;
+      auth_parcel.is_requesting_finish = 1;
+      break;
   }
   memcpy(auth_parcel.initiator_guid,local_guid_str,len); 
   free(local_guid_str);
@@ -58,9 +66,9 @@ int handshake_initiator_command_generate(session *ses,\
 }
 int handshake_generate_public_key_request(session *ses,\
     jnx_uint8 **onetbuffer) {
-  return handshake_initiator_command_generate(ses,CHALLENGE_REQUEST_PUBLIC_KEY,onetbuffer);
+  return handshake_initiator_command_generate(ses,CHALLENGE_PUBLIC_KEY,onetbuffer);
 }
 int handshake_generate_finish_request(session *ses,\
     jnx_uint8 **onetbuffer) { 
-  return handshake_initiator_command_generate(ses,CHALLENGE_REQUEST_FINISH,onetbuffer);
+  return handshake_initiator_command_generate(ses,CHALLENGE_FINISH,onetbuffer);
 }

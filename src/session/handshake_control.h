@@ -12,8 +12,18 @@
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxthread.h>
 
+typedef enum {
+  CHALLENGE_FAIL,
+  CHALLENGE_PUBLIC_KEY,
+  CHALLENGE_FINISH
+}handshake_initiator_state;
+
+int handshake_did_receive_initiator_request(jnx_uint8 *obuffer,
+    jnx_size bytes_read,
+    handshake_initiator_state *ostate);
+
 int handshake_initiator_command_generate(session *ses,\
-    jnx_int is_initial_challenge, jnx_uint8 **onetbuffer);
+    handshake_initiator_state state, jnx_uint8 **onetbuffer);
 
 int handshake_generate_public_key_request(session *ses,\
     jnx_uint8 **onetbuffer);
