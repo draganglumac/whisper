@@ -56,7 +56,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
 	jnx_socket *sender = jnx_socket_tcp_create(ac->listener_family);
 
 	jnx_uint8 *obuffer;
-	jnx_int bytes_read = handshake_generate_finish_request(s,&obuffer);
+	jnx_int bytes_read = handshake_generate_public_key_request(s,&obuffer);
 
 	printf("Generated initial handshake...[%d/bytes]\n",bytes_read);
 
