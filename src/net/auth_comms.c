@@ -32,18 +32,13 @@ static void send_stop_packet(auth_comms_service *ac) {
 static jnx_int32 listener_callback(jnx_uint8 *payload,
     jnx_size bytes_read, jnx_socket *s) {
 
-  handshake_initiator_state ostate;
-  if(handshake_did_receive_initiator_request(payload,bytes_read,&ostate)) {
-    switch(ostate) {
-      case CHALLENGE_PUBLIC_KEY:
+  void *object;
+  if(handshake_did_receive_initiator_request(payload,bytes_read,&object)) {
+    
 
-        break;
-      case CHALLENGE_FINISH:
-
-        break;
-    } 
+    return 0;
   } 
-
+  
   char command[5];
   bzero(command,5);
   memcpy(command,payload,4);

@@ -19,8 +19,7 @@ typedef enum {
 }handshake_initiator_state;
 
 int handshake_did_receive_initiator_request(jnx_uint8 *obuffer,
-    jnx_size bytes_read,
-    handshake_initiator_state *ostate);
+    jnx_size bytes_read,void **oobject);
 
 int handshake_initiator_command_generate(session *ses,\
     handshake_initiator_state state, jnx_uint8 **onetbuffer);

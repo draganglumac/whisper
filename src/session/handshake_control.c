@@ -17,10 +17,15 @@
 
 int handshake_did_receive_initiator_request(jnx_uint8 *obuffer,
     jnx_size bytes_read,
-    handshake_initiator_state *ostate) {
-  ostate = CHALLENGE_FAIL;
+    void **oobject){
+  *oobject = NULL;
 
-  return 0;
+  AuthInitiator *a = auth_initiator__unpack(NULL,bytes_read,obuffer);
+  if(a == NULL) {
+    return 0;
+  }
+  *oobject = a;
+  return 1;
 }
 int handshake_initiator_command_generate(session *ses,\
     handshake_initiator_state state,\
