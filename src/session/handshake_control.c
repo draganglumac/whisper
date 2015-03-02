@@ -17,8 +17,7 @@
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
 
-int handshake_initiator_command_generate(jnx_char *hostname,\
-    jnx_char *port,session *ses,\
+int handshake_initiator_command_generate(session *ses,\
     jnx_int is_initial_challenge,\
     jnx_uint8 **onetbuffer) {
 
@@ -56,4 +55,12 @@ int handshake_initiator_command_generate(jnx_char *hostname,\
 
   *onetbuffer = obuffer;
   return parcel_len;
+}
+int handshake_generate_public_key_request(session *ses,\
+    jnx_uint8 **onetbuffer) {
+  return handshake_initiator_command_generate(ses,CHALLENGE_REQUEST_PUBLIC_KEY,onetbuffer);
+}
+int handshake_generate_finish_request(session *ses,\
+    jnx_uint8 **onetbuffer) { 
+  return handshake_initiator_command_generate(ses,CHALLENGE_REQUEST_FINISH,onetbuffer);
 }

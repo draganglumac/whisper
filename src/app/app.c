@@ -184,6 +184,12 @@ peer *app_peer_from_input(app_context_t *context, char *param) {
   }
   return NULL;
 }
+void app_initiate_handshake(app_context_t *context,session *s) {
+
+  auth_comms_initiator_start(context->auth_comms,context->discovery,
+    s);
+
+}
 void set_up_session_service(app_context_t *context){
   context->session_serv = session_service_create();
 }

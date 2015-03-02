@@ -12,12 +12,10 @@
 #include <jnxc_headers/jnxsocket.h>
 #include <jnxc_headers/jnxthread.h>
 
-int handshake_initiator_command_generate(jnx_char *hostname,\
-    jnx_char *port,session *ses,\
+int handshake_initiator_command_generate(session *ses,\
     jnx_int is_initial_challenge, jnx_uint8 **onetbuffer);
 
-int handshake_generate_public_key_request(jnx_char *hostname,\
-    jnx_char *port, session *ses,\
+int handshake_generate_public_key_request(session *ses,\
     jnx_uint8 **onetbuffer);
 
 

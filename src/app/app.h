@@ -50,4 +50,5 @@ int app_code_for_command_with_param(char *command,\
 void app_create_gui_session();
 void app_list_active_peers(app_context_t *context);
 peer *app_peer_from_input(app_context_t *context,char *param);
+void app_initiate_handshake(app_context_t *context,session *s);
 #endif // __APP_H__
