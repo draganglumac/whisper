@@ -41,6 +41,12 @@ typedef struct session {
   RSA *keypair;
 }session;
 
+typedef void (*session_read_callback)(session *s, jnx_char *decrypted_message);
+ 
+session_state session_message_write(session *s,jnx_char *message);
+ 
+session_state session_message_read_connect(session *s, session_read_callback cb);
+
 void session_add_initiator_public_key(session *s, jnx_char *key);
 
 void session_add_receiver_public_key(session *s, jnx_char *key);
