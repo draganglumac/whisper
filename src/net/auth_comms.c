@@ -28,22 +28,13 @@ static void send_data(jnx_char *hostname, jnx_char *port,
   jnx_socket_tcp_send(sock,hostname,port,buffer,bytes);
   jnx_socket_destroy(&sock);
 }
-static void send_reply(auth_comms_service *ac, discovery_service *ds,jnx_guid *remote_peer_guid,
-    jnx_uint8 *buffer, jnx_int bytes) {
-
-  peer *reply_to_peer = peerstore_lookup(ds->peers,remote_peer_guid);
-  if(!reply_to_peer) {
-    printf("Peer not found, cannot reply!\n"); 
-  }
-  jnx_socket *sock = jnx_socket_tcp_create(ac->listener_family);
-  jnx_socket_tcp_send(sock,reply_to_peer->host_address,ac->listener_port,buffer,bytes);
-  jnx_socket_destroy(&sock);
-}
 static jnx_uint8 *send_data_await_reply(jnx_char *hostname, jnx_char *port,
     unsigned int family, jnx_uint8 *buffer, jnx_int bytes) {
   jnx_socket *sock = jnx_socket_tcp_create(family);
   jnx_uint8 *reply;
+  printf("Awaiting receipt...\n");
   jnx_socket_tcp_send_with_receipt(sock,hostname,port,buffer,bytes,&reply);
+  printf("Got receipt => %s\n",reply);
   jnx_socket_destroy(&sock);
   return reply;
 }
@@ -53,15 +44,14 @@ static void send_stop_packet(auth_comms_service *ac) {
       "STOP",5);
 }
 static jnx_int32 listener_callback(jnx_uint8 *payload,
-    jnx_size bytes_read, jnx_socket *s,void *context) {
+    jnx_size bytes_read, jnx_socket *s,int connected_socket, void *context) {
 
   transport_options *t = (transport_options*)context;
   void *object;
   if(handshake_did_receive_initiator_request(payload,bytes_read,&object)) {
-    /*
-     *
-     */
-      
+
+    printf("Did receive handshake request.\n");
+    write(connected_socket,"Hello",5);
     return 0;
   } 
   
