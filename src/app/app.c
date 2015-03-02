@@ -198,7 +198,7 @@ void set_up_auth_comms(app_context_t *context) {
   context->auth_comms->listener_port = "9991";
   context->auth_comms->listener_family = AF_INET;
   context->auth_comms->listener_socket = jnx_socket_tcp_create(AF_INET);
-
+  auth_comms_listener_start(context->auth_comms);
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));

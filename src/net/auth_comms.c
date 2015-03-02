@@ -43,7 +43,7 @@ auth_comms_service *auth_comms_create() {
   return malloc(sizeof(auth_comms_service));
 }
 void auth_comms_listener_start(auth_comms_service *ac) {
-  ac->listener_thread = jnx_thread_create(listener_bootstrap,NULL);
+  ac->listener_thread = jnx_thread_create(listener_bootstrap,ac);
 }
 void auth_comms_destroy(auth_comms_service **ac) {
 
