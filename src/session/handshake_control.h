@@ -18,5 +18,6 @@ int handshake_initiator_command_generate(session *ses,\
 int handshake_generate_public_key_request(session *ses,\
     jnx_uint8 **onetbuffer);
 
-
+int handshake_generate_finish_request(session *ses,\
+    jnx_uint8 **onetbuffer);
 #endif /* !HANDSHAKE_CONTROL_H */
