@@ -89,7 +89,7 @@ static void *listener_bootstrap(void *args) {
   transport_options *t = (transport_options *)args;
   JNXCHECK(t->ac->listener_socket);
   jnx_socket_tcp_listen_with_context(t->ac->listener_socket,
-      t->ac->listener_port,100,listener_callback,t->ds);
+      t->ac->listener_port,100,listener_callback,t);
   free(t);
 }
 auth_comms_service *auth_comms_create() {
@@ -101,6 +101,7 @@ void auth_comms_listener_start(auth_comms_service *ac, discovery_service *ds,
   ts->ac = ac;
   ts->ds = ds;
   ts->ss = ss;
+
   ac->listener_thread = jnx_thread_create(listener_bootstrap,ts);
 }
 void auth_comms_destroy(auth_comms_service **ac) {
