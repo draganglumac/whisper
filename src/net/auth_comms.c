@@ -12,6 +12,7 @@
 #include "../crypto/cryptography.h"
 #include "../util/utils.h"
 #include "../session/auth_initiator.pb-c.h"
+#include "../session/auth_receiver.pb-c.h"
 #include "../session/handshake_control.h"
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
@@ -67,9 +68,8 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
     jnx_uint8 *onetbuffer;
     int bytes = handshake_generate_public_key_response(osession,
         &onetbuffer);
-
-
-    write(connected_socket,"Hello",5);
+    write(connected_socket,onetbuffer,bytes);
+    free(onetbuffer);
     return 0;
   } 
   
@@ -119,13 +119,13 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
       ac->listener_family,
       obuffer,bytes_read);
  
-  /* expect an AuthReceiver reply here */
-
-
-
+  /* expect an AuthReceiver public key reply here */
+  void *object;
+  if(handshake_did_receive_receiver_request(reply,strlen(reply),&object)) {
+    AuthReceiver *r = (AuthReceiver *)object;
+    printf("Got the public key of peer B => %s\n",r->receiver_public_key);
+  }
   
-  printf("Initiator got this reply from peer B => %s\n",reply);
-
   free(obuffer);
 }
 void auth_comms_receiver_start(auth_comms_service *ac, \

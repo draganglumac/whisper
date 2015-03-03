@@ -27,6 +27,17 @@ int handshake_did_receive_initiator_request(jnx_uint8 *obuffer,
   *oobject = a;
   return 1;
 }
+int handshake_did_receive_receiver_request(jnx_uint8 *obuffer,
+    jnx_size bytes_read,void **oobject) {
+  *oobject = NULL;
+
+  AuthReceiver *a = auth_receiver__unpack(NULL,bytes_read,obuffer);
+  if(a == NULL) {
+    return 0;
+  }
+  *oobject = a;
+  return 1;
+}
 int handshake_initiator_command_generate(session *ses,\
     handshake_initiator_state state,\
     jnx_uint8 **onetbuffer) {
