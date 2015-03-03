@@ -32,6 +32,9 @@ session_service *session_service_create();
 
 void session_service_destroy(session_service **service);
 
+session_state session_service_create_shared_session(session_service *service,\
+    jnx_char *input_guid_string,session **osession);
+
 session_state session_service_create_session(session_service *service,session \
     **osession);
 
