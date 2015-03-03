@@ -17,4 +17,8 @@ void session_add_receiver_public_key(session *s, jnx_char *key) {
   s->receiver_public_key = malloc(len * sizeof(jnx_char));
   memcpy(s->receiver_public_key,key,len);
 }
-
+void session_add_shared_secret(session *s, jnx_char *secret) {
+  jnx_size len = strlen(secret);
+  s->shared_secret = malloc(len * sizeof(jnx_char));
+  memcpy(s->shared_secret,secret,len);
+}

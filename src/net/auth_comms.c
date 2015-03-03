@@ -131,10 +131,13 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
     AuthReceiver *r = (AuthReceiver *)object;
     printf("Got the public key of peer B => %s\n",r->receiver_public_key);
-
     session_add_receiver_public_key(s,r->receiver_public_key);
-  
   }
+  /* At this point we have a session with the receiver public key
+     we can generate the shared secret and transmit it back */
+
+
+
   free(obuffer);
 }
 void auth_comms_receiver_start(auth_comms_service *ac, \

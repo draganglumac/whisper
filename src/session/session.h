@@ -42,6 +42,8 @@ typedef struct session {
   jnx_guid remote_peer_guid;
   jnx_char *initiator_public_key;
   jnx_char *receiver_public_key;
+  jnx_char *shared_secret;
+  /* local only */
   RSA *keypair;
 }session;
 
