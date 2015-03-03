@@ -69,6 +69,17 @@ static int connect_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) 
   freeaddrinfo(res);
   return s->socket;
 }
+void *secure_comms_bootstrap_listener(void *args) {
+  session *s = (session *)args;
+  jnx_char buffer[2048];
+  while(s->is_connected) {
+    bzero(buffer,2048);
+    jnx_size bytes_read = read(s->secure_comms_fd,
+    buffer,2048);
+   
+    jnx_char *decrypted_message = symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
+  }
+}
 void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
   JNXCHECK(s->is_connected);
@@ -105,6 +116,10 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   JNXCHECK(sockfd != -1);
   // At this point both the initiator and receiver are equal and have fd's relevent to them 
   //  that are connected *
+
+  s->session_callback = NULL;
+  jnx_thread_create_disposable(secure_comms_bootstrap_listener,
+      s);
 } 
 void secure_comms_receiver_start(discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
