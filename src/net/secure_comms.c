@@ -77,7 +77,8 @@ void *secure_comms_bootstrap_listener(void *args) {
     jnx_size bytes_read = read(s->secure_comms_fd,
     buffer,2048);
    
-    jnx_char *decrypted_message = symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
+    jnx_char *decrypted_message = 
+      symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
     
     s->session_callback(&(*s).session_guid,decrypted_message);
   }
@@ -121,6 +122,9 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
 
   jnx_thread_create_disposable(secure_comms_bootstrap_listener,
       s);
+  
+  sleep(3);
+  session_message_write(s,"Hello");
 } 
 void secure_comms_receiver_start(discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
