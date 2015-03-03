@@ -40,7 +40,12 @@ typedef struct session {
   jnx_guid session_guid;
   jnx_guid local_peer_guid;
   jnx_guid remote_peer_guid;
+  jnx_char *initiator_public_key;
+  jnx_char *receiver_public_key;
   RSA *keypair;
 }session;
+
+void session_add_initiator_public_key(session *s, jnx_char *key);
+void session_add_receiver_public_key(session *s, jnx_char *key);
 
 #endif

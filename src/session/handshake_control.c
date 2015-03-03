@@ -108,7 +108,7 @@ int handshake_receiver_command_generate(session *ses, \
       auth_parcel.is_receiving_finish = 0;
       break;
     case RESPONSE_FINISH:
-      printf("Genearting finish response\n");
+      printf("Generating finish response\n");
       auth_parcel.is_receiving_public_key = 0;
       auth_parcel.is_receiving_finish = 1;
       break;
@@ -127,7 +127,7 @@ int handshake_receiver_command_generate(session *ses, \
   session_guid_len = strlen(session_guid_str);
   
   auth_parcel.session_guid = malloc(sizeof(char*) * session_guid_len + 1);
-  memcpy(auth_parcel.session_guid,session_guid_str,session_guid_len + 1);
+  memcpy(auth_parcel.session_guid,session_guid_str,session_guid_len +1);
   free(session_guid_str);
   /* packing */
   jnx_int parcel_len = auth_receiver__get_packed_size(&auth_parcel);

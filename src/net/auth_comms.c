@@ -31,12 +31,10 @@ static void send_data(jnx_char *hostname, jnx_char *port,
   jnx_socket_destroy(&sock);
 }
 static jnx_uint8 *send_data_await_reply(jnx_char *hostname, jnx_char *port,
-    unsigned int family, jnx_uint8 *buffer, jnx_int bytes) {
+    unsigned int family, jnx_uint8 *buffer, jnx_int bytes, jnx_size *receipt_bytes) {
   jnx_socket *sock = jnx_socket_tcp_create(family);
   jnx_uint8 *reply;
-  printf("Awaiting receipt...\n");
-  jnx_socket_tcp_send_with_receipt(sock,hostname,port,buffer,bytes,&reply);
-  printf("Got receipt => %s\n",reply);
+  *receipt_bytes = jnx_socket_tcp_send_with_receipt(sock,hostname,port,buffer,bytes,&reply);
   jnx_socket_destroy(&sock);
   return reply;
 }
@@ -61,6 +59,9 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
     session *osession;
     session_state e = session_service_create_shared_session(t->ss,
         a->session_guid,&osession);
+    /* setting our response key as the 'remote public key' */
+    session_add_initiator_public_key(osession,a->initiator_public_key); 
+     
     printf("Generated shared session\n");
     /*
      *Now we have a session on the receiver with a matching GUID to the sender
@@ -73,9 +74,10 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
     printf("About to write reply.\n");
     write(connected_socket,onetbuffer,bytes);
     free(onetbuffer);
+  
+    
     return 0;
   } 
-  
   char command[5];
   bzero(command,5);
   memcpy(command,payload,4);
@@ -119,17 +121,20 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
 
   printf("Generated initial handshake...[%d/bytes]\n",bytes_read);
 
+  jnx_size replysize;
   jnx_uint8 *reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
       ac->listener_family,
-      obuffer,bytes_read);
+      obuffer,bytes_read,&replysize);
  
   /* expect an AuthReceiver public key reply here */
   void *object;
-  if(handshake_did_receive_receiver_request(reply,strlen(reply),&object)) {
+  if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
     AuthReceiver *r = (AuthReceiver *)object;
     printf("Got the public key of peer B => %s\n",r->receiver_public_key);
-  }
+
+    session_add_receiver_public_key(s,r->receiver_public_key);
   
+  }
   free(obuffer);
 }
 void auth_comms_receiver_start(auth_comms_service *ac, \
