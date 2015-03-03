@@ -78,6 +78,8 @@ void *secure_comms_bootstrap_listener(void *args) {
     buffer,2048);
    
     jnx_char *decrypted_message = symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
+    
+    s->session_callback(&(*s).session_guid,decrypted_message);
   }
 }
 void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
@@ -117,7 +119,6 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   // At this point both the initiator and receiver are equal and have fd's relevent to them 
   //  that are connected *
 
-  s->session_callback = NULL;
   jnx_thread_create_disposable(secure_comms_bootstrap_listener,
       s);
 } 
