@@ -61,13 +61,16 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
     session *osession;
     session_state e = session_service_create_shared_session(t->ss,
         a->session_guid,&osession);
+    printf("Generated shared session\n");
     /*
      *Now we have a session on the receiver with a matching GUID to the sender
      *We'll have a valid public key we can send over
      */
     jnx_uint8 *onetbuffer;
+    printf("About to generate handshake.\n");
     int bytes = handshake_generate_public_key_response(osession,
         &onetbuffer);
+    printf("About to write reply.\n");
     write(connected_socket,onetbuffer,bytes);
     free(onetbuffer);
     return 0;
