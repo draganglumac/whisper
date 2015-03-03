@@ -17,7 +17,6 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-#include <jnxc_headers/jnxterm.h>
 #include "../err/whisper_errors.h"
 #include <jnxc_headers/jnxcheck.h>
 #include "app.h"
@@ -43,10 +42,7 @@ jnx_hashmap *load_config(int argc, char **argv) {
 int run_app(app_context_t *context) {
   char command[CMDLEN];
   char *broadcast, *local;
-  get_broadcast_ip(&broadcast);
-  get_local_ip(&local);
-  jnx_term_printf_in_color(JNX_COL_GREEN, "Broadcast IP: %s\n", broadcast);
-  jnx_term_printf_in_color(JNX_COL_GREEN, "Local IP:     %s\n", local);
+  
   app_intro();
   while (1) {
     app_prompt();
