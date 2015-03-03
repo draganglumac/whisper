@@ -52,13 +52,23 @@ int handshake_initiator_command_generate(session *ses,\
   memcpy(auth_parcel.initiator_guid,local_guid_str,len); 
   free(local_guid_str);
 
+  /* public key */
   jnx_char *pub_key_str = asymmetrical_key_to_string(ses->keypair,PUBLIC);
   jnx_size pub_len = strlen(pub_key_str);
   auth_parcel.initiator_public_key = malloc(sizeof(char*) * pub_len);
-
   memcpy(auth_parcel.initiator_public_key,pub_key_str,pub_len);
   free(pub_key_str);
-
+  
+  /*session guid */
+  jnx_char *session_guid_str;
+  jnx_size session_guid_len;
+  jnx_guid_to_string(&ses->session_guid,&session_guid_str);
+  session_guid_len = strlen(session_guid_str);
+  
+  auth_parcel.session_guid = malloc(sizeof(char*) * session_guid_len + 1);
+  memcpy(auth_parcel.session_guid,session_guid_str,session_guid_len + 1);
+  free(session_guid_str);
+  /* packing */
   jnx_int parcel_len = auth_initiator__get_packed_size(&auth_parcel);
   jnx_uint8 *obuffer = malloc(parcel_len);
   auth_initiator__pack(&auth_parcel,obuffer);
@@ -71,9 +81,27 @@ int handshake_initiator_command_generate(session *ses,\
 }
 int handshake_generate_public_key_request(session *ses,\
     jnx_uint8 **onetbuffer) {
-  return handshake_initiator_command_generate(ses,CHALLENGE_PUBLIC_KEY,onetbuffer);
+  return handshake_initiator_command_generate(ses,
+      CHALLENGE_PUBLIC_KEY,onetbuffer);
 }
 int handshake_generate_finish_request(session *ses,\
-    jnx_uint8 **onetbuffer) { 
-  return handshake_initiator_command_generate(ses,CHALLENGE_FINISH,onetbuffer);
+    jnx_uint8 **onetbuffer) {
+
+  return handshake_initiator_command_generate(ses,
+      CHALLENGE_FINISH,onetbuffer);
+}
+int handshake_receiver_command_generate(session *ses, \
+    handshake_receiver_state state, jnx_uint8 **onetbuffer) {
+
+
+}
+int handshake_generate_public_key_response(session *ses,\
+    jnx_uint8 **onetbuffer) {
+  return handshake_receiver_command_generate(ses,
+      RESPONSE_PUBLIC_KEY,onetbuffer);
+}
+int handshake_generate_finish_response(session *ses,\
+    jnx_uint8 **onetbuffer) {
+  return handshake_receiver_command_generate(ses,
+      RESPONSE_FINISH,onetbuffer);
 }

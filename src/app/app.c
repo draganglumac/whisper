@@ -185,10 +185,7 @@ peer *app_peer_from_input(app_context_t *context, char *param) {
   return NULL;
 }
 void app_initiate_handshake(app_context_t *context,session *s) {
-
-  auth_comms_initiator_start(context->auth_comms,context->discovery,
-    s);
-
+  auth_comms_initiator_start(context->auth_comms,context->discovery,s);
 }
 void set_up_session_service(app_context_t *context){
   context->session_serv = session_service_create();
@@ -198,7 +195,7 @@ void set_up_auth_comms(app_context_t *context) {
   context->auth_comms->listener_port = "9991";
   context->auth_comms->listener_family = AF_INET;
   context->auth_comms->listener_socket = jnx_socket_tcp_create(AF_INET);
-  auth_comms_listener_start(context->auth_comms,context->discovery);
+  auth_comms_listener_start(context->auth_comms,context->discovery,context->session_serv);
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));

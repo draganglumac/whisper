@@ -18,6 +18,11 @@ typedef enum {
   CHALLENGE_FINISH
 }handshake_initiator_state;
 
+typedef enum { 
+  REPONSE_FAIL,
+  RESPONSE_PUBLIC_KEY,
+  RESPONSE_FINISH
+}handshake_receiver_state;
 int handshake_did_receive_initiator_request(jnx_uint8 *obuffer,
     jnx_size bytes_read,void **oobject);
 
@@ -28,5 +33,13 @@ int handshake_generate_public_key_request(session *ses,\
     jnx_uint8 **onetbuffer);
 
 int handshake_generate_finish_request(session *ses,\
+    jnx_uint8 **onetbuffer);
+
+int handshake_receiver_command_generate(session *ses, \
+    handshake_receiver_state state, jnx_uint8 **onetbuffer);
+
+int handshake_generate_public_key_response(session *ses,\
+    jnx_uint8 **onetbuffer);
+int handshake_generate_finish_response(session *ses,\
     jnx_uint8 **onetbuffer);
 #endif /* !HANDSHAKE_CONTROL_H */
