@@ -49,5 +49,6 @@ typedef struct session {
 
 void session_add_initiator_public_key(session *s, jnx_char *key);
 void session_add_receiver_public_key(session *s, jnx_char *key);
+void session_add_shared_secret(session *s, jnx_char *secret);
 
 #endif

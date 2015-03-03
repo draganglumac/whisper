@@ -49,35 +49,45 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
   transport_options *t = (transport_options*)context;
   void *object;
   if(handshake_did_receive_initiator_request(payload,bytes_read,&object)) {
-   /*
-    *At this point the receiver does not have a session for PeerA/B
-    *We'll need to insert one so the session reference is usable in the ongoing
-    *comms
-    */
     AuthInitiator *a = (AuthInitiator*)object;
-    printf("Did receive handshake request.\n");
-    session *osession;
-    session_state e = session_service_create_shared_session(t->ss,
-        a->session_guid,&osession);
-    /* setting our response key as the 'remote public key' */
-    session_add_initiator_public_key(osession,a->initiator_public_key); 
-     
-    printf("Generated shared session\n");
+
     /*
-     *Now we have a session on the receiver with a matching GUID to the sender
-     *We'll have a valid public key we can send over
+     *At this point the receiver does not have a session for PeerA/B
+     *We'll need to insert one so the session reference is usable in the ongoing
+     *comms
      */
-    jnx_uint8 *onetbuffer;
-    printf("About to generate handshake.\n");
-    int bytes = handshake_generate_public_key_response(osession,
-        &onetbuffer);
-    printf("About to write reply.\n");
-    write(connected_socket,onetbuffer,bytes);
-    free(onetbuffer);
-  
-    
-    return 0;
+    if(a->is_requesting_public_key && !a->is_requesting_finish){
+
+      printf("Did receive handshake request.\n");
+      session *osession;
+      session_state e = session_service_create_shared_session(t->ss,
+          a->session_guid,&osession);
+      /* setting our response key as the 'remote public key' */
+      session_add_initiator_public_key(osession,a->initiator_public_key); 
+
+      printf("Generated shared session\n");
+      /*
+       *Now we have a session on the receiver with a matching GUID to the sender
+       *We'll have a valid public key we can send over
+       */
+      jnx_uint8 *onetbuffer;
+      printf("About to generate handshake.\n");
+      int bytes = handshake_generate_public_key_response(osession,
+          &onetbuffer);
+      printf("About to write reply.\n");
+      write(connected_socket,onetbuffer,bytes);
+      free(onetbuffer);    
+      return 0;
+    }else {
+       printf("Did receive encrypted shared secret.\n"); 
+
+
+       write(connected_socket,"Got it",7);
+    }
   } 
+
+
+
   char command[5];
   bzero(command,5);
   memcpy(command,payload,4);
@@ -125,7 +135,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   jnx_uint8 *reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
       ac->listener_family,
       obuffer,bytes_read,&replysize);
- 
+
   /* expect an AuthReceiver public key reply here */
   void *object;
   if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
@@ -135,9 +145,27 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   }
   /* At this point we have a session with the receiver public key
      we can generate the shared secret and transmit it back */
+  jnx_uint8 *secret;
+  jnx_size s_len = generate_shared_secret(&secret);
+
+  /* wrap this secret in the public key of B */
+  jnx_size encrypted_secret_len;
+  jnx_char *encrypted_secret = asymmetrical_encrypt(s->keypair,
+      secret, &encrypted_secret_len);
+
+  jnx_uint8 *fbuffer;
+  bytes_read = handshake_generate_finish_request(s,encrypted_secret,&fbuffer);
+
+  jnx_size replysizetwo;
+  reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
+      ac->listener_family,
+      fbuffer,bytes_read,&replysizetwo);
+
+  printf("Finish reponse: %s\n",reply);
 
 
-
+  free(encrypted_secret);
+  free(secret);
   free(obuffer);
 }
 void auth_comms_receiver_start(auth_comms_service *ac, \

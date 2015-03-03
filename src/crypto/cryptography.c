@@ -109,3 +109,23 @@ jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
   DES_cfb64_encrypt(msg,res,size,&schedule,&key2,&n,DES_DECRYPT);
   return res;
 }
+jnx_size generate_shared_secret(jnx_uint8 **buffer) {
+  jnx_int num_words = 10;
+  jnx_char *words[] = {
+    "quick", "brown", "shoes", "onomatopoeia", "quintana",
+    "lebowski", "sobchak", "independent", "posh", "pauper"
+  };
+  jnx_int rands[3], i, size = 0;
+  srand(time(0));
+  for (i = 0; i < 3; i++) {
+    rands[i] = rand() % 10;
+    size += strlen(words[rands[i]]);
+  }
+
+  *buffer = calloc(size + 1, sizeof(jnx_uint8));
+  for (i = 0; i < 3; i++) {
+    strcat(*buffer, words[rands[i]]);
+  }
+
+  return size;
+} 

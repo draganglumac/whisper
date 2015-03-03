@@ -28,12 +28,14 @@ int handshake_did_receive_initiator_request(jnx_uint8 *obuffer,
 int handshake_did_receive_receiver_request(jnx_uint8 *obuffer,
     jnx_size bytes_read,void **oobject);
 int handshake_initiator_command_generate(session *ses,\
-    handshake_initiator_state state, jnx_uint8 **onetbuffer);
+    handshake_initiator_state state, jnx_uint8 *shared_secret,
+    jnx_uint8 **onetbuffer);
 
 int handshake_generate_public_key_request(session *ses,\
     jnx_uint8 **onetbuffer);
 
 int handshake_generate_finish_request(session *ses,\
+    jnx_uint8 *shared_secret,
     jnx_uint8 **onetbuffer);
 
 int handshake_receiver_command_generate(session *ses, \
