@@ -8,11 +8,15 @@
 #include "session.h"
 
 session_state session_message_write(session *s,jnx_char *message) {
+  
+  /* take the raw message and des encrypt it */
+}
+session_state session_message_read_and_decrypt(session *s, 
+    jnx_char *message,jnx_char **omessage) {
 
 }
- 
-session_state session_message_read_connect(session *s, session_read_callback cb) {
-
+session_state session_message_read_connect(session *s, session_read_callback *cb) {
+  s->session_callback = cb;
 }
 void session_add_initiator_public_key(session *s, jnx_char *key) {
   JNXCHECK(key);
