@@ -39,6 +39,7 @@ void asymmetrical_destroy_key(RSA *key) {
   if(key != NULL) RSA_free(key);
 }
 jnx_char *asymmetrical_key_to_string(RSA *keypair,key_type type) {
+
   BIO *key = BIO_new(BIO_s_mem());
   switch(type) {
     case PUBLIC:
@@ -52,7 +53,7 @@ jnx_char *asymmetrical_key_to_string(RSA *keypair,key_type type) {
   jnx_size len = BIO_pending(key);
   jnx_char *skey = malloc(len + 1);
   jnx_size read = BIO_read(key,skey,len);
-  skey[read + 1] = '\0';
+  skey[len] = '\0';
   BIO_free(key);
   return skey;
 }
