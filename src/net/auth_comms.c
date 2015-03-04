@@ -158,6 +158,12 @@ void auth_comms_destroy(auth_comms_service **ac) {
 void auth_comms_initiator_start(auth_comms_service *ac, \
     discovery_service *ds, session *s) {
 
+  if(s->is_connected) {
+
+    printf("This session is already connected.\n");
+    return;
+  }
+
   peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
 
   jnx_uint8 *obuffer;
