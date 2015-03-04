@@ -66,7 +66,7 @@ jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, \
     jnx_size in_len, jnx_size *out_len) {
   jnx_char *decrypted_message = malloc(RSA_size(keypair));
   bzero(decrypted_message, RSA_size(keypair));
-  char *err = malloc(30);
+  char *err = malloc(120);
 
   if((*out_len = RSA_private_decrypt(in_len, message,
           decrypted_message, keypair, RSA_PKCS1_OAEP_PADDING)) == -1) {
