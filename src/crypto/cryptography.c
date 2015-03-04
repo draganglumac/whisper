@@ -19,7 +19,7 @@
 #include "cryptography.h"
 #include <time.h>
 #include <string.h>
-
+#include <jnxc_headers/jnxcheck.h>
 RSA *asymmetrical_generate_key(jnx_size length) {
   srand(time(NULL));
   return RSA_generate_key(length,3,NULL,NULL);
@@ -33,6 +33,7 @@ RSA *asymmetrical_generate_key_from_public_string(jnx_char *pub) {
     return 0;
   }
   rsa = PEM_read_bio_RSA_PUBKEY(keybio,&rsa,NULL,NULL);
+  JNXCHECK(rsa);
   return rsa;
 }
 void asymmetrical_destroy_key(RSA *key) {

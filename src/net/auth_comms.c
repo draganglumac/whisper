@@ -169,7 +169,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   void *object;
   if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
     AuthReceiver *r = (AuthReceiver *)object;
-    printf("Got the public key of peer B => %s\n",r->receiver_public_key);
+    printf("Got the public key of peer B => [%s]\n",r->receiver_public_key);
     session_add_receiver_public_key(s,r->receiver_public_key);
     /* At this point we have a session with the receiver public key
        we can generate the shared secret and transmit it back */
@@ -179,8 +179,10 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     session_add_shared_secret(s,secret);
 
     RSA *remote_pub_keypair = asymmetrical_generate_key_from_public_string(
-        r->receiver_public_key);
+        r->receiver_public_key); 
 
+    print_public_key(remote_pub_keypair);
+    
       jnx_size encrypted_secret_len;
     jnx_char *encrypted_secret = asymmetrical_encrypt(remote_pub_keypair,
         secret, &encrypted_secret_len);

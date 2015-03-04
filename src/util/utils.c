@@ -32,3 +32,10 @@ void print_peer(peer *p) {
   printf("Peer last seen => %ld\n",p->last_seen);
   printf("----------\n");
 }
+void print_public_key(RSA *remote_pub_keypair) {
+
+  jnx_char *s = asymmetrical_key_to_string(remote_pub_keypair,
+    PUBLIC);
+  printf("[%s]\n",s);
+  free(s);
+}
