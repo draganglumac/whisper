@@ -111,11 +111,13 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
             &olen);
 
       //DEBUG ONLY
-      printf("Starting Gui directly from auth_comms l:113\n");
-      app_create_gui_session(osession);
+      printf("DEBUG => %s\n",decrypted_shared_secret);
       session_add_shared_secret(osession,decrypted_shared_secret);
       //
       jnx_encoder_destroy(&encoder);
+      
+      osession->is_connected = 1;
+      printf("Handshake complete.\n");
       return 0;
     }
   } 
@@ -208,7 +210,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     if(handshake_did_receive_receiver_request(reply,replysizetwo,&finish_object)){
       AuthReceiver *r = (AuthReceiver *)object;
       if(r->is_receiving_finish && !r->is_receiving_public_key) {
-
+        s->is_connected = 1;
         printf("Handshake complete.\n");
       }
     }

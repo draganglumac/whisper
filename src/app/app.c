@@ -22,8 +22,7 @@
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
-
-void *launch_gui(void *args) {
+void app_create_gui_session(session *s) {
   context_t *c = context_create();
   pthread_t read_thread;
   pthread_create(&read_thread, 0,read_loop,(void*)c);
@@ -33,10 +32,6 @@ void *launch_gui(void *args) {
     }
   }
   context_destroy(c);
- }
-void app_create_gui_session(session *s){
-  pthread_t launch_gui_thread;
-  pthread_create(&launch_gui_thread,0,launch_gui,(void *)s);
 }
 int is_equivalent(char *command, char *expected) {
   if (strcmp(command, expected) == 0) {
