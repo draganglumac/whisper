@@ -22,7 +22,7 @@
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
-
+#include <time.h>
 typedef enum key_type { PUBLIC, PRIVATE } key_type;
 
 
@@ -42,4 +42,5 @@ jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size);
 
 jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size);
 
+jnx_size generate_shared_secret(jnx_uint8 **buffer);
 #endif

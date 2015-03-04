@@ -96,20 +96,11 @@ session_state session_service_create_session(session_service *service, session *
 session_state session_service_create_shared_session(session_service *service,\
     jnx_char *input_guid_string,session **osession) 
 {
-  session *s = malloc(sizeof(session));
-  s->keypair = asymmetrical_generate_key(2048);  
-  /* guid from char* */
   jnx_guid g;
   jnx_guid_from_string(input_guid_string,&g);
-  s->session_guid = g; 
-  generate_blank_guid(&s->local_peer_guid); 
-  generate_blank_guid(&s->remote_peer_guid); 
-  if(session_service_does_exist(service,&s->session_guid)){
-    return SESSION_STATE_EXISTS;
-  }
-  session_service_add_session(service,s);
-  *osession = s;
-  return SESSION_STATE_OKAY;
+  session_state e = session_service_create_session(service,osession);
+  (*osession)->session_guid = g;
+  return e;
 }
 session_state session_service_fetch_all_sessions(session_service *service, jnx_list **olist) {
   *olist = NULL;
@@ -151,7 +142,6 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
   return SESSION_STATE_NOT_FOUND;
 }
 static void destroy_session(session *s) {
-  JNXCHECK(s);
   asymmetrical_destroy_key(s->keypair);
   free(s);
 }
