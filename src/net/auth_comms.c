@@ -178,8 +178,8 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
 
     session_add_shared_secret(s,secret);
 
-    RSA *remote_pub_keypair = asymmetrical_generate_key_from_public_string(
-        r->receiver_public_key); 
+    RSA *remote_pub_keypair = 
+      asymmetrical_key_from_string(r->receiver_public_key,PUBLIC);
 
     print_public_key(remote_pub_keypair);
     
@@ -187,7 +187,6 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     jnx_char *encrypted_secret = asymmetrical_encrypt(remote_pub_keypair,
         secret, &encrypted_secret_len);
 
-    /* the shared secret needs to encoded */
     jnx_size encoded_len;
     jnx_encoder *encoder = jnx_encoder_create();
     jnx_uint8 *encoded_secret = jnx_encoder_b64_encode(encoder,

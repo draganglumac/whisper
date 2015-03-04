@@ -25,17 +25,15 @@
 #include <time.h>
 typedef enum key_type { PUBLIC, PRIVATE } key_type;
 
-
 RSA *asymmetrical_generate_key(jnx_size length);
 
-RSA *asymmetrical_generate_key_from_public_string(jnx_char *pub);
+RSA *asymmetrical_key_from_string(jnx_char *key, key_type type);
 
 void asymmetrical_destroy_key(RSA *key);
 
 jnx_char *asymmetrical_key_to_string(RSA *keypair,key_type type); 
 
-jnx_char *asymmetrical_encrypt(RSA *keypair,
-    jnx_uint8 *message, jnx_size *out_len);
+jnx_char *asymmetrical_encrypt(RSA *keypair,jnx_uint8 *message, jnx_size *out_len);
 
 jnx_char *asymmetrical_decrypt(RSA *keypair,
     jnx_uint8 *message, jnx_size in_len, jnx_size *out_len);
