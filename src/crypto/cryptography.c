@@ -24,6 +24,17 @@ RSA *asymmetrical_generate_key(jnx_size length) {
   srand(time(NULL));
   return RSA_generate_key(length,3,NULL,NULL);
 }
+RSA *asymmetrical_generate_key_from_public_string(jnx_char *pub) {
+  RSA *rsa = NULL;
+  BIO *keybio;
+  keybio = BIO_new_mem_buf(pub, -1);
+  if(keybio == NULL) {
+    printf("Failed to generate key from string.\n");
+    return 0;
+  }
+  rsa = PEM_read_bio_RSA_PUBKEY(keybio,&rsa,NULL,NULL);
+  return rsa;
+}
 void asymmetrical_destroy_key(RSA *key) {
   if(key != NULL) RSA_free(key);
 }
