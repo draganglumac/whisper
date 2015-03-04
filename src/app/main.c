@@ -42,7 +42,7 @@ jnx_hashmap *load_config(int argc, char **argv) {
 int run_app(app_context_t *context) {
   char command[CMDLEN];
   char *broadcast, *local;
-  
+
   app_intro();
   while (1) {
     app_prompt();
@@ -60,15 +60,22 @@ int run_app(app_context_t *context) {
         }
 
         peer *remote_peer = app_peer_from_input(context,param);
+
         if(remote_peer) {
+
+          peer *local_peer = peerstore_get_local_peer(context->discovery->peers);
+          if(strcmp(remote_peer->host_address,local_peer->host_address) == 0) {
+            printf("You cannot start a session with yourself.\n");
+            break;
+          }
           printf("Found peer-----\n");
           printf("Host address: %s\n",remote_peer->host_address);
+          printf("Host address: %s\n",local_peer->host_address);
           printf("User name: %s\n",remote_peer->user_name);
           printf("---------------\n");;
           /*
            * Version 1.0
            */
-          peer *local_peer = peerstore_get_local_peer(context->discovery->peers);
           session *s;
           /* create session */
           session_service_create_session(context->session_serv,&s);
@@ -78,7 +85,7 @@ int run_app(app_context_t *context) {
           printf("Created and linked session.\n");
 
           app_initiate_handshake(context,s);
-  
+
           printf("Handshaking complete.\nLaunching GUI.\n");
 
           /* start gui */
