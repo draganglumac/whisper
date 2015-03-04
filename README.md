@@ -34,19 +34,21 @@ Components
 ==========
 ```
 session/
-  Session Service [WIP]
-  Session Object [WIP]
+  ~~Session Service~~
+  ~~Session Object~~
 net/
-  Discovery Service [WIP]
-  Multicast Service
-  Secure/Non-Secure Socket interface
+  ~~Discovery Service~~
+  ~~Multicast Service~~
+  ~~Secure/Non-Secure Socket interface~~
 
 crypto/
-  ~~Symmetrical key encrypt/decrypt~~ [DONE]
-  ~~Asymmetrical key encrypt/decrypt~~ [DONE]
-  ~~Integrity Service~~ [DONE]
+  ~~Symmetrical key encrypt/decrypt~~ 
+  ~~Asymmetrical key encrypt/decrypt~~
+  ~~Integrity Service~~ 
 usr/
-  User command line I/O
+ ~~User command line I/O~~
+gui/
+  User Gui interface
 ```
 
 Tests for each module are included
