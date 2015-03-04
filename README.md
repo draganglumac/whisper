@@ -32,24 +32,37 @@ Regenerate Protobuf files
 This currently uses a wildcard `*.proto` with an assumption for now that there is one proto file in a directory
 Components
 ==========
-```
+
 session/
+
   ~~Session Service~~
+  
   ~~Session Object~~
+  
 net/
+
   ~~Discovery Service~~
+  
   ~~Multicast Service~~
+  
   ~~Secure/Non-Secure Socket interface~~
 
 crypto/
+
   ~~Symmetrical key encrypt/decrypt~~ 
+  
   ~~Asymmetrical key encrypt/decrypt~~
+  
   ~~Integrity Service~~ 
+  
 usr/
+
  ~~User command line I/O~~
+ 
 gui/
+
   User Gui interface
-```
+
 
 Tests for each module are included
 
