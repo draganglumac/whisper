@@ -33,6 +33,8 @@ This currently uses a wildcard `*.proto` with an assumption for now that there i
 Components
 ==========
 
+TODO List:
+
 session/
 
   ~~Session Service~~
@@ -64,13 +66,4 @@ gui/
   User Gui interface
 
 
-Tests for each module are included
 
-
-Flags
-======
-
-```
-cmake . -DAUTH_COMMS_TCP
-```
-This will use TCP auth comms transport
