@@ -86,6 +86,12 @@ static void pretty_print_peer(peer *p) {
   printf("%-32s %-16s %s\n", guid, p->host_address, p->user_name);
   free(guid);
 }
+static void pretty_print_peer_in_col(peer *p, jnx_int32 colour) {
+  char *guid;
+  jnx_guid_to_string(&p->guid, &guid);
+  jnx_term_printf_in_color(colour, "%-32s %-16s %s\n", guid, p->host_address, p->user_name);
+  free(guid);
+}
 static void show_active_peers(peerstore *ps) {
   jnx_guid **active_guids;
   int num_guids = peerstore_get_active_guids(ps, &active_guids);
@@ -105,7 +111,7 @@ void app_list_active_peers(app_context_t *context) {
   peer *local = peerstore_lookup_by_username(context->discovery->peers, peerstore_get_local_peer(context->discovery->peers)->user_name);
   printf("\n");
   printf("Local peer:\n");
-  pretty_print_peer(local);
+  pretty_print_peer_in_col(local, JNX_COL_GREEN);
   printf("\n");
 }
 void app_intro() {
