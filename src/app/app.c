@@ -22,7 +22,7 @@
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
-void app_create_gui_session(){
+void app_create_gui_session(session *s){
   context_t *c = context_create();
   pthread_t read_thread;
   pthread_create(&read_thread, 0,read_loop,(void*)c);

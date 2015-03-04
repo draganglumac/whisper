@@ -14,6 +14,7 @@
 #include "../util/utils.h"
 #include "../session/auth_initiator.pb-c.h"
 #include "../session/auth_receiver.pb-c.h"
+#include "../app/app.h"
 #include "../session/handshake_control.h"
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
@@ -110,10 +111,12 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
             &olen);
 
       //DEBUG ONLY
-      printf("DEBUG!!! -> Peer B says the shared secret is %s\n", decrypted_shared_secret);
+      printf("Starting Gui directly from auth_comms l:113\n");
+      app_create_gui_session(osession);
       session_add_shared_secret(osession,decrypted_shared_secret);
       //
       jnx_encoder_destroy(&encoder);
+      return 0;
     }
   } 
 
@@ -169,7 +172,6 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   void *object;
   if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
     AuthReceiver *r = (AuthReceiver *)object;
-    printf("Got the public key of peer B => [%s]\n",r->receiver_public_key);
     session_add_receiver_public_key(s,r->receiver_public_key);
     /* At this point we have a session with the receiver public key
        we can generate the shared secret and transmit it back */
