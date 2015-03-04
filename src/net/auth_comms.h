@@ -10,6 +10,7 @@
 #include "../net/discovery.h"
 #include <jnxc_headers/jnxsocket.h>
 #include "../session/session.h"
+#include "../session/session_service.h"
 #include <jnxc_headers/jnxthread.h>
 typedef struct auth_comms_service {
   jnx_socket *listener_socket;
@@ -22,7 +23,7 @@ typedef struct auth_comms_service {
 
 auth_comms_service *auth_comms_create();
 
-void auth_comms_listener_start(auth_comms_service *ac,discovery_service *ds);
+void auth_comms_listener_start(auth_comms_service *ac,discovery_service *ds,session_service *ss);
 
 void auth_comms_destroy(auth_comms_service **ac);
 

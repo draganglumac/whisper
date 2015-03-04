@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <jnxc_headers/jnxterm.h>
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
@@ -137,6 +138,11 @@ static void set_up_discovery_service(app_context_t *context) {
     exit(1);
   }
   peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
+  char *local_ip = (char *) jnx_hash_get(config, "LOCAL_IP");
+  if (local_ip != NULL) {
+    free(peerstore_get_local_peer(ps)->host_address);
+    peerstore_get_local_peer(ps)->host_address = local_ip;
+  }
 
   int port = DEFAULT_BROADCAST_PORT;
   char *disc_port = (char *) jnx_hash_get(config, "DISCOVERY_PORT");
@@ -185,10 +191,7 @@ peer *app_peer_from_input(app_context_t *context, char *param) {
   return NULL;
 }
 void app_initiate_handshake(app_context_t *context,session *s) {
-
-  auth_comms_initiator_start(context->auth_comms,context->discovery,
-    s);
-
+  auth_comms_initiator_start(context->auth_comms,context->discovery,s);
 }
 void set_up_session_service(app_context_t *context){
   context->session_serv = session_service_create();
@@ -198,7 +201,7 @@ void set_up_auth_comms(app_context_t *context) {
   context->auth_comms->listener_port = "9991";
   context->auth_comms->listener_family = AF_INET;
   context->auth_comms->listener_socket = jnx_socket_tcp_create(AF_INET);
-  auth_comms_listener_start(context->auth_comms,context->discovery);
+  auth_comms_listener_start(context->auth_comms,context->discovery,context->session_serv);
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
   app_context_t *context = calloc(1, sizeof(app_context_t));
@@ -206,6 +209,11 @@ app_context_t *app_create_context(jnx_hashmap *config) {
   set_up_discovery_service(context);
   set_up_session_service(context);
   set_up_auth_comms(context);
+  char *broadcast_ip, *local_ip;
+  jnx_term_printf_in_color(JNX_COL_GREEN, "Broadcast IP: %s\n",
+      context->discovery->broadcast_group_address);
+  jnx_term_printf_in_color(JNX_COL_GREEN, "Local IP:     %s\n", 
+      peerstore_get_local_peer(context->discovery->peers)->host_address);
   return context;
 }
 void app_destroy_context(app_context_t **context) {

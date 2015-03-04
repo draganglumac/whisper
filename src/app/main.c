@@ -41,7 +41,8 @@ jnx_hashmap *load_config(int argc, char **argv) {
 }
 int run_app(app_context_t *context) {
   char command[CMDLEN];
-
+  char *broadcast, *local;
+  
   app_intro();
   while (1) {
     app_prompt();
