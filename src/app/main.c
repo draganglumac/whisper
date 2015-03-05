@@ -68,11 +68,7 @@ int run_app(app_context_t *context) {
             printf("You cannot start a session with yourself.\n");
             break;
           }
-          printf("Found peer-----\n");
-          printf("Host address: %s\n",remote_peer->host_address);
-          printf("Host address: %s\n",local_peer->host_address);
-          printf("User name: %s\n",remote_peer->user_name);
-          printf("---------------\n");;
+          printf("Found peer.\n");
           /*
            * Version 1.0
            */
@@ -82,13 +78,9 @@ int run_app(app_context_t *context) {
           /* link our peers to our session information */
           session_service_link_sessions(context->session_serv,&(*s).session_guid,
               local_peer,remote_peer);
-          printf("Created and linked session.\n");
 
+          /* async handshake */
           app_initiate_handshake(context,s);
-
-          printf("Handshaking complete.\nLaunching GUI.\n");
-
-          /* start gui */
           //app_create_gui_session(s);
         }else {
           printf("Session could not be started.\nDid you spell your target \

@@ -32,30 +32,38 @@ Regenerate Protobuf files
 This currently uses a wildcard `*.proto` with an assumption for now that there is one proto file in a directory
 Components
 ==========
-```
+
+TODO List:
+
 session/
-  Session Service [WIP]
-  Session Object [WIP]
+
+  ~~Session Service~~
+  
+  ~~Session Object~~
+  
 net/
-  Discovery Service [WIP]
-  Multicast Service
-  Secure/Non-Secure Socket interface
+
+  ~~Discovery Service~~
+  
+  ~~Multicast Service~~
+  
+  ~~Secure/Non-Secure Socket interface~~
 
 crypto/
-  ~~Symmetrical key encrypt/decrypt~~ [DONE]
-  ~~Asymmetrical key encrypt/decrypt~~ [DONE]
-  ~~Integrity Service~~ [DONE]
+
+  ~~Symmetrical key encrypt/decrypt~~ 
+  
+  ~~Asymmetrical key encrypt/decrypt~~
+  
+  ~~Integrity Service~~ 
+  
 usr/
-  User command line I/O
-```
 
-Tests for each module are included
+ ~~User command line I/O~~
+ 
+gui/
+
+  User Gui interface
 
 
-Flags
-======
 
-```
-cmake . -DAUTH_COMMS_TCP
-```
-This will use TCP auth comms transport

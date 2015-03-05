@@ -196,8 +196,23 @@ peer *app_peer_from_input(app_context_t *context, char *param) {
   }
   return NULL;
 }
+typedef struct {
+  app_context_t *context;
+  session *s;
+}handshake_dto;
+
+void *handshake_async_start(void *args) {
+  handshake_dto *h = (handshake_dto*)args;
+  auth_comms_initiator_start(h->context->auth_comms,
+      h->context->discovery,h->s);
+  free(h);
+}
 void app_initiate_handshake(app_context_t *context,session *s) {
-  auth_comms_initiator_start(context->auth_comms,context->discovery,s);
+  handshake_dto *h= malloc(sizeof(handshake_dto));
+  h->s = s;
+  h->context = context;
+  pthread_t thr;
+  pthread_create(&thr,0,handshake_async_start,(void*)h);
 }
 void set_up_session_service(app_context_t *context){
   context->session_serv = session_service_create();
