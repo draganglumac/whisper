@@ -91,6 +91,7 @@ int handshake_initiator_command_generate(session *ses,\
   /* secure comms port */
   jnx_size secure_comms_port_len = strlen(ses->secure_comms_port);
   auth_parcel.secure_comms_port = malloc(sizeof(char*) * secure_comms_port_len + 1);
+  bzero(auth_parcel.secure_comms_port,secure_comms_port_len +1);
   memcpy(auth_parcel.secure_comms_port,ses->secure_comms_port,secure_comms_port_len + 1);
 
   /* packing */
