@@ -110,8 +110,8 @@ void app_list_active_peers(app_context_t *context) {
   printf("\n");
   printf("Active Peers:\n");
   printf("%-32s %-16s %-16s\n", "UUID", "IP Address", "Username");
-  printf("--------------------------------+\
-      ----------------+----------------\n");
+  printf("%s",
+      "--------------------------------+----------------+----------------\n");
   show_active_peers(context->discovery->peers);
   peer *local = peerstore_lookup_by_username(context->discovery->peers, 
       peerstore_get_local_peer(context->discovery->peers)->user_name);
@@ -137,7 +137,7 @@ void app_show_help() {
 }
 void app_quit_message() {
   printf("\n");
-  printf("Shutting down cleanly...\n");
+  printf("Shutting down 'whisper'...\n");
 }
 
 extern int peer_update_interval;

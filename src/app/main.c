@@ -108,8 +108,6 @@ int main(int argc, char **argv) {
   jnx_hashmap *config = load_config(argc, argv);
   app_context_t *app_context = app_create_context(config);
   run_app(app_context);
-  app_destroy_context(&app_context);
-  jnx_hash_destroy(&config);
-  printf("Done.\n");
+  printf("Bye.\n");
   return 0;
 }
