@@ -99,7 +99,12 @@ session_state session_service_create_shared_session(session_service *service,\
 {
   jnx_guid g;
   jnx_guid_from_string(input_guid_string,&g);
-  session_state e = session_service_create_session(service,osession);
+  session_state e;
+  if((e = session_service_fetch_session(service,&g,osession)) == SESSION_STATE_OKAY) {
+    printf("Returning existing session.\n");
+    return e;
+  }
+   e = session_service_create_session(service,osession);
   (*osession)->session_guid = g;
   return e;
 }
@@ -135,6 +140,7 @@ session_state session_service_fetch_session(session_service *service, jnx_guid *
     session *s = h->_data;
     if(jnx_guid_compare(g,&s->session_guid) == JNX_GUID_STATE_SUCCESS) {
       *osession = s;
+      service->session_list->head = r;
       return SESSION_STATE_OKAY;
     }
     h = h->next_node;
