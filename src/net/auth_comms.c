@@ -78,6 +78,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
           &onetbuffer);
       write(connected_socket,onetbuffer,bytes);
       free(onetbuffer);    
+      auth_initiator__free_unpacked(a,NULL);
       return 0;
     }
     if(!a->is_requesting_public_key && a->is_requesting_finish){
@@ -98,7 +99,6 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
        * the session */
 
       jnx_size olen;
-
       jnx_size decoded_len;
       jnx_encoder *encoder = jnx_encoder_create();
       jnx_uint8 *decoded_secret = 
@@ -113,11 +113,11 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       //DEBUG ONLY
       printf("DEBUG => %s\n",decrypted_shared_secret);
       session_add_shared_secret(osession,decrypted_shared_secret);
-      //
+
       jnx_encoder_destroy(&encoder);
-      
       osession->is_connected = 1;
       printf("Handshake complete.\n");
+      auth_initiator__free_unpacked(a,NULL);
       return 0;
     }
   } 
@@ -211,6 +211,8 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
         ac->listener_family,
         fbuffer,bytes_read,&replysizetwo);
+    
+    auth_receiver__free_unpacked(r,NULL);
 
     void *finish_object;
     if(handshake_did_receive_receiver_request(reply,replysizetwo,&finish_object)){
@@ -219,6 +221,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
         s->is_connected = 1;
         printf("Handshake complete.\n");
       }
+      auth_receiver__free_unpacked(r,NULL);
     }
     free(encrypted_secret);
     free(secret);
