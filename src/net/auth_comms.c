@@ -66,7 +66,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
           a->session_guid,&osession);
       /* setting our response key as the 'remote public key' */
       session_add_initiator_public_key(osession,a->initiator_public_key); 
-
+      session_add_secure_comms_port(osession,a->secure_comms_port);
       printf("Generated shared session\n");
       /*
        *Now we have a session on the receiver with a matching GUID to the sender
@@ -111,7 +111,9 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
             &olen);
 
       //DEBUG ONLY
+#ifndef RELEASE
       printf("DEBUG => %s\n",decrypted_shared_secret);
+#endif
       session_add_shared_secret(osession,decrypted_shared_secret);
 
       jnx_encoder_destroy(&encoder);
@@ -163,6 +165,13 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     printf("This session is already connected.\n");
     return;
   }
+
+  printf("-------------------------------------------\n");
+  printf(" Warning using hardcoded secure_comms_port \n");
+  session_add_secure_comms_port(s,"6666");
+  printf("-------------------------------------------\n");
+  JNXCHECK(s->secure_comms_port);
+
 
   peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
 
