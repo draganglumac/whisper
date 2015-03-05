@@ -112,7 +112,8 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
 
       //DEBUG ONLY
 #ifndef RELEASE
-      printf("DEBUG => %s\n",decrypted_shared_secret);
+      printf("DEBUG => shared secret:%s\n",decrypted_shared_secret);
+      printf("DEBUG => secure_comms_port:%s\n",osession->secure_comms_port);
 #endif
       session_add_shared_secret(osession,decrypted_shared_secret);
 
