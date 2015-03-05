@@ -19,7 +19,7 @@
 #include "cryptography.h"
 #include <time.h>
 #include <string.h>
-
+#include <jnxc_headers/jnxcheck.h>
 RSA *asymmetrical_generate_key(jnx_size length) {
   srand(time(NULL));
   return RSA_generate_key(length,3,NULL,NULL);
@@ -27,7 +27,19 @@ RSA *asymmetrical_generate_key(jnx_size length) {
 void asymmetrical_destroy_key(RSA *key) {
   if(key != NULL) RSA_free(key);
 }
+RSA *asymmetrical_key_from_string(jnx_char *string, key_type type) { 
+  BIO *key = BIO_new_mem_buf((void*)string,strlen(string));
+  RSA *rsa = RSA_new();
+  switch(type) {
+    case PUBLIC:
+    PEM_read_bio_RSAPublicKey(key,&rsa,0,NULL);
+    break;
+  }
+  BIO_free(key);
+  return rsa;
+}
 jnx_char *asymmetrical_key_to_string(RSA *keypair,key_type type) {
+
   BIO *key = BIO_new(BIO_s_mem());
   switch(type) {
     case PUBLIC:
@@ -41,7 +53,7 @@ jnx_char *asymmetrical_key_to_string(RSA *keypair,key_type type) {
   jnx_size len = BIO_pending(key);
   jnx_char *skey = malloc(len + 1);
   jnx_size read = BIO_read(key,skey,len);
-  skey[read + 1] = '\0';
+  skey[len] = '\0';
   BIO_free(key);
   return skey;
 }
@@ -66,7 +78,7 @@ jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, \
     jnx_size in_len, jnx_size *out_len) {
   jnx_char *decrypted_message = malloc(RSA_size(keypair));
   bzero(decrypted_message, RSA_size(keypair));
-  char *err = malloc(30);
+  char *err = malloc(120);
 
   if((*out_len = RSA_private_decrypt(in_len, message,
           decrypted_message, keypair, RSA_PKCS1_OAEP_PADDING)) == -1) {

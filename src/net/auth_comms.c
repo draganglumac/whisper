@@ -5,6 +5,7 @@
  * Distributed under terms of the MIT license.
  */
 #include <jnxc_headers/jnxlog.h>
+#include <jnxc_headers/jnxencoder.h>
 #include "auth_comms.h"
 #include <ifaddrs.h>
 #include <arpa/inet.h>
@@ -13,6 +14,7 @@
 #include "../util/utils.h"
 #include "../session/auth_initiator.pb-c.h"
 #include "../session/auth_receiver.pb-c.h"
+#include "../app/app.h"
 #include "../session/handshake_control.h"
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
@@ -77,34 +79,46 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       write(connected_socket,onetbuffer,bytes);
       free(onetbuffer);    
       return 0;
-    }else {
-       printf("Did receive encrypted shared secret.\n"); 
+    }
+    if(!a->is_requesting_public_key && a->is_requesting_finish){
+      printf("Did receive encrypted shared secret.\n"); 
       session *osession;
       jnx_guid g;
       jnx_guid_from_string(a->session_guid,&g);
       session_service_fetch_session(t->ss,
           &g,&osession);
 
-       jnx_uint8 *onetbuffer;
-       int bytes = handshake_generate_finish_response(osession,
-           &onetbuffer);
+      jnx_uint8 *onetbuffer;
+      int bytes = handshake_generate_finish_response(osession,
+          &onetbuffer);
       write(connected_socket,onetbuffer,bytes);
       free(onetbuffer);    
 
       /* The last thing to do is to decrypt the shared secret and store it in
        * the session */
-  
-      printf("Received secret length: %d\n",a->shared_secret_len);
+
       jnx_size olen;
-    //  jnx_char *decrypted_shared_secret = 
-      //  asymmetrical_decrypt(osession->keypair,a->shared_secret,
-        //    strlen(a->shared_secret),
-        //  &olen);
+
+      jnx_size decoded_len;
+      jnx_encoder *encoder = jnx_encoder_create();
+      jnx_uint8 *decoded_secret = 
+        jnx_encoder_b64_decode(encoder,a->shared_secret,
+            strlen(a->shared_secret),&decoded_len);
+
+      jnx_char *decrypted_shared_secret = 
+        asymmetrical_decrypt(osession->keypair,decoded_secret,
+            decoded_len,
+            &olen);
 
       //DEBUG ONLY
-    //  printf("DEBUG!!! -> Peer B says the shared secret is %s\n",
-      //    decrypted_shared_secret);
+      printf("DEBUG => %s\n",decrypted_shared_secret);
+      session_add_shared_secret(osession,decrypted_shared_secret);
       //
+      jnx_encoder_destroy(&encoder);
+      
+      osession->is_connected = 1;
+      printf("Handshake complete.\n");
+      return 0;
     }
   } 
 
@@ -144,6 +158,12 @@ void auth_comms_destroy(auth_comms_service **ac) {
 void auth_comms_initiator_start(auth_comms_service *ac, \
     discovery_service *ds, session *s) {
 
+  if(s->is_connected) {
+
+    printf("This session is already connected.\n");
+    return;
+  }
+
   peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
 
   jnx_uint8 *obuffer;
@@ -160,41 +180,50 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   void *object;
   if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
     AuthReceiver *r = (AuthReceiver *)object;
-    printf("Got the public key of peer B => %s\n",r->receiver_public_key);
     session_add_receiver_public_key(s,r->receiver_public_key);
-  }
-  /* At this point we have a session with the receiver public key
-     we can generate the shared secret and transmit it back */
-  jnx_uint8 *secret;
-  jnx_size s_len = generate_shared_secret(&secret);
+    /* At this point we have a session with the receiver public key
+       we can generate the shared secret and transmit it back */
+    jnx_uint8 *secret;
+    jnx_size s_len = generate_shared_secret(&secret);
 
-  session_add_shared_secret(s,secret);
-  /* wrap this secret in the public key of B */
-  jnx_size encrypted_secret_len;
-  jnx_char *encrypted_secret = asymmetrical_encrypt(s->keypair,
-      secret, &encrypted_secret_len);
-  printf("Encrypted secret length: %d\n",encrypted_secret_len);
+    session_add_shared_secret(s,secret);
 
-  jnx_uint8 *fbuffer;
-  bytes_read = handshake_generate_finish_request(s,encrypted_secret,
-      encrypted_secret_len,&fbuffer);
+    RSA *remote_pub_keypair = 
+      asymmetrical_key_from_string(r->receiver_public_key,PUBLIC);
 
-  jnx_size replysizetwo;
-  reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
-      ac->listener_family,
-      fbuffer,bytes_read,&replysizetwo);
+    print_public_key(remote_pub_keypair);
+    
+      jnx_size encrypted_secret_len;
+    jnx_char *encrypted_secret = asymmetrical_encrypt(remote_pub_keypair,
+        secret, &encrypted_secret_len);
 
-  void *finish_object;
-  if(handshake_did_receive_receiver_request(reply,replysizetwo,&finish_object)){
-    AuthReceiver *r = (AuthReceiver *)object;
-    if(r->is_receiving_finish && !r->is_receiving_public_key) {
-  
-      printf("Handshake complete.\n");
+    jnx_size encoded_len;
+    jnx_encoder *encoder = jnx_encoder_create();
+    jnx_uint8 *encoded_secret = jnx_encoder_b64_encode(encoder,
+        encrypted_secret,encrypted_secret_len,
+        &encoded_len);
+
+    jnx_encoder_destroy(&encoder);
+    jnx_uint8 *fbuffer;
+    bytes_read = handshake_generate_finish_request(s,encoded_secret,encoded_len,&fbuffer);
+
+    jnx_size replysizetwo;
+    reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
+        ac->listener_family,
+        fbuffer,bytes_read,&replysizetwo);
+
+    void *finish_object;
+    if(handshake_did_receive_receiver_request(reply,replysizetwo,&finish_object)){
+      AuthReceiver *r = (AuthReceiver *)object;
+      if(r->is_receiving_finish && !r->is_receiving_public_key) {
+        s->is_connected = 1;
+        printf("Handshake complete.\n");
+      }
     }
+    free(encrypted_secret);
+    free(secret);
+    free(obuffer);
   }
-  free(encrypted_secret);
-  free(secret);
-  free(obuffer);
 }
 void auth_comms_receiver_start(auth_comms_service *ac, \
     discovery_service *ds, session *s) {

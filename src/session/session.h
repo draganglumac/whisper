@@ -45,6 +45,7 @@ typedef struct session {
   jnx_char *shared_secret;
   /* local only */
   RSA *keypair;
+  jnx_int is_connected;
 }session;
 
 void session_add_initiator_public_key(session *s, jnx_char *key);
