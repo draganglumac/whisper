@@ -117,7 +117,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       osession->is_connected = 1;
       printf("Handshake complete.\n");
       printf("Starting secure comms channel.\n");
-      secure_comms_start(osession);
+      secure_comms_start(osession,t->ac->listener_family);
       auth_initiator__free_unpacked(a,NULL);
       return 0;
     }
@@ -219,7 +219,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
         s->is_connected = 1;
         printf("Handshake complete.\n");
         printf("Starting secure comms channel.\n");
-        secure_comms_start(s);
+        secure_comms_start(s,ac->listener_family);
         auth_receiver__free_unpacked(r,NULL);
       }
       free(encrypted_secret);
