@@ -49,4 +49,5 @@ void session_add_shared_secret(session *s, jnx_char *secret);
 
 void session_add_secure_comms_port(session *s, jnx_char *comms_port);
 
+void session_add_remote_peer_guid(session *s, jnx_uint8 *guid_str);
 #endif

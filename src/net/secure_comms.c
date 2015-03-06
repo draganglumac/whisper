@@ -16,6 +16,16 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   jnx_socket *secure_sock = jnx_socket_tcp_create(addr_family);
   /* Not using standard jnx_socket networking here due to bespoke nature of 
    * bi directional socket with non-blocking write properties */
+  switch(e) {
+  
+    case SC_INITIATOR:
+
+      break;
+
+    case SC_RECEIVER:
+
+      break;
+  }
 
 
 } 
