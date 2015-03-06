@@ -320,7 +320,7 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
 int discovery_service_stop(discovery_service *svc) {
   JNXCHECK(svc);
   svc->isrunning = 0;
-  stop_listening(svc);
+//  stop_listening(svc);
   if (svc->update_thread != NULL) {
     cancel_thread(&svc->update_thread);
   }
