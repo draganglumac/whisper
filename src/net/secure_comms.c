@@ -69,6 +69,7 @@ static int connect_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) 
   freeaddrinfo(res);
   return s->socket;
 }
+/*
 typedef struct {
   jnx_int sockfd;
   session *s;
@@ -88,6 +89,7 @@ void *comms_listener_bootrap(void *args) {
   }
   free(d);
 }
+*/
 void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
   JNXCHECK(s->is_connected);
@@ -122,16 +124,15 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
       break;
   }
   JNXCHECK(sockfd != -1);
-  /* At this point both the initiator and receiver are equal and have fd's relevent to them 
-   * that are connected */
+  // At this point both the initiator and receiver are equal and have fd's relevent to them 
+  //  that are connected *
 
-  secure_comms_dto *dto = malloc(sizeof(secure_comms_dto));
+  /*secure_comms_dto *dto = malloc(sizeof(secure_comms_dto));
   dto->sockfd = sockfd;
   dto->s = s;
-  /* Let's thread out a receiver for both sockets */
   jnx_thread_create_disposable(comms_listener_bootrap,(void*)dto);
-
-  /* lets test this */
+  */
+  /* 
   sleep(3);
   char buffer[256];
   bzero(buffer,256);
@@ -143,6 +144,7 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
 
   write(s->secure_comms_fd,encrypted_string,len);
   free(encrypted_string);
+  */
 } 
 void secure_comms_receiver_start(discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
