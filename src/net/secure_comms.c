@@ -12,7 +12,11 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
   JNXCHECK(s->is_connected);
   printf("Starting secure comms on %s.\n",s->secure_comms_port);
-  
+
+  peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
+  printf("Starting a tunnel to %s\n",remote_peer->host_address);
+
+
   jnx_socket *secure_sock = jnx_socket_tcp_create(addr_family);
   /* Not using standard jnx_socket networking here due to bespoke nature of 
    * bi directional socket with non-blocking write properties */
