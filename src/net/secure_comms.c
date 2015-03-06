@@ -116,7 +116,6 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   /* At this point both the initiator and receiver are equal and have fd's relevent to them 
    * that are connected */
 
-
   /* Let's thread out a receiver for both sockets */
   jnx_thread_create_disposable(comms_listener_bootrap,(void*)s->secure_comms_fd);
 
@@ -125,7 +124,7 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   char buffer[256];
   bzero(buffer,256);
   strcpy(buffer,"Hello from ");
-  strcat("%s.\n",local_peer->host_address);
+  strcat(buffer,local_peer->host_address);
   write(s->secure_comms_fd,buffer,strlen(buffer));
 } 
 void secure_comms_receiver_start(discovery_service *ds,
