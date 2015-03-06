@@ -91,22 +91,24 @@ jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, \
   free(err);
   return decrypted_message;
 }
-jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size,jnx_size *olen){
+jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size){
   jnx_char *res;
   DES_cblock key2;
   DES_key_schedule schedule;
+  jnx_int n = 0;
   size += 1;
   res = malloc(size);
   bzero(res,size);
   memcpy(key2,key,8);
   DES_set_odd_parity(&key2);
   DES_set_key_checked(&key2,&schedule);
-  DES_cfb64_encrypt(msg,res,size,&schedule,&key2,olen,DES_ENCRYPT);
+  DES_cfb64_encrypt(msg,res,size,&schedule,&key2,&n,DES_ENCRYPT);
   return res;
 }
-jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size,jnx_size *olen) {
+jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size){
   jnx_char *res;
   DES_cblock key2;
+  jnx_int n = 0;
   DES_key_schedule schedule;
   size += 1;
   res = malloc(size);
@@ -114,7 +116,7 @@ jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size,jnx_s
   memcpy(key2,key,8);
   DES_set_odd_parity(&key2);
   DES_set_key_checked(&key2,&schedule);
-  DES_cfb64_encrypt(msg,res,size,&schedule,&key2,olen,DES_DECRYPT);
+  DES_cfb64_encrypt(msg,res,size,&schedule,&key2,&n,DES_DECRYPT);
   return res;
 }
 jnx_size generate_shared_secret(jnx_uint8 **buffer) {

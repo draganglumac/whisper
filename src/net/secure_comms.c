@@ -82,8 +82,7 @@ void *comms_listener_bootrap(void *args) {
     jnx_int bytes_read = read(d->sockfd,buffer,1024);
     if(bytes_read > 0) {
       jnx_size len = strlen(buffer);
-      jnx_size olen;
-      jnx_char *decrypted = symmetrical_decrypt(d->s->shared_secret,buffer,len,&olen);
+      jnx_char *decrypted = symmetrical_decrypt(d->s->shared_secret,buffer,len);
       printf("Decrypted message => %s\n",decrypted);
     }
   }
@@ -140,10 +139,9 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   strcat(buffer,local_peer->host_address);
 
   jnx_size len = strlen(buffer);
-  jnx_size olen;
-  jnx_char *encrypted_string = symmetrical_encrypt(s->shared_secret,buffer,len,&olen); 
+  jnx_char *encrypted_string = symmetrical_encrypt(s->shared_secret,buffer,len); 
 
-  write(s->secure_comms_fd,encrypted_string,olen);
+  write(s->secure_comms_fd,encrypted_string,len);
   free(encrypted_string);
 } 
 void secure_comms_receiver_start(discovery_service *ds,

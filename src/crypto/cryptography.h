@@ -38,9 +38,9 @@ jnx_char *asymmetrical_encrypt(RSA *keypair,jnx_uint8 *message, jnx_size *out_le
 jnx_char *asymmetrical_decrypt(RSA *keypair,
     jnx_uint8 *message, jnx_size in_len, jnx_size *out_len);
 
-jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size,jnx_size *olen);
+jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size);
 
-jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size,jnx_size *olen);
+jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size);
 
 jnx_size generate_shared_secret(jnx_uint8 **buffer);
 #endif
