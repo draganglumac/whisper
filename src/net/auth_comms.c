@@ -16,6 +16,7 @@
 #include "../session/auth_receiver.pb-c.h"
 #include "../app/app.h"
 #include "../session/handshake_control.h"
+#include "../net/secure_comms.h"
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
 #define CHALLENGE_REQUEST_FINISH 0
 
@@ -39,11 +40,6 @@ static jnx_uint8 *send_data_await_reply(jnx_char *hostname, jnx_char *port,
   *receipt_bytes = jnx_socket_tcp_send_with_receipt(sock,hostname,port,buffer,bytes,&reply);
   jnx_socket_destroy(&sock);
   return reply;
-}
-static void send_stop_packet(auth_comms_service *ac) {
-  void *buffer;
-  send_data("127.0.0.1",ac->listener_port,ac->listener_family,
-      "STOP",5);
 }
 static jnx_int32 listener_callback(jnx_uint8 *payload,
     jnx_size bytes_read, jnx_socket *s,int connected_socket, void *context) {
@@ -120,18 +116,12 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       jnx_encoder_destroy(&encoder);
       osession->is_connected = 1;
       printf("Handshake complete.\n");
+      printf("Starting secure comms channel.\n");
+      secure_comms_start(osession);
       auth_initiator__free_unpacked(a,NULL);
       return 0;
     }
   } 
-
-  char command[5];
-  bzero(command,5);
-  memcpy(command,payload,4);
-  if(strcmp(command,"STOP") == 0) {
-    printf("Stopping auth comms listener...\n");
-    return -1;
-  }
   return 0;
 }
 static void *listener_bootstrap(void *args) {
@@ -154,8 +144,6 @@ void auth_comms_listener_start(auth_comms_service *ac, discovery_service *ds,
   ac->listener_thread = jnx_thread_create(listener_bootstrap,ts);
 }
 void auth_comms_destroy(auth_comms_service **ac) {
-  send_stop_packet(*ac);
-  sleep(1);
   jnx_socket_destroy(&(*ac)->listener_socket);
 }
 void auth_comms_initiator_start(auth_comms_service *ac, \
@@ -202,8 +190,8 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
       asymmetrical_key_from_string(r->receiver_public_key,PUBLIC);
 
     print_public_key(remote_pub_keypair);
-    
-      jnx_size encrypted_secret_len;
+
+    jnx_size encrypted_secret_len;
     jnx_char *encrypted_secret = asymmetrical_encrypt(remote_pub_keypair,
         secret, &encrypted_secret_len);
 
@@ -221,7 +209,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
         ac->listener_family,
         fbuffer,bytes_read,&replysizetwo);
-    
+
     auth_receiver__free_unpacked(r,NULL);
 
     void *finish_object;
@@ -230,16 +218,14 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
       if(r->is_receiving_finish && !r->is_receiving_public_key) {
         s->is_connected = 1;
         printf("Handshake complete.\n");
+        printf("Starting secure comms channel.\n");
+        secure_comms_start(s);
+        auth_receiver__free_unpacked(r,NULL);
       }
-      auth_receiver__free_unpacked(r,NULL);
+      free(encrypted_secret);
+      free(secret);
+      free(obuffer);
     }
-    free(encrypted_secret);
-    free(secret);
-    free(obuffer);
   }
-}
-void auth_comms_receiver_start(auth_comms_service *ac, \
-    discovery_service *ds, session *s) {
-
 }
 
