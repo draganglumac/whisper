@@ -77,7 +77,7 @@ void *comms_listener_bootrap(void *args) {
   secure_comms_dto *d = (secure_comms_dto*)args;
 
   jnx_char buffer[1024];
-  while(1) {
+  while(d->s->is_connected) {
     memset(buffer,0,1024);
     jnx_int bytes_read = read(d->sockfd,buffer,1024);
     if(bytes_read > 0) {
