@@ -91,12 +91,11 @@ jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, \
   free(err);
   return decrypted_message;
 }
-jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
+jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size){
   jnx_char *res;
-  jnx_int n = 0;
-  jnx_size dlen;
   DES_cblock key2;
   DES_key_schedule schedule;
+  jnx_int n = 0;
   size += 1;
   res = malloc(size);
   bzero(res,size);
@@ -106,11 +105,10 @@ jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
   DES_cfb64_encrypt(msg,res,size,&schedule,&key2,&n,DES_ENCRYPT);
   return res;
 }
-jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
+jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size){
   jnx_char *res;
-  jnx_int n = 0;
-  jnx_size dlen;
   DES_cblock key2;
+  jnx_int n = 0;
   DES_key_schedule schedule;
   size += 1;
   res = malloc(size);
