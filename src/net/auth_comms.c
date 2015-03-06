@@ -154,8 +154,8 @@ void auth_comms_listener_start(auth_comms_service *ac, discovery_service *ds,
   ac->listener_thread = jnx_thread_create(listener_bootstrap,ts);
 }
 void auth_comms_destroy(auth_comms_service **ac) {
-  cancel_thread(&(*ac)->listener_thread);
   send_stop_packet(*ac);
+  sleep(1);
   jnx_socket_destroy(&(*ac)->listener_socket);
 }
 void auth_comms_initiator_start(auth_comms_service *ac, \
