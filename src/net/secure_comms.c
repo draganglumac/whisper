@@ -8,8 +8,8 @@
 #include "secure_comms.h"
 #include <jnxc_headers/jnxsocket.h>
 
-void secure_comms_start(discovery_service *ds,
-    session *s,jnx_unsigned_int addr_family){  
+void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
+    session *s,jnx_unsigned_int addr_family) {
   JNXCHECK(s->is_connected);
   printf("Starting secure comms on %s.\n",s->secure_comms_port);
   
@@ -18,5 +18,13 @@ void secure_comms_start(discovery_service *ds,
    * bi directional socket with non-blocking write properties */
 
 
+} 
+void secure_comms_receiver_start(discovery_service *ds,
+    session *s,jnx_unsigned_int addr_family) {
+  secure_comms_start(SC_RECEIVER,ds,s,addr_family);
 }
+void secure_comms_initiator_start(discovery_service *ds,
+    session *s,jnx_unsigned_int addr_family) {
+  secure_comms_start(SC_INITIATOR,ds,s,addr_family);
+} 
 
