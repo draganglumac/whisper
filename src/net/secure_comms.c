@@ -44,6 +44,29 @@ static int listen_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) {
   socklen_t addr_size = sizeof(their_addr);
   return accept(s->socket,(struct sockaddr*)&their_addr,&addr_size);
 }
+static int connect_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) {
+  struct addrinfo hints, *res;
+  memset(&hints,0,sizeof(hints));
+  hints.ai_family = s->addrfamily;
+  hints.ai_socktype = s->stype;
+
+  jnx_int32 rg = 0;
+
+  if((rg = getaddrinfo(remote_peer->host_address,ses->secure_comms_port,&hints,&res)) != 0) {
+    JNX_LOG(DEFAULT_CONTEXT,"%s\n",gai_strerror(rg));
+    return -1;
+  }
+  if(!s->isconnected) {
+    if(connect(s->socket,res->ai_addr,res->ai_addrlen) != 0) {
+      perror("connect:");
+      freeaddrinfo(res);
+      return 1;
+    }
+    s->isconnected = 1;
+  }
+  freeaddrinfo(res);
+  return s->socket;
+}
 void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
   JNXCHECK(s->is_connected);
@@ -55,21 +78,28 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   jnx_socket *secure_sock = jnx_socket_tcp_create(addr_family);
   /* Not using standard jnx_socket networking here due to bespoke nature of 
    * bi directional socket with non-blocking write properties */
+  jnx_int sockfd = -1;
   switch(e) {
 
     case SC_INITIATOR:
       printf("About to initiate connection to remote secure_comms_port.\n");
       sleep(3);
+      sockfd = connect_for_socket_fd(secure_sock,remote_peer,s); 
+      s->secure_comms_fd = sockfd;
+      printf("Secure socket fd: %d\n",s->secure_comms_fd);
       break;
 
     case SC_RECEIVER:
       printf("Setting up recevier.\n");
-      jnx_int sockfd = listen_for_socket_fd(secure_sock,remote_peer,s);     
+      sockfd = listen_for_socket_fd(secure_sock,remote_peer,s);     
       JNXCHECK(sockfd != -1);
       s->secure_comms_fd = sockfd;
+      printf("Secure socket fd: %d\n",s->secure_comms_fd);
       break;
   }
-
+  JNXCHECK(sockfd != -1);
+  /* At this point both the initiator and receiver are equal and have fd's relevent to them 
+   * that are connected */
 
 } 
 void secure_comms_receiver_start(discovery_service *ds,
