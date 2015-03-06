@@ -14,6 +14,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <jnxc_headers/jnxthread.h>
+
 static int listen_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) {
   jnx_int32 optval = 1;
   struct addrinfo hints, *res, *p;
@@ -67,11 +69,24 @@ static int connect_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) 
   freeaddrinfo(res);
   return s->socket;
 }
+void *comms_listener_bootrap(void *args) {
+  jnx_int sockfd = (jnx_int)args;
+
+  jnx_char buffer[1024];
+  memset(buffer,0,1024);
+  while(1) {
+    jnx_int bytes_read = read(sockfd,buffer,1024);
+    if(bytes_read > 0) {
+      printf("Read => %s\n",buffer);
+    }
+  }
+}
 void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
   JNXCHECK(s->is_connected);
   printf("Starting secure comms on %s.\n",s->secure_comms_port);
 
+  peer *local_peer = peerstore_get_local_peer(ds->peers);
   peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
   printf("Starting a tunnel to %s\n",remote_peer->host_address);
 
@@ -101,6 +116,17 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   /* At this point both the initiator and receiver are equal and have fd's relevent to them 
    * that are connected */
 
+
+  /* Let's thread out a receiver for both sockets */
+  jnx_thread_create_disposable(comms_listener_bootrap,(void*)s->secure_comms_fd);
+
+  /* lets test this */
+  sleep(3);
+  char buffer[256];
+  bzero(buffer,256);
+  strcpy(buffer,"Hello from ");
+  strcat("%s.\n",local_peer->host_address);
+  write(s->secure_comms_fd,buffer,strlen(buffer));
 } 
 void secure_comms_receiver_start(discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
