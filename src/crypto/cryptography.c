@@ -91,7 +91,7 @@ jnx_char *asymmetrical_decrypt(RSA *keypair, jnx_uint8 *message, \
   free(err);
   return decrypted_message;
 }
-jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
+jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size,jnx_size *olen){
   jnx_char *res;
   jnx_int n = 0;
   jnx_size dlen;
@@ -104,9 +104,10 @@ jnx_char *symmetrical_encrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
   DES_set_odd_parity(&key2);
   DES_set_key_checked(&key2,&schedule);
   DES_cfb64_encrypt(msg,res,size,&schedule,&key2,&n,DES_ENCRYPT);
+  *olen = n;
   return res;
 }
-jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
+jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size,jnx_size *olen) {
   jnx_char *res;
   jnx_int n = 0;
   jnx_size dlen;
@@ -119,6 +120,7 @@ jnx_char *symmetrical_decrypt(jnx_uint8 *key,jnx_uint8 *msg, jnx_size size) {
   DES_set_odd_parity(&key2);
   DES_set_key_checked(&key2,&schedule);
   DES_cfb64_encrypt(msg,res,size,&schedule,&key2,&n,DES_DECRYPT);
+  *olen = n;
   return res;
 }
 jnx_size generate_shared_secret(jnx_uint8 **buffer) {
