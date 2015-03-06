@@ -95,7 +95,9 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   printf("Starting secure comms on %s.\n",s->secure_comms_port);
 
   peer *local_peer = peerstore_get_local_peer(ds->peers);
+  JNXCHECK(local_peer); 
   peer *remote_peer = peerstore_lookup(ds->peers,&(*s).remote_peer_guid);
+  JNXCHECK(remote_peer);
   printf("Starting a tunnel to %s\n",remote_peer->host_address);
 
   jnx_socket *secure_sock = jnx_socket_tcp_create(addr_family);
