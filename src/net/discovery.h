@@ -46,6 +46,7 @@ extern discovery_strategy broadcast_update_strategy;
 
 extern int peer_update_interval; // seconds
 
+#define INITIAL_DISCOVERY_REQS 3
 #define ASK_ONCE_STRATEGY NULL
 #define POLLING_UPDATE_STRATEGY polling_update_strategy
 #define BROADCAST_UPDATE_STRATEGY broadcast_update_strategy

@@ -291,6 +291,17 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
   svc->update_time_lock = jnx_thread_mutex_create();	
   return svc;
 }
+void initiate_discovery(discovery_service *svc) {
+  send_peer_packet(svc);
+  int i;
+  for (i = 0; i < INITIAL_DISCOVERY_REQS; i++) {
+    send_discovery_request(svc);
+    printf(".");
+    fflush(stdout);
+    sleep(1);
+  }
+  printf("\n");
+}
 int discovery_service_start(discovery_service *svc, discovery_strategy *strategy) {
   JNXCHECK(svc);
 
@@ -304,6 +315,8 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
     JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
     return ERR_DISCOVERY_START;
   }
+
+  initiate_discovery(svc);
 
   if (strategy == NULL) {
     svc->peers->is_active_peer = is_active_peer_ask_once;
