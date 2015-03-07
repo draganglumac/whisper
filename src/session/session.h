@@ -18,16 +18,7 @@
 #define __SESSION_H__
 #include "../crypto/cryptography.h"
 #include <jnxc_headers/jnxguid.h>
-
-typedef enum session_handshake_sender {
-  SENDER_AWAIT_PUB,
-  SENDER_AWAIT_FINISH
-}session_handshake_sender;
-
-typedef enum session_handshake_receiver {
-  RECEIVER_START,
-  RECEIVER_SHARED
-}session_handshake_receiver;
+#include <jnxc_headers/jnxqueue.h>
 
 typedef enum session_state {
   SESSION_STATE_OKAY,
@@ -43,13 +34,20 @@ typedef struct session {
   jnx_char *initiator_public_key;
   jnx_char *receiver_public_key;
   jnx_char *shared_secret;
+  jnx_int is_connected;
+  jnx_char *secure_comms_port;
+  jnx_int secure_comms_fd;
   /* local only */
   RSA *keypair;
-  jnx_int is_connected;
 }session;
 
 void session_add_initiator_public_key(session *s, jnx_char *key);
+
 void session_add_receiver_public_key(session *s, jnx_char *key);
+
 void session_add_shared_secret(session *s, jnx_char *secret);
 
+void session_add_secure_comms_port(session *s, jnx_char *comms_port);
+
+void session_add_remote_peer_guid(session *s, jnx_uint8 *guid_str);
 #endif
