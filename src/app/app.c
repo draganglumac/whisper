@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <jnxc_headers/jnxterm.h>
 #include <jnxc_headers/jnxthread.h>
+#include <jnxc_headers/jnx_tcp_socket.h>
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
@@ -310,11 +311,9 @@ void set_up_session_service(app_context_t *context){
 void set_up_auth_comms(app_context_t *context) {
   context->auth_comms = auth_comms_create();
   context->auth_comms->ar_callback = app_accept_or_reject_session;
-  context->auth_comms->listener_port = malloc(strlen("9991")+1);
-  bzero(context->auth_comms->listener_port,strlen("9991")+1);
-  strcpy(context->auth_comms->listener_port,"9991");
-  context->auth_comms->listener_family = AF_INET;
-  context->auth_comms->listener_socket = jnx_socket_tcp_create(AF_INET);
+  context->auth_comms->listener = jnx_socket_tcp_listener_create("9991",
+    AF_INET,15);
+  
   auth_comms_listener_start(context->auth_comms,context->discovery,context->session_serv);
 }
 app_context_t *app_create_context(jnx_hashmap *config) {

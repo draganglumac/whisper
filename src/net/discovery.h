@@ -19,7 +19,7 @@
 #define __DISCOVERY_H__
 
 #include <jnxc_headers/jnxtypes.h>
-#include <jnxc_headers/jnxsocket.h>
+#include <jnxc_headers/jnx_udp_socket.h>
 #include <jnxc_headers/jnxthread.h>
 #include <time.h>
 #include "../data/peer.h"
@@ -31,7 +31,7 @@ typedef struct {
   jnx_socket *sock_send;
   jnx_socket *sock_receive;
   char *broadcast_group_address;
-  udp_socket_listener_callback_with_context receive_callback;
+  jnx_udp_listener_callback receive_callback;
   int isrunning;
   peerstore *peers; // synchronised
   jnx_thread *update_thread;
