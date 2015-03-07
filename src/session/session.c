@@ -7,6 +7,13 @@
 
 #include "session.h"
 
+session_state session_message_write(session *s,jnx_char *message) {
+
+}
+ 
+session_state session_message_read_connect(session *s, session_read_callback cb) {
+
+}
 void session_add_initiator_public_key(session *s, jnx_char *key) {
   JNXCHECK(key);
   jnx_size len = strlen(key);
