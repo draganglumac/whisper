@@ -60,6 +60,7 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 void discovery_service_cleanup(discovery_service **svc);
 int discovery_service_start(discovery_service *svc, discovery_strategy *strategy);
 int discovery_service_stop(discovery_service *svc);
+void discovery_notify_peers_of_shutdown(discovery_service *svc);
 time_t get_last_update_time(discovery_service *svc);
 
 void cancel_thread(jnx_thread **thr);

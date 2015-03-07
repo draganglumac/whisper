@@ -98,6 +98,7 @@ int run_app(app_context_t *context) {
         break;
       case CMD_QUIT:
         app_quit_message();
+        discovery_notify_peers_of_shutdown(context->discovery);
         return 0;
     }
     free(cmd_string);
