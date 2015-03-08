@@ -41,8 +41,25 @@ peerstore *peerstore_init(peer *local_peer, is_active_peer_t is_active_peer) {
 peer *peerstore_get_local_peer(peerstore *ps) {
   return ps->local_peer;
 }
+static void handle_peer_reconnection(peerstore *ps, peer *p) {
+  char *guid_str = (char *) jnx_hash_get(NAMESTORE(ps->namestore), p->user_name);
+  if (guid_str != NULL) {
+    char *new_guid_str;
+    jnx_guid_to_string(&p->guid, &new_guid_str);
+    if (0 != strcmp(guid_str, new_guid_str)) {
+      peer *old_peer = jnx_hash_get(PEERSTORE(ps->peers), guid_str);
+      if (old_peer != NULL
+          && 0 == strcmp(p->host_address, old_peer->host_address)) {
+        jnx_hash_delete_value(PEERSTORE(ps->peers), guid_str);
+        peer_free(&old_peer);
+        free(guid_str);
+      }
+    }
+  }
+}
 void peerstore_store_peer(peerstore *ps, peer *p) {
   jnx_thread_lock(ps->store_lock);
+  handle_peer_reconnection(ps, p);
   p->last_seen = time(0);
   char *guid_str;
   jnx_guid_to_string(&p->guid, &guid_str);
