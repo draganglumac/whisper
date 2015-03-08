@@ -8,11 +8,26 @@
 #include "session.h"
 
 session_state session_message_write(session *s,jnx_char *message) {
-
+  
+  /* take the raw message and des encrypt it */
+  jnx_size len = strlen(message);
+  jnx_char *encrypted = symmetrical_encrypt(s->shared_secret,message,
+      len);
+  write(s->secure_comms_fd,encrypted,strlen(encrypted));
+  return SESSION_STATE_OKAY;
 }
- 
-session_state session_message_read_connect(session *s, session_read_callback cb) {
-
+session_state session_message_read_and_decrypt(session *s, 
+    jnx_char *message,jnx_char **omessage) {
+  jnx_size len = strlen(message);
+  jnx_char *decrypted = symmetrical_decrypt(s->shared_secret,
+      message,len);
+  *omessage = decrypted;
+  return SESSION_STATE_OKAY;
+}
+session_state session_message_read_connect(session *s, session_read_callback *cb) {
+  /* Wip will call session_message_read_and_decrypt internally on internal callback before releasing up */
+  s->session_callback = cb;
+  return SESSION_STATE_OKAY;
 }
 void session_add_initiator_public_key(session *s, jnx_char *key) {
   JNXCHECK(key);
