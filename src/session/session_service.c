@@ -81,7 +81,7 @@ void session_service_destroy(session_service **service) {
   *service = NULL;
 }
 session_state session_service_create_session(session_service *service, session **osession) {
-  session *s = malloc(sizeof(session));
+  session *s = calloc(1, sizeof(session));
   s->keypair = asymmetrical_generate_key(2048);  
   s->is_connected = 0;
   s->session_callback = default_session_callback;

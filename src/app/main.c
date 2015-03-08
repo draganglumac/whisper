@@ -81,7 +81,10 @@ int run_app(app_context_t *context) {
 
           /* async handshake */
           app_initiate_handshake(context,s);
-          //app_create_gui_session(s);
+          while (s->secure_comms_fd == 0) {
+            sleep(1);
+          }
+          app_create_gui_session(s);
         }else {
           printf("Session could not be started.\nDid you spell your target \
               username correctly?\n");
@@ -98,6 +101,7 @@ int run_app(app_context_t *context) {
         break;
       case CMD_QUIT:
         app_quit_message();
+        discovery_notify_peers_of_shutdown(context->discovery);
         return 0;
     }
     free(cmd_string);

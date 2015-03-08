@@ -111,6 +111,16 @@ peer *peerstore_lookup_by_username(peerstore *ps, char *username) {
   jnx_thread_unlock(ps->store_lock);
   return p;
 }
+void peerstore_peer_no_longer_active(peerstore *ps, peer *p) {
+  jnx_thread_lock(ps->store_lock);
+  char *guid_str = jnx_hash_get(NAMESTORE(ps->namestore), p->user_name);
+  jnx_hash_delete_value(NAMESTORE(ps->namestore), p->user_name);
+  peer *pr = (peer *) jnx_hash_get(PEERSTORE(ps->peers), guid_str);
+  jnx_hash_delete_value(PEERSTORE(ps->peers), guid_str);
+  peer_free(&pr);
+  free(guid_str);
+  jnx_thread_unlock(ps->store_lock);
+}
 int peerstore_get_active_guids(peerstore *ps, jnx_guid ***guids) {
   jnx_thread_lock(ps->store_lock);
   jnx_hashmap *peers = PEERSTORE(ps->peers);

@@ -46,6 +46,7 @@ extern discovery_strategy broadcast_update_strategy;
 
 extern int peer_update_interval; // seconds
 
+#define INITIAL_DISCOVERY_REQS 3
 #define ASK_ONCE_STRATEGY NULL
 #define POLLING_UPDATE_STRATEGY polling_update_strategy
 #define BROADCAST_UPDATE_STRATEGY broadcast_update_strategy
@@ -59,6 +60,7 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
 void discovery_service_cleanup(discovery_service **svc);
 int discovery_service_start(discovery_service *svc, discovery_strategy *strategy);
 int discovery_service_stop(discovery_service *svc);
+void discovery_notify_peers_of_shutdown(discovery_service *svc);
 time_t get_last_update_time(discovery_service *svc);
 
 void cancel_thread(jnx_thread **thr);

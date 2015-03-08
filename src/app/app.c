@@ -23,7 +23,7 @@
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
 void app_create_gui_session(session *s) {
-  context_t *c = context_create();
+  gui_context_t *c = gui_create(s);
   pthread_t read_thread;
   pthread_create(&read_thread, 0,read_loop,(void*)c);
   while (TRUE) {
@@ -113,10 +113,9 @@ void app_list_active_peers(app_context_t *context) {
   printf("%s",
       "--------------------------------+----------------+----------------\n");
   show_active_peers(context->discovery->peers);
-  peer *local = peerstore_lookup_by_username(context->discovery->peers, 
-      peerstore_get_local_peer(context->discovery->peers)->user_name);
   printf("\n");
   printf("Local peer:\n");
+  peer *local = peerstore_get_local_peer(context->discovery->peers);
   pretty_print_peer_in_col(local, JNX_COL_GREEN);
   printf("\n");
 }
@@ -175,12 +174,12 @@ static void set_up_discovery_service(app_context_t *context) {
   context->discovery = discovery_service_create(port, AF_INET, broadcast_address, ps);
   char *discovery_strategy = (char *) jnx_hash_get(config, "DISCOVERY_STRATEGY");
   if (discovery_strategy == NULL) {
-    JNX_LOG(0, "Starting discovery service with heartbeat srategy.");
-    discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
+    JNX_LOG(0, "Starting discovery service with polling srategy.");
+    discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
   }	else {
-    if (0 == strcmp(discovery_strategy, "polling")) {
-      JNX_LOG(0, "Starting discovery service with polling srategy.");
-      discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
+    if (0 == strcmp(discovery_strategy, "heartbeat")) {
+      JNX_LOG(0, "Starting discovery service with heartbeat srategy.");
+      discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
     }
   }
 }
@@ -212,6 +211,7 @@ void *handshake_async_start(void *args) {
   auth_comms_initiator_start(h->context->auth_comms,
       h->context->discovery,h->s);
   free(h);
+  return NULL;
 }
 void app_initiate_handshake(app_context_t *context,session *s) {
   handshake_dto *h= malloc(sizeof(handshake_dto));
