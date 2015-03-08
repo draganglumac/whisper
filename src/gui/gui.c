@@ -50,33 +50,35 @@ void display_logo() {
   attroff(COLOR_PAIR(COL_LOGO) | A_BOLD);
   refresh();
 }
-context_t *context_create() {
+gui_context_t *gui_create(session *s) {
   pthread_mutex_init(&output_mutex, NULL);
   pthread_cond_init(&output_cond, NULL);
-  context_t *c = malloc(sizeof(context_t));
+  gui_context_t *c = malloc(sizeof(gui_context_t));
   ui_t *ui = malloc(sizeof(ui_t));
   initscr();
   init_colours();
   display_logo();
   ui->screen = newwin(LINES - 6, COLS - 1, 1, 1);
   scrollok(ui->screen, TRUE);
-  box(ui->screen, 0, 0);
+//  box(ui->screen, 0, 0);
+  wborder(ui->screen, '|', '|', '-', '-', '+', '+', '+', '+');
   ui->next_line = 1;
   wrefresh(ui->screen);
   ui->prompt = newwin(4, COLS - 1, LINES - 5, 1);
   show_prompt(ui);
 
   c->ui = ui;
+  c->s = s;
   c->msg = NULL;
   return c;
 }
-void context_destroy(context_t *c) {
+void context_destroy(gui_context_t *c) {
   delwin(c->ui->screen);
   delwin(c->ui->prompt);
   endwin();
   free(c);
 }
-char *get_message(context_t *c){
+char *get_message(gui_context_t *c){
   char *msg = malloc(1024);
   wmove(c->ui->prompt, 1, 4);
   wgetstr(c->ui->prompt, msg);
@@ -107,11 +109,11 @@ void display_message(ui_t *ui, char *msg, int col_flag) {
   wmove(ui->prompt, row, col);
   wrefresh(ui->prompt);
 }
-void display_local_message(context_t *c, char *msg) {
+void display_local_message(gui_context_t *c, char *msg) {
   display_message(c->ui, msg, COL_LOCAL);
   free(msg);
 }
-void display_remote_message(context_t *c, char *msg) {
+void display_remote_message(gui_context_t *c, char *msg) {
   display_message(c->ui, msg + 2, COL_REMOTE);
   free(msg);
 }
@@ -127,7 +129,7 @@ void wait_for_message() {
     printf("Error in waiting for the mesage, Error %d\n", retval);
   }
 }
-void send_message_to_context(context_t *context, char *message) {
+void send_message_to_context(gui_context_t *context, char *message) {
   pthread_mutex_lock(&output_mutex);
   context->msg = message;
   pthread_mutex_unlock(&output_mutex);
@@ -135,17 +137,20 @@ void send_message_to_context(context_t *context, char *message) {
 }
 
 void *read_loop(void *data) {
-  context_t *context = (context_t *) data;
+  gui_context_t *context = (gui_context_t *) data;
   while(TRUE) {
     char *msg = get_message(context);
-    send_message_to_context(context, msg);
     if (strcmp(msg, ":q") == 0) {
       break;
+    }
+    else {
+      session_state res = session_message_write(context->s, msg);
+      display_local_message(context, msg);
     }
   }
   return NULL;
 }
-int output_next_message_in_context(context_t *context) {
+int output_next_message_in_context(gui_context_t *context) {
   pthread_mutex_lock(&output_mutex);	
   wait_for_message();
   ui_t *cui = context->ui;

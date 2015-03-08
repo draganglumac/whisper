@@ -20,6 +20,7 @@
 
 #include <pthread.h>
 #include <ncurses.h>
+#include "../session/session.h"
 
 typedef struct {
   WINDOW *prompt;
@@ -29,15 +30,16 @@ typedef struct {
 
 typedef struct {
   ui_t *ui;
+  session *s;
   char *msg;
-} context_t;
+} gui_context_t;
 
-context_t *context_create();
-void context_destroy(context_t *c);
-char *get_message(context_t *c);
-void display_local_message(context_t *c, char *msg);
-void display_remote_message(context_t *c, char *msg);
+gui_context_t *gui_create(session *s);
+void context_destroy(gui_context_t *c);
+char *get_message(gui_context_t *c);
+void display_local_message(gui_context_t *c, char *msg);
+void display_remote_message(gui_context_t *c, char *msg);
 void *read_loop(void *data);
-int output_next_message_in_context(context_t *context);
+int output_next_message_in_context(gui_context_t *c);
 
 #endif
