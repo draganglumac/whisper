@@ -55,9 +55,13 @@ void wait_for_flag(int *flag) {
 
 static int list_message_received = 0;
 int starting_service_spy(char *message, int len, jnx_socket *s, void *context) {
-  JNXCHECK(strcmp(message, "LIST") == 0);
-  list_message_received = 1;
-  return -1;
+  JNXCHECK(strncmp(message, "PEER", 4) == 0
+           || strcmp(message, "LIST") == 0);
+  if (strcmp(message, "LIST") == 0) {
+    list_message_received = 1;
+    return -1;
+  }
+  return 0;
 }
 
 // *** Discovery service test runner ***
@@ -132,18 +136,6 @@ int test_restarting_service(discovery_service *svc) {
   return CLEANUP;
 }
 
-int test_peer_packet_sent_after_list_packet_received(discovery_service *svc) {
-  jnx_guid *guid = &(svc->peers->local_peer->guid);
-  discovery_service_start(svc, ASK_ONCE_STRATEGY);
-  JNXCHECK(NULL == peerstore_lookup(svc->peers, guid));
-  while (NULL == peerstore_lookup(svc->peers, guid)) {
-    printf(".");
-    fflush(stdout);
-    sleep(1);
-  }
-  printf("\n");
-  return CLEANUP;
-}
 int test_setting_peer_update_interval(discovery_service *svc) {
   JNXCHECK(peer_update_interval == 10);
   peer_update_interval = 20;
@@ -183,9 +175,6 @@ int main(int argc, char **argv) {
 
   JNX_LOG(NULL, "Test restarting discovery service.");
   run_discovery_service_test(test_restarting_service);
-
-  JNX_LOG(NULL, "Test PEER packet is sent after discovery service recieves LIST packet.");
-  run_discovery_service_test(test_peer_packet_sent_after_list_packet_received);	
 
   JNX_LOG(NULL, "Test setting peer_update_interval global variable.");
   run_discovery_service_test(test_setting_peer_update_interval);
