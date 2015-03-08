@@ -28,6 +28,8 @@
 #include "../data/peer.h"
 #include "../err/whisper_errors.h"
 
+extern void peerstore_peer_no_longer_active(peerstore *ps, peer *p);
+
 typedef struct {
   jnx_socket *sock;
   discovery_service *svc;
@@ -78,10 +80,16 @@ static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size byt
 }
 static jnx_int32 handle_stop(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
   peer *p = ntopeer(payload, bytesread);
-  if (PEERS_EQUIVALENT == peers_compare(p, peerstore_get_local_peer(svc->peers))) {
+  if (PEERS_EQUIVALENT
+      == peers_compare(p, peerstore_get_local_peer(svc->peers))) {
+    peer_free(&p);
     return -1;
-  }  
-  return 0;
+  }
+  else {
+    peerstore_peer_no_longer_active(svc->peers, p);
+    peer_free(&p);
+    return 0;
+  }
 }
 // IP filtering function - say for filtering broadcast address, or local IP etc.
 typedef struct sockaddr*(*address_mapping)(struct ifaddrs *);
@@ -247,10 +255,6 @@ void cancel_thread(jnx_thread **thr) {
   jnx_thread_handle_destroy(temp);
   *thr = NULL;
 }
-static int stop_listening(discovery_service *svc) {
-  int dont_block = 1; 
-  return ioctl(svc->sock_receive->socket, FIONBIO, (char *) &dont_block);
-}
 
 // Broadcast or Multicast - call the appropriate function
 static void set_up_sockets_for_broadcast(discovery_service *svc) {
@@ -291,6 +295,17 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
   svc->update_time_lock = jnx_thread_mutex_create();	
   return svc;
 }
+void initiate_discovery(discovery_service *svc) {
+  send_peer_packet(svc);
+  int i;
+  for (i = 0; i < INITIAL_DISCOVERY_REQS; i++) {
+    send_discovery_request(svc);
+    printf(".");
+    fflush(stdout);
+    sleep(1);
+  }
+  printf("\n");
+}
 int discovery_service_start(discovery_service *svc, discovery_strategy *strategy) {
   JNXCHECK(svc);
 
@@ -304,6 +319,8 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
     JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
     return ERR_DISCOVERY_START;
   }
+
+  initiate_discovery(svc);
 
   if (strategy == NULL) {
     svc->peers->is_active_peer = is_active_peer_ask_once;
@@ -320,7 +337,6 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
 int discovery_service_stop(discovery_service *svc) {
   JNXCHECK(svc);
   svc->isrunning = 0;
-//  stop_listening(svc);
   if (svc->update_thread != NULL) {
     cancel_thread(&svc->update_thread);
   }
@@ -347,4 +363,7 @@ time_t get_last_update_time(discovery_service *svc) {
   time_t last_update = svc->last_updated;
   jnx_thread_unlock(svc->update_time_lock);
   return last_update;
+}
+void discovery_notify_peers_of_shutdown(discovery_service *svc) {
+  send_stop_packet(svc);
 }
