@@ -217,13 +217,16 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     void *finish_object;
     if(handshake_did_receive_receiver_request(reply,replysizetwo,&finish_object)){
       AuthReceiver *r = (AuthReceiver *)object;
-      if(r->is_receiving_finish && !r->is_receiving_public_key) {
+/* Disabling due to some sort of bug */
+//      if(r->is_receiving_finish == 1 && r->is_receiving_public_key == 0) {
+      
         s->is_connected = 1;
         printf("Handshake complete.\n");
         printf("Starting secure comms channel.\n");
         secure_comms_initiator_start(ds,s,ac->listener_family);
         auth_receiver__free_unpacked(r,NULL);
-      }
+
+//      }
       free(encrypted_secret);
       free(secret);
       free(obuffer);
