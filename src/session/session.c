@@ -25,6 +25,7 @@ session_state session_message_read_and_decrypt(session *s,
   return SESSION_STATE_OKAY;
 }
 session_state session_message_read_connect(session *s, session_read_callback *cb) {
+  /* Wip will call session_message_read_and_decrypt internally on internal callback before releasing up */
   s->session_callback = cb;
   return SESSION_STATE_OKAY;
 }
