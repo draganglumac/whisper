@@ -123,8 +123,6 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   jnx_thread_create_disposable(secure_comms_bootstrap_listener,
       s);
   
-  sleep(3);
-  session_message_write(s,"Hello");
 } 
 void secure_comms_receiver_start(discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
