@@ -48,8 +48,8 @@ int handshake_initiator_command_generate(session *ses,\
   jnx_size len = strlen(local_guid_str);
 
   AuthInitiator auth_parcel = AUTH_INITIATOR__INIT;
-  auth_parcel.initiator_guid = malloc(sizeof(char) * len);
-  memcpy(auth_parcel.initiator_guid,local_guid_str,len); 
+  auth_parcel.initiator_guid = malloc(sizeof(char) * len + 1);
+  memcpy(auth_parcel.initiator_guid,local_guid_str,len + 1); 
   free(local_guid_str);
   switch(state) {
     case CHALLENGE_PUBLIC_KEY:
@@ -84,10 +84,16 @@ int handshake_initiator_command_generate(session *ses,\
   jnx_size session_guid_len;
   jnx_guid_to_string(&ses->session_guid,&session_guid_str);
   session_guid_len = strlen(session_guid_str);
-
   auth_parcel.session_guid = malloc(sizeof(char*) * session_guid_len + 1);
   memcpy(auth_parcel.session_guid,session_guid_str,session_guid_len + 1);
   free(session_guid_str);
+
+  /* secure comms port */
+  jnx_size secure_comms_port_len = strlen(ses->secure_comms_port);
+  auth_parcel.secure_comms_port = malloc(sizeof(char*) * secure_comms_port_len + 1);
+  bzero(auth_parcel.secure_comms_port,secure_comms_port_len +1);
+  memcpy(auth_parcel.secure_comms_port,ses->secure_comms_port,secure_comms_port_len + 1);
+
   /* packing */
   jnx_int parcel_len = auth_initiator__get_packed_size(&auth_parcel);
   jnx_uint8 *obuffer = malloc(parcel_len);
