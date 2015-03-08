@@ -27,25 +27,35 @@ typedef enum session_state {
   SESSION_STATE_EXISTS
 }session_state;
 
+typedef void (*session_read_callback)(jnx_guid *session_guid,
+    jnx_char *decrypted_message);
+
 typedef struct session {
   jnx_guid session_guid;
+  /* discovery */
   jnx_guid local_peer_guid;
   jnx_guid remote_peer_guid;
+  /* crypto */
   jnx_char *initiator_public_key;
   jnx_char *receiver_public_key;
   jnx_char *shared_secret;
+  /* secure network */ 
   jnx_int is_connected;
   jnx_char *secure_comms_port;
   jnx_int secure_comms_fd;
+  
+  session_read_callback *session_callback;
   /* local only */
   RSA *keypair;
 }session;
 
-typedef void (*session_read_callback)(session *s, jnx_char *decrypted_message);
  
 session_state session_message_write(session *s,jnx_char *message);
- 
-session_state session_message_read_connect(session *s, session_read_callback cb);
+
+session_state session_message_read_and_decrypt(session *s, jnx_char *message,
+    jnx_char **omessage);
+
+session_state session_message_read_connect(session *s, session_read_callback *cb);
 
 void session_add_initiator_public_key(session *s, jnx_char *key);
 
