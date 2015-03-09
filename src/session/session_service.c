@@ -84,6 +84,10 @@ session_state session_service_create_session(session_service *service, session *
   session *s = calloc(1, sizeof(session));
   s->keypair = asymmetrical_generate_key(2048);  
   s->is_connected = 0;
+  s->initiator_public_key = NULL;
+  s->receiver_public_key = NULL;
+  s->shared_secret = NULL;
+  s->secure_comms_fd = -1;
   s->session_callback = default_session_callback;
   jnx_guid_create(&s->session_guid);
   generate_blank_guid(&s->local_peer_guid); 
