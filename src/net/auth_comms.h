@@ -28,6 +28,6 @@ void auth_comms_listener_start(auth_comms_service *ac,discovery_service *ds,sess
 void auth_comms_destroy(auth_comms_service **ac);
 
 void auth_comms_initiator_start(auth_comms_service *ac, \
-    discovery_service *ds, session *s);
+    discovery_service *ds, session *s, jnx_char *port);
 
 #endif /* !AUTH_COMMS_H */

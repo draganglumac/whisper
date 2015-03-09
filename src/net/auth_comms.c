@@ -149,7 +149,7 @@ void auth_comms_destroy(auth_comms_service **ac) {
   jnx_socket_destroy(&(*ac)->listener_socket);
 }
 void auth_comms_initiator_start(auth_comms_service *ac, \
-    discovery_service *ds, session *s) {
+    discovery_service *ds, session *s, jnx_char *secure_port) {
 
   if(s->is_connected) {
 
@@ -157,10 +157,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     return;
   }
 
-  printf("-------------------------------------------\n");
-  printf(" Warning using hardcoded secure_comms_port \n");
-  session_add_secure_comms_port(s,"6666");
-  printf("-------------------------------------------\n");
+  session_add_secure_comms_port(s,secure_port);
   JNXCHECK(s->secure_comms_port);
 
 

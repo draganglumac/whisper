@@ -208,8 +208,15 @@ typedef struct {
 
 void *handshake_async_start(void *args) {
   handshake_dto *h = (handshake_dto*)args;
+  jnx_char *default_secure_comms = "6666";
+  jnx_char *secure_comms_port = (jnx_char*)jnx_hash_get(h->context->config,
+      "SECURE_COMMS_PORT");
+  if(secure_comms_port != NULL) {
+    default_secure_comms = secure_comms_port;
+  }
+  printf("Using secure comms port %s.\n",default_secure_comms);
   auth_comms_initiator_start(h->context->auth_comms,
-      h->context->discovery,h->s);
+      h->context->discovery,h->s,default_secure_comms);
   free(h);
   return NULL;
 }
