@@ -65,7 +65,7 @@ static void send_peer_packet(discovery_service *svc) {
   memcpy(message, "PEER", 4);
   memcpy(message + 4, buffer, len);
 
-  jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
+  jnx_socket_udp_broadcast_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
 
   safely_update_last_update_time(svc);
   free(message);
