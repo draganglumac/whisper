@@ -53,7 +53,6 @@ static int connect_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) 
   hints.ai_socktype = s->stype;
 
   jnx_int32 rg = 0;
-
   if((rg = getaddrinfo(remote_peer->host_address,ses->secure_comms_port,&hints,&res)) != 0) {
     JNX_LOG(DEFAULT_CONTEXT,"%s\n",gai_strerror(rg));
     return -1;

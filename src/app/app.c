@@ -236,7 +236,9 @@ void set_up_session_service(app_context_t *context){
 }
 void set_up_auth_comms(app_context_t *context) {
   context->auth_comms = auth_comms_create();
-  context->auth_comms->listener_port = "9991";
+  context->auth_comms->listener_port = malloc(strlen("9991")+1);
+  bzero(context->auth_comms->listener_port,strlen("9991")+1);
+  strcpy(context->auth_comms->listener_port,"9991");
   context->auth_comms->listener_family = AF_INET;
   context->auth_comms->listener_socket = jnx_socket_tcp_create(AF_INET);
   auth_comms_listener_start(context->auth_comms,context->discovery,context->session_serv);

@@ -37,6 +37,7 @@ static jnx_uint8 *send_data_await_reply(jnx_char *hostname, jnx_char *port,
     unsigned int family, jnx_uint8 *buffer, jnx_int bytes, jnx_size *receipt_bytes) {
   jnx_socket *sock = jnx_socket_tcp_create(family);
   jnx_uint8 *reply;
+  printf("awaiting reply from %s\n",hostname);
   *receipt_bytes = jnx_socket_tcp_send_with_receipt(sock,hostname,port,buffer,\
       bytes,&reply);
   jnx_socket_destroy(&sock);
@@ -130,6 +131,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
 static void *listener_bootstrap(void *args) {
   transport_options *t = (transport_options *)args;
   JNXCHECK(t->ac->listener_socket);
+  JNXCHECK(t->ac->listener_port);
   jnx_socket_tcp_listen_with_context(t->ac->listener_socket,
       t->ac->listener_port,100,listener_callback,t);
   free(t);
@@ -216,20 +218,21 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     free(secret);
     free(fbuffer);
     free(obuffer);
-    auth_receiver__free_unpacked(r,NULL);
+  //  auth_receiver__free_unpacked(r,NULL);
 
     void *finish_object;
     printf("Checking object type 2.\n");
     if(handshake_did_receive_receiver_request(replytwo,replysizetwo,&finish_object)){
-      AuthReceiver *r = (AuthReceiver *)object;
-      if(r->is_receiving_finish == 1 && r->is_receiving_public_key == 0) {
+      printf("Unpacked auth receiver request\n");
+      AuthReceiver *ar = (AuthReceiver *)finish_object;
+      if(ar->is_receiving_finish == 1 && ar->is_receiving_public_key == 0) {
         s->is_connected = 1;
         printf("Handshake complete.\n");
         secure_comms_initiator_start(ds,s,ac->listener_family);
       }
       /* free data */
       free(replytwo);
-      auth_receiver__free_unpacked(r,NULL);
+      auth_receiver__free_unpacked(ar,NULL);
     }
   }
 }
