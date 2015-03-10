@@ -30,9 +30,10 @@ int handshake_did_receive_initiator_request(jnx_uint8 *obuffer,
 int handshake_did_receive_receiver_request(jnx_uint8 *obuffer,
     jnx_size bytes_read,void **oobject) {
   *oobject = NULL;
-
+  printf("Unpacking receiver request.\n");
   AuthReceiver *a = auth_receiver__unpack(NULL,bytes_read,obuffer);
   if(a == NULL) {
+    printf("Receiver request was null!.\n");
     return 0;
   }
   *oobject = a;

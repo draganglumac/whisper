@@ -37,7 +37,9 @@ static jnx_uint8 *send_data_await_reply(jnx_char *hostname, jnx_char *port,
     unsigned int family, jnx_uint8 *buffer, jnx_int bytes, jnx_size *receipt_bytes) {
   jnx_socket *sock = jnx_socket_tcp_create(family);
   jnx_uint8 *reply;
+  printf("Sending [%s:%s] and awaiting reply.\n",hostname,port);
   *receipt_bytes = jnx_socket_tcp_send_with_receipt(sock,hostname,port,buffer,bytes,&reply);
+  printf("Got reply\n");
   jnx_socket_destroy(&sock);
   return reply;
 }
@@ -175,6 +177,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
 
   /* expect an AuthReceiver public key reply here */
   void *object;
+  printf("Checking object type 1.\n");
   if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
     AuthReceiver *r = (AuthReceiver *)object;
     session_add_receiver_public_key(s,r->receiver_public_key);
@@ -187,8 +190,6 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
 
     RSA *remote_pub_keypair = 
       asymmetrical_key_from_string(r->receiver_public_key,PUBLIC);
-
-    print_public_key(remote_pub_keypair);
 
     jnx_size encrypted_secret_len;
     jnx_char *encrypted_secret = asymmetrical_encrypt(remote_pub_keypair,
@@ -205,28 +206,28 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     bytes_read = handshake_generate_finish_request(s,encoded_secret,encoded_len,&fbuffer);
 
     jnx_size replysizetwo;
-    reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
+    jnx_uint8 *replytwo = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
         ac->listener_family,
         fbuffer,bytes_read,&replysizetwo);
 
     auth_receiver__free_unpacked(r,NULL);
 
     void *finish_object;
-    if(handshake_did_receive_receiver_request(reply,replysizetwo,&finish_object)){
+    printf("Checking object type 2.\n");
+    if(handshake_did_receive_receiver_request(replytwo,replysizetwo,&finish_object)){
       AuthReceiver *r = (AuthReceiver *)object;
       if(r->is_receiving_finish == 1 && r->is_receiving_public_key == 0) {
-      
         s->is_connected = 1;
         printf("Handshake complete.\n");
-        printf("Starting secure comms channel.\n");
         secure_comms_initiator_start(ds,s,ac->listener_family);
         auth_receiver__free_unpacked(r,NULL);
-
       }
       free(encrypted_secret);
       free(secret);
       free(obuffer);
+      free(replytwo);
     }
   }
+  free(reply);
 }
 
