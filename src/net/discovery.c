@@ -61,8 +61,8 @@ static void send_peer_packet(discovery_service *svc) {
   safely_update_last_update_time(svc);
   free(message);
   free(buffer);
-#ifdef DEBUG  
-  JNX_LOG(0, "[DEBUG] Sent a PEER packet.");
+#ifdef DEBUG
+  printf("[DEBUG] Sent a PEER packet.\n");
 #endif
 }
 static void send_stop_packet(discovery_service *svc) {
@@ -175,10 +175,10 @@ void *polling_update_loop(void *data) {
     if (!svc->isrunning) {
       return NULL;
     }
-    if (next_update == get_last_update_time(svc) + peer_update_interval) {
+    if (next_update <= time(0)) {
       send_discovery_request(svc);
     }
-    next_update = get_last_update_time(svc) + peer_update_interval;
+    next_update += peer_update_interval;
     sleep(next_update - time(0));
   }
   return NULL;

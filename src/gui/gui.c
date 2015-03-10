@@ -72,7 +72,7 @@ gui_context_t *gui_create(session *s) {
   c->msg = NULL;
   return c;
 }
-void context_destroy(gui_context_t *c) {
+void gui_destroy(gui_context_t *c) {
   delwin(c->ui->screen);
   delwin(c->ui->prompt);
   endwin();
@@ -141,6 +141,8 @@ void *read_loop(void *data) {
   while(TRUE) {
     char *msg = get_message(context);
     if (strcmp(msg, ":q") == 0) {
+      session_disconnect(context->s);
+      gui_destroy(context);
       break;
     }
     else {
@@ -149,6 +151,10 @@ void *read_loop(void *data) {
     }
   }
   return NULL;
+}
+void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
+  gui_context_t *c = (gui_context_t *) gc;
+  display_remote_message(c, message);
 }
 int output_next_message_in_context(gui_context_t *context) {
   pthread_mutex_lock(&output_mutex);	

@@ -22,16 +22,14 @@
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
+void pair_session_with_gui(session *s, void *gui_context) {
+  s->gui_context = gui_context;
+  s->session_callback = gui_receive_message;
+}
 void app_create_gui_session(session *s) {
   gui_context_t *c = gui_create(s);
-  pthread_t read_thread;
-  pthread_create(&read_thread, 0,read_loop,(void*)c);
-  while (TRUE) {
-    if (-1 == output_next_message_in_context(c)) {
-      break;
-    }
-  }
-  context_destroy(c);
+  pair_session_with_gui(s, (void *) c);
+  read_loop((void *) c);
 }
 int is_equivalent(char *command, char *expected) {
   if (strcmp(command, expected) == 0) {
@@ -51,6 +49,12 @@ int code_for_command(char *command) {
   }
   else if (is_equivalent(command, "quit")) {
     return CMD_QUIT;
+  }
+  else if (is_equivalent(command, "accept")) {
+    return CMD_ACCEPT_SESSION;
+  }
+  else if (is_equivalent(command, "reject")) {
+    return CMD_REJECT_SESSION;
   }
   return CMD_HELP;
 }

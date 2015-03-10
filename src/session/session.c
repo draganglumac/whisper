@@ -6,8 +6,9 @@
  */
 
 #include "session.h"
+#include "../gui/gui.h"
 
-void default_session_callback(jnx_guid *session_guid,
+void default_session_callback(void *gui_context, jnx_guid *session_guid,
     jnx_char *decrypted_message) {
 
   printf("default_session_callback: %s.\n",decrypted_message);
@@ -28,6 +29,11 @@ session_state session_message_read_and_decrypt(session *s,
   jnx_char *decrypted = symmetrical_decrypt(s->shared_secret,
       message,len);
   *omessage = decrypted;
+  return SESSION_STATE_OKAY;
+}
+session_state session_disconnect(session *s) {
+  close(s->secure_comms_fd);
+  s->is_connected = 0;
   return SESSION_STATE_OKAY;
 }
 void session_add_initiator_public_key(session *s, jnx_char *key) {
