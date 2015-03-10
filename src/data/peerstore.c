@@ -71,7 +71,9 @@ void peerstore_store_peer(peerstore *ps, peer *p) {
   jnx_guid_to_string(&p->guid, &guid_str);
   peer *old = jnx_hash_get(PEERSTORE(ps->peers), guid_str);
   if (old != NULL) {
-    peer_free(&old);
+    memcpy(old, p, sizeof(peer));
+    peer_free(&p);
+    p = old;
   }
   jnx_hash_put(PEERSTORE(ps->peers), guid_str, (void *) p);
   jnx_hash_put(NAMESTORE(ps->namestore), p->user_name, (void *) guid_str);
