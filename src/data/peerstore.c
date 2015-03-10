@@ -73,10 +73,11 @@ void peerstore_store_peer(peerstore *ps, peer *p) {
   if (old != NULL) {
     memcpy(old, p, sizeof(peer));
     peer_free(&p);
-    p = old;
   }
-  jnx_hash_put(PEERSTORE(ps->peers), guid_str, (void *) p);
-  jnx_hash_put(NAMESTORE(ps->namestore), p->user_name, (void *) guid_str);
+  else {
+    jnx_hash_put(PEERSTORE(ps->peers), guid_str, (void *) p);
+    jnx_hash_put(NAMESTORE(ps->namestore), p->user_name, (void *) guid_str);
+  }
   jnx_thread_unlock(ps->store_lock);
 }
 void peerstore_destroy(peerstore **pps) {
