@@ -71,7 +71,16 @@ void peerstore_store_peer(peerstore *ps, peer *p) {
   jnx_guid_to_string(&p->guid, &guid_str);
   peer *old = jnx_hash_get(PEERSTORE(ps->peers), guid_str);
   if (old != NULL) {
-    memcpy(old, p, sizeof(peer));
+    memcpy(&old->guid, &p->guid, sizeof(jnx_guid));
+   
+    free(old->host_address);
+    old->host_address = calloc(1 + strlen(p->host_address), sizeof(char));
+    strcpy(old->host_address, p->host_address);
+   
+    free(old->user_name);
+    old->user_name = calloc(1 + strlen(p->user_name), sizeof(char));
+    strcpy(old->user_name, p->user_name);
+
     peer_free(&p);
   }
   else {
