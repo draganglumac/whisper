@@ -24,14 +24,9 @@
 #include "../net/auth_comms.h"
 void app_create_gui_session(session *s) {
   gui_context_t *c = gui_create(s);
+  session_pair_with_gui(s, (void *) c);
   pthread_t read_thread;
   pthread_create(&read_thread, 0,read_loop,(void*)c);
-  while (TRUE) {
-    if (-1 == output_next_message_in_context(c)) {
-      break;
-    }
-  }
-  gui_destroy(c);
 }
 int is_equivalent(char *command, char *expected) {
   if (strcmp(command, expected) == 0) {
