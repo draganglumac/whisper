@@ -59,7 +59,7 @@ static void send_peer_packet(discovery_service *svc) {
   jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
 
   safely_update_last_update_time(svc);
-  printf("[DEBUG] Sent a PEER packet.\n");
+  printf("[DEBUG] %ld Sent a PEER packet.\n", time(0));
   free(message);
   free(buffer);
 }
