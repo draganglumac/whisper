@@ -152,6 +152,10 @@ void *read_loop(void *data) {
   }
   return NULL;
 }
+void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
+  gui_context_t *c = (gui_context_t *) gc;
+  display_remote_message(c, message);
+}
 int output_next_message_in_context(gui_context_t *context) {
   pthread_mutex_lock(&output_mutex);	
   wait_for_message();

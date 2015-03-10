@@ -7,7 +7,7 @@
 
 #include "session.h"
 
-void default_session_callback(jnx_guid *session_guid,
+void default_session_callback(void *gui_context, jnx_guid *session_guid,
     jnx_char *decrypted_message) {
 
   printf("default_session_callback: %s.\n",decrypted_message);

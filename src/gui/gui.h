@@ -22,13 +22,15 @@
 #include <ncurses.h>
 #include "../session/session.h"
 
+extern struct gui_context_t;
+
 typedef struct {
   WINDOW *prompt;
   WINDOW *screen;	
   int next_line;
 } ui_t;
 
-typedef struct {
+typedef struct gui_context {
   ui_t *ui;
   session *s;
   char *msg;
@@ -40,6 +42,7 @@ char *get_message(gui_context_t *c);
 void display_local_message(gui_context_t *c, char *msg);
 void display_remote_message(gui_context_t *c, char *msg);
 void *read_loop(void *data);
+void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message);
 int output_next_message_in_context(gui_context_t *c);
 
 #endif

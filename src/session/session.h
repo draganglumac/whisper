@@ -41,13 +41,13 @@ typedef struct session {
   jnx_char *secure_comms_port;
   jnx_int secure_comms_fd;
 
-  void (*session_callback)(jnx_guid *session_guid,
+  void (*session_callback)(void *gui_context, jnx_guid *session_guid,
       jnx_char *decrypted_message);
   /* local only */
   RSA *keypair;
 }session;
 
-void default_session_callback(jnx_guid *session_guid,
+void default_session_callback(void *gui_context, jnx_guid *session_guid,
     jnx_char *decrypted_message);
 
 session_state session_message_write(session *s,jnx_char *message);
