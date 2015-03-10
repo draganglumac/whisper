@@ -36,10 +36,6 @@ session_state session_disconnect(session *s) {
   s->is_connected = 0;
   return SESSION_STATE_OKAY;
 }
-void session_pair_with_gui(session *s, void *gui_context) {
-  s->gui_context = gui_context;
-  s->session_callback = gui_receive_message; 
-}
 void session_add_initiator_public_key(session *s, jnx_char *key) {
   JNXCHECK(key);
   jnx_size len = strlen(key);

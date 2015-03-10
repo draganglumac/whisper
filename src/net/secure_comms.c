@@ -80,7 +80,7 @@ void *secure_comms_bootstrap_listener(void *args) {
     jnx_char *decrypted_message = 
       symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
     
-    s->session_callback(s->gui_context, &(*s).session_guid,decrypted_message);
+    s->session_callback(s->gui_context, &s->session_guid, decrypted_message);
   }
 }
 void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,

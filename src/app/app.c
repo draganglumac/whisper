@@ -22,11 +22,13 @@
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
+void pair_session_with_gui(session *s, void *gui_context) {
+  s->gui_context = gui_context;
+  s->session_callback = gui_receive_message;
+}
 void app_create_gui_session(session *s) {
   gui_context_t *c = gui_create(s);
-  session_pair_with_gui(s, (void *) c);
-//  pthread_t read_thread;
-//  pthread_create(&read_thread, 0,read_loop,(void*)c);
+  pair_session_with_gui(s, (void *) c);
   read_loop((void *) c);
 }
 int is_equivalent(char *command, char *expected) {
