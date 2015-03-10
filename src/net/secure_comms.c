@@ -120,9 +120,7 @@ void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
   // At this point both the initiator and receiver are equal and have fd's relevent to them 
   //  that are connected *
 
-  jnx_thread_create_disposable(secure_comms_bootstrap_listener,
-      s);
-  
+  jnx_thread_create_disposable(secure_comms_bootstrap_listener,s);
 } 
 void secure_comms_receiver_start(discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {

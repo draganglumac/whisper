@@ -53,6 +53,10 @@ int run_app(app_context_t *context) {
     char *param = NULL;
     jnx_vector *active_peers = NULL;
     switch(app_code_for_command_with_param(cmd_string,read_bytes,&param)) {
+      case CMD_ACCEPT_SESSION:
+        break;
+      case CMD_REJECT_SESSION:
+        break;
       case CMD_SESSION:
         if(!param) {
           printf("Session requires a username to connect to.\n");

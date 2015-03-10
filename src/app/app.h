@@ -30,6 +30,8 @@
 #define CMD_LIST    2
 #define CMD_HELP    3
 #define CMD_QUIT    4
+#define CMD_ACCEPT_SESSION 5
+#define CMD_REJECT_SESSION 6
 
 typedef struct {
   jnx_hashmap *config;

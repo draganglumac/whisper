@@ -48,6 +48,12 @@ int code_for_command(char *command) {
   else if (is_equivalent(command, "quit")) {
     return CMD_QUIT;
   }
+  else if (is_equivalent(command, "accept")) {
+    return CMD_ACCEPT_SESSION;
+  }
+  else if (is_equivalent(command, "reject")) {
+    return CMD_REJECT_SESSION;
+  }
   return CMD_HELP;
 }
 int app_code_for_command_with_param(char *command, jnx_size cmd_len, char **oparam) {
