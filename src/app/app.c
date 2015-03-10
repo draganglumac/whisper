@@ -31,7 +31,7 @@ void app_create_gui_session(session *s) {
       break;
     }
   }
-  context_destroy(c);
+  gui_destroy(c);
 }
 int is_equivalent(char *command, char *expected) {
   if (strcmp(command, expected) == 0) {

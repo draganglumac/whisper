@@ -72,7 +72,7 @@ gui_context_t *gui_create(session *s) {
   c->msg = NULL;
   return c;
 }
-void context_destroy(gui_context_t *c) {
+void gui_destroy(gui_context_t *c) {
   delwin(c->ui->screen);
   delwin(c->ui->prompt);
   endwin();
