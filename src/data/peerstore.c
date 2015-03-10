@@ -23,18 +23,24 @@
 #define PEERSTORE(x) ((jnx_hashmap *) x)
 #define NAMESTORE(x) ((jnx_hashmap *) x)
 
+static int is_peer_active(peerstore *ps, peer *p) {
+  return (p != NULL && ps->is_active_peer(ps->last_update, p));
+}
 static int always_active(time_t lut, peer *p) {
   return 1;
 }
-peerstore *peerstore_init(peer *local_peer, is_active_peer_t is_active_peer) {
+peerstore *peerstore_init(peer *local_peer, is_active_peer_t iap) {
   peerstore *store = malloc(sizeof(peerstore));
   store->local_peer = local_peer;
   store->store_lock = jnx_thread_mutex_create();
   store->peers = (void *) jnx_hash_create(1024);
   store->namestore = (void *) jnx_hash_create(1024);
   store->last_update = time(0);
-  if (is_active_peer == NULL) {
+  if (iap == NULL) {
     store->is_active_peer = always_active;
+  }
+  else {
+    store->is_active_peer = iap;
   }
   return (peerstore *) store;
 }
@@ -65,10 +71,24 @@ void peerstore_store_peer(peerstore *ps, peer *p) {
   jnx_guid_to_string(&p->guid, &guid_str);
   peer *old = jnx_hash_get(PEERSTORE(ps->peers), guid_str);
   if (old != NULL) {
-    peer_free(&old);
+    memcpy(&old->guid, &p->guid, sizeof(jnx_guid));
+   
+    free(old->host_address);
+    old->host_address = calloc(1 + strlen(p->host_address), sizeof(char));
+    strcpy(old->host_address, p->host_address);
+   
+    free(old->user_name);
+    old->user_name = calloc(1 + strlen(p->user_name), sizeof(char));
+    strcpy(old->user_name, p->user_name);
+
+    old->last_seen = p->last_seen;
+
+    peer_free(&p);
   }
-  jnx_hash_put(PEERSTORE(ps->peers), guid_str, (void *) p);
-  jnx_hash_put(NAMESTORE(ps->namestore), p->user_name, (void *) guid_str);
+  else {
+    jnx_hash_put(PEERSTORE(ps->peers), guid_str, (void *) p);
+    jnx_hash_put(NAMESTORE(ps->namestore), p->user_name, (void *) guid_str);
+  }
   jnx_thread_unlock(ps->store_lock);
 }
 void peerstore_destroy(peerstore **pps) {
@@ -96,7 +116,7 @@ peer *peerstore_lookup(peerstore *ps, jnx_guid *guid) {
   char *guid_str;
   jnx_guid_to_string(guid, &guid_str);
   peer *p = (peer *) jnx_hash_get(PEERSTORE(ps->peers), guid_str);
-  if (p != NULL && !ps->is_active_peer(ps->last_update, p)) {
+  if (!is_peer_active(ps, p)) {
     jnx_hash_delete_value(PEERSTORE(ps->peers), guid_str);
     peer_free(&p);
     p = NULL;
@@ -120,7 +140,7 @@ peer *peerstore_lookup_by_username(peerstore *ps, char *username) {
     jnx_thread_unlock(ps->store_lock);
     return NULL;
   }
-  if (p != NULL && !ps->is_active_peer(ps->last_update, p)) {
+  if (!is_peer_active(ps, p)) {
     jnx_hash_delete_value(PEERSTORE(ps->peers), guid_str);
     peer_free(&p);
     p = NULL;
@@ -147,7 +167,7 @@ int peerstore_get_active_guids(peerstore *ps, jnx_guid ***guids) {
   *guids = calloc(num_keys, sizeof(jnx_guid *));
   for (i = 0; i < num_keys; i++) {
     peer *temp = jnx_hash_get(peers, *(keys + i));
-    if (ps->is_active_peer(ps->last_update, temp)) {
+    if (is_peer_active(ps, temp)) {
       (*guids)[num_guids] = &temp->guid;
       num_guids++;
     }	

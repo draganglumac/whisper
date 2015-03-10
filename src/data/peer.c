@@ -36,7 +36,7 @@ size_t peerton(peer *p, void **out) {
   }
 
   // required string host_address=2;
-  msg.host_address = malloc(1 + sizeof(char) * strlen(p->host_address));
+  msg.host_address = calloc(1 + strlen(p->host_address), sizeof(char));
   strcpy(msg.host_address, p->host_address);
 
   // optional string user_name=3;

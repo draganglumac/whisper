@@ -73,10 +73,13 @@ void run_discovery_service_test(discovery_test test) {
   jnx_guid guid;
   int i;
   for (i = 0; i < 16; i++) {
-    guid.guid[i] = 1;
+    guid.guid[i] = i;
   }
   peerstore *store = peerstore_init(peer_create(guid, "127.0.0.1", "UserName"), 0);
   discovery_service *svc = discovery_service_create(1234, AF_INET, baddr, store);
+#ifdef DEBUG
+  printf("[DEBUG] service: %p\n", svc);
+#endif
   int retval = test(svc);
   if (retval == CLEANUP) {
     discovery_service_cleanup(&svc);
@@ -179,11 +182,11 @@ int main(int argc, char **argv) {
   JNX_LOG(NULL, "Test setting peer_update_interval global variable.");
   run_discovery_service_test(test_setting_peer_update_interval);
 
-  JNX_LOG(NULL, "Test polling update strategy.");
-  run_discovery_service_test(test_polling_update_strategy);
-
   JNX_LOG(NULL, "Test broadcast update strategy.");
   run_discovery_service_test(test_broadcast_update_strategy);
+ 
+  JNX_LOG(NULL, "Test polling update strategy.");
+  run_discovery_service_test(test_polling_update_strategy);
   
 	free(baddr);
 	return 0;

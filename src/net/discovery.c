@@ -13,7 +13,7 @@
  *         Author:  Dragan Glumac (draganglumac), dragan.glumac@gmail.com
  *   Organization:  
  *
- * =====================================================================================
+ 2* =====================================================================================
  */
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -49,6 +49,15 @@ static void safely_update_last_update_time(discovery_service *svc) {
   jnx_thread_unlock(svc->update_time_lock);
 }
 
+static void debug_packet(discovery_service *svc, char *packet_type) {
+  char *guid_str;
+  jnx_guid_to_string(&peerstore_get_local_peer(svc->peers)->guid, &guid_str);
+  printf("[DEBUG] Sent %s packet for peer %s, %s, %s.\n",
+      packet_type,
+      guid_str,
+      peerstore_get_local_peer(svc->peers)->host_address, 
+      peerstore_get_local_peer(svc->peers)->user_name);
+}
 static void send_peer_packet(discovery_service *svc) {
   void *buffer;
   size_t len = peerton(peerstore_get_local_peer(svc->peers), &buffer);
@@ -62,7 +71,7 @@ static void send_peer_packet(discovery_service *svc) {
   free(message);
   free(buffer);
 #ifdef DEBUG
-  printf("[DEBUG] Sent a PEER packet.\n");
+  debug_packet(svc, "PEER");
 #endif
 }
 static void send_stop_packet(discovery_service *svc) {
@@ -71,8 +80,11 @@ static void send_stop_packet(discovery_service *svc) {
   jnx_uint8 *message = malloc(4 + len);
   memcpy(message, "STOP", 4);
   memcpy(message + 4, buffer, len);
-  
+
   jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
+#ifdef DEBUG
+  debug_packet(svc, "STOP");
+#endif
 }
 static void handle_peer(discovery_service *svc, jnx_uint8 *payload, jnx_size bytesread) {
   peer *p = ntopeer(payload, bytesread);
