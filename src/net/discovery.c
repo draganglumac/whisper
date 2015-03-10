@@ -59,9 +59,11 @@ static void send_peer_packet(discovery_service *svc) {
   jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
 
   safely_update_last_update_time(svc);
-  printf("[DEBUG] %ld Sent a PEER packet.\n", time(0));
   free(message);
   free(buffer);
+#ifdef DEBUG
+  printf("[DEBUG] Sent a PEER packet.\n");
+#endif
 }
 static void send_stop_packet(discovery_service *svc) {
   void *buffer;
@@ -148,7 +150,6 @@ jnx_int32 send_discovery_request(discovery_service *svc) {
   char *tmp = "LIST";
   char *port = port_to_string(svc);
   jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, (jnx_uint8 *) tmp, 5);	
-  printf("[DEBUG] Sent LIST packet.\n");
   return 0;
 }
 
@@ -174,11 +175,10 @@ void *polling_update_loop(void *data) {
     if (!svc->isrunning) {
       return NULL;
     }
-    if (next_update == get_last_update_time(svc) + peer_update_interval) {
-      printf("polling_update_loop->");
+    if (next_update <= time(0)) {
       send_discovery_request(svc);
     }
-    next_update = get_last_update_time(svc) + peer_update_interval;
+    next_update += peer_update_interval;
     sleep(next_update - time(0));
   }
   return NULL;
@@ -198,7 +198,6 @@ void *broadcast_update_loop(void *data) {
     if (!svc->isrunning) {
       return NULL;
     }
-    printf("broadcast_update_loop->");
     send_peer_packet(svc);
     sleep(next_update - time(0));
     next_update += peer_update_interval;
@@ -217,7 +216,6 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
   memset(command, 0, 5);
   memcpy(command, payload, 4);
   if (0 == strcmp(command, "LIST")) {
-    printf("discovery_receive_handler->");
     send_peer_packet(svc);
   }
   else if (0 == strcmp(command, "PEER")) {
@@ -298,11 +296,9 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
   return svc;
 }
 void initiate_discovery(discovery_service *svc) {
-  printf("initiate_discovery->");
   send_peer_packet(svc);
   int i;
   for (i = 0; i < INITIAL_DISCOVERY_REQS; i++) {
-    printf("initiate_discovery->");
     send_discovery_request(svc);
     printf(".");
     fflush(stdout);
@@ -328,7 +324,6 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
 
   if (strategy == NULL) {
     svc->peers->is_active_peer = is_active_peer_ask_once;
-    printf("discovery_service_start->");
     send_discovery_request(svc);
   }
   else {
