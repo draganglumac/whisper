@@ -148,6 +148,7 @@ jnx_int32 send_discovery_request(discovery_service *svc) {
   char *tmp = "LIST";
   char *port = port_to_string(svc);
   jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, (jnx_uint8 *) tmp, 5);	
+  printf("[DEBUG] Sent LIST packet.\n");
   return 0;
 }
 
@@ -174,6 +175,7 @@ void *polling_update_loop(void *data) {
       return NULL;
     }
     if (next_update == get_last_update_time(svc) + peer_update_interval) {
+      printf("polling_update_loop->");
       send_discovery_request(svc);
     }
     next_update = get_last_update_time(svc) + peer_update_interval;
@@ -300,6 +302,7 @@ void initiate_discovery(discovery_service *svc) {
   send_peer_packet(svc);
   int i;
   for (i = 0; i < INITIAL_DISCOVERY_REQS; i++) {
+    printf("initiate_discovery->");
     send_discovery_request(svc);
     printf(".");
     fflush(stdout);
@@ -325,6 +328,7 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
 
   if (strategy == NULL) {
     svc->peers->is_active_peer = is_active_peer_ask_once;
+    printf("discovery_service_start->");
     send_discovery_request(svc);
   }
   else {
