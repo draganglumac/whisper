@@ -30,6 +30,11 @@ session_state session_message_read_and_decrypt(session *s,
   *omessage = decrypted;
   return SESSION_STATE_OKAY;
 }
+session_state session_disconnect(session *s) {
+  close(s->secure_comms_fd);
+  s->is_connected = 0;
+  return SESSION_STATE_OKAY;
+}
 void session_add_initiator_public_key(session *s, jnx_char *key) {
   JNXCHECK(key);
   jnx_size len = strlen(key);

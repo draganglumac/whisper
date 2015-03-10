@@ -55,6 +55,8 @@ session_state session_message_write(session *s,jnx_char *message);
 session_state session_message_read_and_decrypt(session *s, jnx_char *message,
     jnx_char **omessage);
 
+session_state session_disconnect(session *s);
+
 void session_add_initiator_public_key(session *s, jnx_char *key);
 
 void session_add_receiver_public_key(session *s, jnx_char *key);

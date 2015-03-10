@@ -61,9 +61,6 @@ static void send_peer_packet(discovery_service *svc) {
   safely_update_last_update_time(svc);
   free(message);
   free(buffer);
-#ifdef DEBUG  
-  JNX_LOG(0, "[DEBUG] Sent a PEER packet.");
-#endif
 }
 static void send_stop_packet(discovery_service *svc) {
   void *buffer;
