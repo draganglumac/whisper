@@ -59,6 +59,7 @@ static void send_peer_packet(discovery_service *svc) {
   jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port_to_string(svc), message, len + 4);
 
   safely_update_last_update_time(svc);
+  printf("[DEBUG] Sent a PEER packet.\n");
   free(message);
   free(buffer);
 }
@@ -195,6 +196,7 @@ void *broadcast_update_loop(void *data) {
     if (!svc->isrunning) {
       return NULL;
     }
+    printf("broadcast_update_loop->");
     send_peer_packet(svc);
     sleep(next_update - time(0));
     next_update += peer_update_interval;
@@ -213,6 +215,7 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
   memset(command, 0, 5);
   memcpy(command, payload, 4);
   if (0 == strcmp(command, "LIST")) {
+    printf("discovery_receive_handler->");
     send_peer_packet(svc);
   }
   else if (0 == strcmp(command, "PEER")) {
@@ -293,6 +296,7 @@ discovery_service* discovery_service_create(int port, unsigned int family, char 
   return svc;
 }
 void initiate_discovery(discovery_service *svc) {
+  printf("initiate_discovery->");
   send_peer_packet(svc);
   int i;
   for (i = 0; i < INITIAL_DISCOVERY_REQS; i++) {
