@@ -142,6 +142,7 @@ void *read_loop(void *data) {
     char *msg = get_message(context);
     if (strcmp(msg, ":q") == 0) {
       session_disconnect(context->s);
+      context_destroy(context);
       break;
     }
     else {
