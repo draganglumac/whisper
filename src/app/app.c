@@ -25,8 +25,9 @@
 void app_create_gui_session(session *s) {
   gui_context_t *c = gui_create(s);
   session_pair_with_gui(s, (void *) c);
-  pthread_t read_thread;
-  pthread_create(&read_thread, 0,read_loop,(void*)c);
+//  pthread_t read_thread;
+//  pthread_create(&read_thread, 0,read_loop,(void*)c);
+  read_loop((void *) c);
 }
 int is_equivalent(char *command, char *expected) {
   if (strcmp(command, expected) == 0) {
