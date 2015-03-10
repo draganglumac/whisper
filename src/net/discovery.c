@@ -13,7 +13,7 @@
  *         Author:  Dragan Glumac (draganglumac), dragan.glumac@gmail.com
  *   Organization:  
  *
- * =====================================================================================
+ 2* =====================================================================================
  */
 #include <stdlib.h>
 #include <sys/socket.h>

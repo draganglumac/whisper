@@ -81,6 +81,8 @@ void peerstore_store_peer(peerstore *ps, peer *p) {
     old->user_name = calloc(1 + strlen(p->user_name), sizeof(char));
     strcpy(old->user_name, p->user_name);
 
+    old->last_seen = p->last_seen;
+
     peer_free(&p);
   }
   else {
