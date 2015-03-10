@@ -22,15 +22,13 @@
 #include <ncurses.h>
 #include "../session/session.h"
 
-extern struct gui_context_t;
-
 typedef struct {
   WINDOW *prompt;
   WINDOW *screen;	
   int next_line;
 } ui_t;
 
-typedef struct gui_context {
+typedef struct {
   ui_t *ui;
   session *s;
   char *msg;
