@@ -106,7 +106,7 @@ int handshake_initiator_command_generate(session *ses,\
   return parcel_len;
 }
 int handshake_receiver_command_generate(session *ses, \
-    handshake_receiver_state state, jnx_uint8 **onetbuffer) {
+    handshake_receiver_state state, jnx_int abort,jnx_uint8 **onetbuffer) {
 
   jnx_char *local_guid_str;
   jnx_guid_to_string(&(*ses).local_peer_guid,&local_guid_str);
@@ -128,6 +128,8 @@ int handshake_receiver_command_generate(session *ses, \
       auth_parcel.is_receiving_finish = 1;
       break;
   }
+  /* set the abort token */
+  auth_parcel.should_abort = abort;
   /* public key */
   jnx_char *pub_key_str = asymmetrical_key_to_string(ses->keypair,PUBLIC);
   jnx_size pub_len = strlen(pub_key_str);
@@ -167,12 +169,14 @@ int handshake_generate_finish_request(session *ses,\
       CHALLENGE_FINISH,shared_secret,len,onetbuffer);
 }
 int handshake_generate_public_key_response(session *ses,\
+    jnx_int abort,
     jnx_uint8 **onetbuffer) {
   return handshake_receiver_command_generate(ses,
-      RESPONSE_PUBLIC_KEY,onetbuffer);
+      RESPONSE_PUBLIC_KEY,abort,onetbuffer);
 }
 int handshake_generate_finish_response(session *ses,\
+    jnx_int abort,
     jnx_uint8 **onetbuffer) {
   return handshake_receiver_command_generate(ses,
-      RESPONSE_FINISH,onetbuffer);
+      RESPONSE_FINISH,abort,onetbuffer);
 }

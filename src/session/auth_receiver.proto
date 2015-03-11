@@ -4,4 +4,5 @@ message auth_receiver {
   required int32 is_receiving_public_key=3;
   required int32 is_receiving_finish=4;
   required string receiver_public_key=5;
+  optional int32 should_abort=6;
 }

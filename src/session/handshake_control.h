@@ -39,10 +39,12 @@ int handshake_generate_finish_request(session *ses,\
     jnx_uint8 **onetbuffer);
 
 int handshake_receiver_command_generate(session *ses, \
-    handshake_receiver_state state, jnx_uint8 **onetbuffer);
+    handshake_receiver_state state, jnx_int abort, jnx_uint8 **onetbuffer);
 
 int handshake_generate_public_key_response(session *ses,\
+    jnx_int abort,
     jnx_uint8 **onetbuffer);
 int handshake_generate_finish_response(session *ses,\
+    jnx_int abort,
     jnx_uint8 **onetbuffer);
 #endif /* !HANDSHAKE_CONTROL_H */

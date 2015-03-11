@@ -48,6 +48,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
 
   transport_options *t = (transport_options*)context;
   void *object;
+  int abort_token = 0;
   if(handshake_did_receive_initiator_request(payload,bytes_read,&object)) {
     AuthInitiator *a = (AuthInitiator*)object;
     /*
@@ -73,7 +74,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
        */
       jnx_uint8 *onetbuffer;
       printf("About to generate handshake.\n");
-      int bytes = handshake_generate_public_key_response(osession,
+      int bytes = handshake_generate_public_key_response(osession,abort_token,
           &onetbuffer);
       write(connected_socket,onetbuffer,bytes);
       /* free data */
@@ -90,7 +91,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
           &g,&osession);
 
       jnx_uint8 *onetbuffer;
-      int bytes = handshake_generate_finish_response(osession,
+      int bytes = handshake_generate_finish_response(osession,abort_token,
           &onetbuffer);
       write(connected_socket,onetbuffer,bytes);
       free(onetbuffer);    
