@@ -80,6 +80,10 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       /* free data */
       free(onetbuffer);    
       auth_initiator__free_unpacked(a,NULL);
+      
+      if(abort_token) {
+        printf("Aborting session.\n");
+      }
       return 0;
     }
     if(!a->is_requesting_public_key && a->is_requesting_finish){
@@ -179,6 +183,15 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   printf("Received reply on initial handshake.\n");
   if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
     AuthReceiver *r = (AuthReceiver *)object;
+ 
+    /* first thing we check is if we should abort */
+    if(r->should_abort) {
+      printf("Handshake has been rejected.\n");
+      free(obuffer);
+      auth_receiver__free_unpacked(r,NULL);
+      return;
+    }
+    
     /* At this point we have a session with the receiver public key
        we can generate the shared secret and transmit it back */
     jnx_uint8 *secret;
@@ -219,7 +232,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     free(secret);
     free(fbuffer);
     free(obuffer);
-  //  auth_receiver__free_unpacked(r,NULL);
+    auth_receiver__free_unpacked(r,NULL);
 
     void *finish_object;
     printf("Checking object type 2.\n");
