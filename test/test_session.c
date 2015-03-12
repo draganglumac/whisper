@@ -49,8 +49,8 @@ void test_linking() {
   jnx_guid_create(&h);
   jnx_guid_create(&g);
  
-  peer *l = peer_create(h,"N/A","Bob");
-  peer *n = peer_create(g,"N/A","Bob");
+  peer *l = peer_create(h,"N/A","Bob", 10);
+  peer *n = peer_create(g,"N/A","Bob", 10);
   
   e = session_service_link_sessions(service,&os->session_guid,l,n);
   JNXCHECK(e == SESSION_STATE_OKAY);

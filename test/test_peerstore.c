@@ -30,7 +30,7 @@ peer *local_test_peer() {
   for (i = 0; i < 16; i++) {
     guid.guid[i] = i;
   }
-  return peer_create(guid, "127.0.0.1", "LocalUser");
+  return peer_create(guid, "127.0.0.1", "LocalUser", 10);
 }
 peer *other_test_peer() {
   jnx_guid guid;
@@ -38,7 +38,7 @@ peer *other_test_peer() {
   for (i = 0; i < 16; i++) {
     guid.guid[i] = 15;
   }
-  return peer_create(guid, "127.0.0.2", "OtherUser");
+  return peer_create(guid, "127.0.0.2", "OtherUser", 10);
 }
 peerstore *create_test_peerstore() {
   peerstore *store = peerstore_init(local_test_peer(), 0);

@@ -152,7 +152,7 @@ static void set_up_discovery_service(app_context_t *context) {
     JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
     exit(1);
   }
-  peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
+  peerstore *ps = peerstore_init(local_peer_for_user(user_name, peer_update_interval), 0);
   char *local_ip = (char *) jnx_hash_get(config, "LOCAL_IP");
   if (local_ip != NULL) {
     free(peerstore_get_local_peer(ps)->host_address);
@@ -177,13 +177,14 @@ static void set_up_discovery_service(app_context_t *context) {
 
   context->discovery = discovery_service_create(port, AF_INET, broadcast_address, ps);
   char *discovery_strategy = (char *) jnx_hash_get(config, "DISCOVERY_STRATEGY");
-  if (discovery_strategy == NULL) {
-    JNX_LOG(0, "Starting discovery service with polling srategy.");
-    discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
-  }	else {
-    if (0 == strcmp(discovery_strategy, "heartbeat")) {
-      JNX_LOG(0, "Starting discovery service with heartbeat srategy.");
-      discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
+  if (NULL == discovery_strategy) {
+    JNX_LOG(0, "Starting discovery service with heartbeat srategy.");
+    discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
+  }
+  else {
+    if (0 == strcmp(discovery_strategy, "polling")) {
+      JNX_LOG(0, "Starting discovery service with polling srategy.");
+      discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
     }
   }
 }

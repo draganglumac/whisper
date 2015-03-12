@@ -45,6 +45,8 @@ size_t peerton(peer *p, void **out) {
     strcpy(msg.user_name, p->user_name);
   }
 
+  msg.discovery_interval = p->discovery_interval;
+
   len = peer__get_packed_size(&msg);
   *out = malloc(len);
   peer__pack(&msg, *out);
@@ -61,11 +63,11 @@ peer *ntopeer(void *in, size_t len) {
 
   jnx_guid gd;
   memcpy(gd.guid, msg->guid.data, msg->guid.len);	
-  peer *p = peer_create(gd, msg->host_address, msg->user_name); 
+  peer *p = peer_create(gd, msg->host_address, msg->user_name, msg->discovery_interval); 
   peer__free_unpacked(msg, NULL);
   return p;	
 }
-peer *peer_create(jnx_guid guid, char *host_address, char *user_name) {
+peer *peer_create(jnx_guid guid, char *host_address, char *user_name, jnx_uint32 discovery_interval) {
   JNXCHECK(host_address);
   peer *temp = malloc(sizeof(peer));
 
@@ -76,6 +78,7 @@ peer *peer_create(jnx_guid guid, char *host_address, char *user_name) {
     temp->user_name = malloc(1 + strlen(user_name));
     strcpy(temp->user_name, user_name);
   }
+  temp->discovery_interval = discovery_interval;
   return temp;
 }
 void peer_free(peer **p) {
@@ -87,11 +90,12 @@ void peer_free(peer **p) {
   free(temp);
   *p = NULL;
 }
-peer *local_peer_for_user(char *user) {
+peer *local_peer_for_user(char *user, jnx_uint32 discovery_interval) {
 	peer *p = calloc(1, sizeof(peer));
 	jnx_guid_create(&p->guid);
 	get_local_ip(&p->host_address);
 	p->user_name = user;
+  p->discovery_interval = discovery_interval;
 	return p;
 }
 peer_compare_status peers_compare(peer *p1, peer *p2) {
