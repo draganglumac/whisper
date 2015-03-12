@@ -152,7 +152,7 @@ static void set_up_discovery_service(app_context_t *context) {
     JNX_LOG(0, "[ERROR] You must supply the user name in the configuration. Add USER_NAME=username line to the config file.");
     exit(1);
   }
-  peerstore *ps = peerstore_init(local_peer_for_user(user_name), 0);
+  peerstore *ps = peerstore_init(local_peer_for_user(user_name, peer_update_interval), 0);
   char *local_ip = (char *) jnx_hash_get(config, "LOCAL_IP");
   if (local_ip != NULL) {
     free(peerstore_get_local_peer(ps)->host_address);

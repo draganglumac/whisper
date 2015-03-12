@@ -152,7 +152,7 @@ int is_active_peer_ask_once(time_t last_update_time, peer *p) {
   return 1;
 }
 int is_active_peer_periodic_update(time_t last_update_time, peer *p) {
-  if (p->last_seen >= last_update_time - 2 * peer_update_interval) {
+  if (p->last_seen >= last_update_time - 2 * p->discovery_interval) {
     return 1;
   }
   return 0;
