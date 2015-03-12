@@ -241,6 +241,7 @@ void set_up_session_service(app_context_t *context){
 }
 void set_up_auth_comms(app_context_t *context) {
   context->auth_comms = auth_comms_create();
+  context->auth_comms->ar_callback = app_accept_or_reject_session;
   context->auth_comms->listener_port = malloc(strlen("9991")+1);
   bzero(context->auth_comms->listener_port,strlen("9991")+1);
   strcpy(context->auth_comms->listener_port,"9991");

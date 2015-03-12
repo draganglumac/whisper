@@ -14,7 +14,6 @@
 #include "../util/utils.h"
 #include "../session/auth_initiator.pb-c.h"
 #include "../session/auth_receiver.pb-c.h"
-#include "../app/app.h"
 #include "../session/handshake_control.h"
 #include "../net/secure_comms.h"
 #define CHALLENGE_REQUEST_PUBLIC_KEY 1
@@ -61,7 +60,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       jnx_guid g;
       jnx_guid_from_string(a->initiator_guid,&g);
       
-      abort_token = app_accept_or_reject_session(t->ds,&g);
+      abort_token = t->ac->ar_callback(t->ds,&g);
 
       printf("Did receive handshake request.\n");
       session *osession;
