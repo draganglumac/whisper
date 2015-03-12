@@ -22,6 +22,10 @@
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
+int app_accept_or_reject_session(session *s) {
+  int will_accept = 1;
+  return will_accept ? 0 : 1;
+}
 void pair_session_with_gui(session *s, void *gui_context) {
   s->gui_context = gui_context;
   s->session_callback = gui_receive_message;
