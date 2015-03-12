@@ -53,5 +53,5 @@ void app_create_gui_session(session *s);
 void app_list_active_peers(app_context_t *context);
 peer *app_peer_from_input(app_context_t *context,char *param);
 void app_initiate_handshake(app_context_t *context,session *s);
-int app_accept_or_reject_session(session *s);
+int app_accept_or_reject_session(discovery_service *ds, jnx_guid *g);
 #endif // __APP_H__

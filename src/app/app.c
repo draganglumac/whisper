@@ -22,7 +22,7 @@
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
-int app_accept_or_reject_session(session *s) {
+int app_accept_or_reject_session(discovery_service *ds,jnx_guid *intiator_guid) {
   int will_accept = 1;
   return will_accept ? 0 : 1;
 }

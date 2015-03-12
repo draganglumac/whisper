@@ -58,6 +58,11 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
      */
     if(a->is_requesting_public_key && !a->is_requesting_finish){
 
+      jnx_guid g;
+      jnx_guid_from_string(a->initiator_guid,&g);
+      
+      abort_token = app_accept_or_reject_session(t->ds,&g);
+
       printf("Did receive handshake request.\n");
       session *osession;
       session_state e = session_service_create_shared_session(t->ss,
