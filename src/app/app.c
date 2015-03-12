@@ -177,13 +177,15 @@ static void set_up_discovery_service(app_context_t *context) {
 
   context->discovery = discovery_service_create(port, AF_INET, broadcast_address, ps);
   char *discovery_strategy = (char *) jnx_hash_get(config, "DISCOVERY_STRATEGY");
-  if (0 == strcmp(discovery_strategy, "polling")) {
-    JNX_LOG(0, "Starting discovery service with polling srategy.");
-    discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
-  }
-  else {
+  if (NULL == discovery_strategy) {
     JNX_LOG(0, "Starting discovery service with heartbeat srategy.");
     discovery_service_start(context->discovery, BROADCAST_UPDATE_STRATEGY);
+  }
+  else {
+    if (0 == strcmp(discovery_strategy, "polling")) {
+      JNX_LOG(0, "Starting discovery service with polling srategy.");
+      discovery_service_start(context->discovery, POLLING_UPDATE_STRATEGY);
+    }
   }
 }
 int app_is_input_guid_size(char *input) {
