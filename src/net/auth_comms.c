@@ -151,7 +151,7 @@ auth_comms_service *auth_comms_create() {
 }
 void auth_comms_listener_start(auth_comms_service *ac, discovery_service *ds,
     session_service *ss) {
-  transport_options *ts = malloc(sizeof(ts));
+  transport_options *ts = malloc(sizeof(transport_options));
   ts->ac = ac;
   ts->ds = ds;
   ts->ss = ss;
