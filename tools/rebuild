@@ -1,4 +1,4 @@
+git clean -fdx
 ./tools/destroy_library 
-./tools/generate_protobuf 
 cmake .
 make
