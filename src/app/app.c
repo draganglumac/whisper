@@ -19,10 +19,25 @@
 #include <string.h>
 #include <stdio.h>
 #include <jnxc_headers/jnxterm.h>
+#include <jnxc_headers/jnxunixsocket.h>
+#include <jnxc_headers/jnxthread.h>
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
+
+#define SESSION_INTERACTION "session_interaction"
+
+static char *session_interaction_path() {
+  int size = 0;
+  size += strlen(P_tmpdir);
+  size += strlen(SESSION_INTERACTION);
+  char *path = calloc(1, size + 1);
+  strcpy(path, P_tmpdir);
+  strcpy(path, SESSION_INTERACTION);
+  return path;
+}
 int app_accept_or_reject_session(discovery_service *ds,jnx_guid *intiator_guid) {
+  
   int will_accept = 1;
   return will_accept ? 0 : 1;
 }
