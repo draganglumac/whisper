@@ -19,27 +19,58 @@
 #include <string.h>
 #include <stdio.h>
 #include <jnxc_headers/jnxterm.h>
-#include <jnxc_headers/jnxunixsocket.h>
 #include <jnxc_headers/jnxthread.h>
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
 
+#define END_LISTEN -1
 #define SESSION_INTERACTION "session_interaction"
 
-static char *session_interaction_path() {
+static int get_session_interaction_path(char *path) {
   int size = 0;
   size += strlen(P_tmpdir);
   size += strlen(SESSION_INTERACTION);
-  char *path = calloc(1, size + 1);
+  memset(path, 0, size + 1);
   strcpy(path, P_tmpdir);
-  strcpy(path, SESSION_INTERACTION);
-  return path;
+  strcat(path, SESSION_INTERACTION);
+  return size;
 }
-int app_accept_or_reject_session(discovery_service *ds,jnx_guid *intiator_guid) {
-  
-  int will_accept = 1;
-  return will_accept ? 0 : 1;
+typedef struct {
+  int abort;
+  jnx_guid *session_guid;
+} accept_reject_dto;
+static jnx_int32 user_accept_reject(jnx_uint8 *payload, jnx_size bytesread, 
+    jnx_unix_socket *remote_sock, void *ctx) {
+  accept_reject_dto *ar = (accept_reject_dto *) ctx;
+  if (0 == strncmp((char *) payload, "a", bytesread)
+      || 0 == strncmp((char *) payload, "accept", bytesread)) {
+    ar->abort = 0;
+    write(remote_sock->socket, 
+        (void *) ar->session_guid, sizeof(jnx_guid));
+  }
+  else {
+    ar->abort = 1;
+  }
+  return END_LISTEN;
+}
+int app_accept_or_reject_session(discovery_service *ds,
+    jnx_guid *initiator_guid, jnx_guid *session_guid) {
+  char sockpath[128];
+  get_session_interaction_path(sockpath);
+  unlink(sockpath);
+  jnx_unix_socket *s = jnx_unix_stream_socket_create(sockpath);
+  int abort; 
+  peer *p = peerstore_lookup(ds->peers, initiator_guid);
+  printf("You have a chat request from %s. %s",
+      p->user_name, "Would you like to accept or reject the chat? [a/r]: ");
+  fflush(stdout);
+  accept_reject_dto ar;
+  ar.session_guid = session_guid;
+  jnx_unix_stream_socket_listen_with_context(
+      s, 1, user_accept_reject, (void *) &ar);
+  jnx_unix_socket_destroy(&s);
+  return ar.abort;
 }
 void pair_session_with_gui(session *s, void *gui_context) {
   s->gui_context = gui_context;
@@ -283,4 +314,25 @@ void app_destroy_context(app_context_t **context) {
   auth_comms_destroy(&(*context)->auth_comms);
   free(*context);
   *context = NULL;
+}
+session *app_accept_chat(app_context_t *context) {
+  char sockpath[128];
+  get_session_interaction_path(sockpath);
+  jnx_unix_socket *us = jnx_unix_stream_socket_create(sockpath);
+  jnx_unix_stream_socket_send(us, (jnx_uint8 *) "accept",
+      strlen("accept"));
+  jnx_guid session_guid;
+  read(us->socket, (void *) &session_guid, sizeof(jnx_guid));
+  jnx_unix_socket_destroy(&us);
+
+  session *osession = NULL;
+  while (SESSION_STATE_NOT_FOUND 
+      == session_service_fetch_session(context->session_serv,
+            &session_guid, &osession)) {
+    sleep(1);
+  }
+  while (osession->secure_comms_fd == 0) {
+    sleep(1);
+  }
+  return osession;
 }

@@ -57,10 +57,11 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
      */
     if(a->is_requesting_public_key && !a->is_requesting_finish){
 
-      jnx_guid g;
+      jnx_guid g, session_g;
       jnx_guid_from_string(a->initiator_guid,&g);
-      
-      abort_token = t->ac->ar_callback(t->ds,&g);
+      jnx_guid_from_string(a->session_guid,&session_g);
+
+      abort_token = t->ac->ar_callback(t->ds,&g,&session_g);
 
       printf("Did receive handshake request.\n");
       session *osession;
