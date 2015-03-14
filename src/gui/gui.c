@@ -60,7 +60,7 @@ gui_context_t *gui_create(session *s) {
   display_logo();
   ui->screen = newwin(LINES - 6, COLS - 1, 1, 1);
   scrollok(ui->screen, TRUE);
-//  box(ui->screen, 0, 0);
+  //  box(ui->screen, 0, 0);
   wborder(ui->screen, '|', '|', '-', '-', '+', '+', '+', '+');
   ui->next_line = 1;
   wrefresh(ui->screen);
@@ -141,18 +141,29 @@ void *read_loop(void *data) {
   while(TRUE) {
     char *msg = get_message(context);
     if (strcmp(msg, ":q") == 0) {
-      session_disconnect(context->s);
-      gui_destroy(context);
       break;
     }
     else {
       session_state res = session_message_write(context->s, msg);
-      display_local_message(context, msg);
+      if (SESSION_STATE_OKAY == res) {
+        display_local_message(context, msg);
+      }
+      else {
+        display_local_message(context, "!!! The chat has finished !!!");
+        break;
+      }
     }
   }
+  session_disconnect(context->s);
+  gui_destroy(context);
   return NULL;
 }
 void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
   gui_context_t *c = (gui_context_t *) gc;
-  display_remote_message(c, message);
+  if (c->s->is_connected) {
+    display_remote_message(c, message);
+  }
+  else {
+    gui_destroy(c);
+  }
 }

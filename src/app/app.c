@@ -89,9 +89,9 @@ void unpair_session_from_gui(session *s, void *gui_context) {
 }
 void app_create_gui_session(session *s) {
   gui_context_t *c = gui_create(s);
-  pair_session_with_gui(s, (void *) c);
-  read_loop((void *) c);
-  unpair_session_from_gui(s, (void *) c);
+  pair_session_with_gui(s, (void *)c);
+  read_loop((void *)c);
+  unpair_session_from_gui(s, (void *)c);
 }
 int is_equivalent(char *command, char *expected) {
   if (strcmp(command, expected) == 0) {
