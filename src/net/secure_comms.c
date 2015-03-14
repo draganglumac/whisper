@@ -59,7 +59,7 @@ static int connect_for_socket_fd(jnx_socket *s, peer *remote_peer,session *ses) 
   }
   if(!s->isconnected) {
     if(connect(s->socket,res->ai_addr,res->ai_addrlen) != 0) {
-      perror("connect:");
+      perror("connect");
       freeaddrinfo(res);
       return 1;
     }
@@ -74,13 +74,16 @@ void *secure_comms_bootstrap_listener(void *args) {
   while(s->is_connected) {
     bzero(buffer,2048);
     jnx_size bytes_read = read(s->secure_comms_fd,
-    buffer,2048);
-   
-    jnx_char *decrypted_message = 
-      symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
-    
-    s->session_callback(s->gui_context, &s->session_guid, decrypted_message);
+        buffer,2048);
+
+    if (bytes_read > 0) { 
+      jnx_char *decrypted_message = 
+        symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
+
+      s->session_callback(s->gui_context, &s->session_guid, decrypted_message);
+    }
   }
+  return NULL;
 }
 void secure_comms_start(secure_comms_endpoint e, discovery_service *ds,
     session *s,jnx_unsigned_int addr_family) {
