@@ -114,7 +114,7 @@ void display_local_message(gui_context_t *c, char *msg) {
   free(msg);
 }
 void display_remote_message(gui_context_t *c, char *msg) {
-  display_message(c->ui, msg + 2, COL_REMOTE);
+  display_message(c->ui, msg, COL_REMOTE);
   free(msg);
 }
 void signal_message() {
@@ -154,6 +154,7 @@ void *read_loop(void *data) {
 }
 void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
   gui_context_t *c = (gui_context_t *) gc;
+  printf("[DEBUG] %s", message);
   display_remote_message(c, message);
 }
 int output_next_message_in_context(gui_context_t *context) {
