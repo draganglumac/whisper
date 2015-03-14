@@ -30,9 +30,16 @@
 static int get_session_interaction_path(char *path) {
   int size = 0;
   size += strlen(P_tmpdir);
+  int has_end_slash = (P_tmpdir[strlen(P_tmpdir)] == '/');
+  if (has_end_slash) {
+    size++;
+  }
   size += strlen(SESSION_INTERACTION);
-  memset(path, 0, size + 1);
+  memset(path, 0, size);
   strcpy(path, P_tmpdir);
+  if (! has_end_slash) {
+    strcat(path, "/");
+  }
   strcat(path, SESSION_INTERACTION);
   return size;
 }
