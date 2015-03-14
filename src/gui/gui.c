@@ -156,21 +156,3 @@ void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
   gui_context_t *c = (gui_context_t *) gc;
   display_remote_message(c, message);
 }
-int output_next_message_in_context(gui_context_t *context) {
-  pthread_mutex_lock(&output_mutex);	
-  wait_for_message();
-  ui_t *cui = context->ui;
-  char *msg = context->msg;
-  if (strcmp(msg, ":q") == 0) {
-    pthread_mutex_unlock(&output_mutex);
-    return -1;
-  }
-  else if (strncmp(msg, "r/", 2) == 0) {
-    display_remote_message(context, msg);
-  }
-  else {
-    display_local_message(context, msg);
-  }
-  pthread_mutex_unlock(&output_mutex);
-  return 0;
-}
