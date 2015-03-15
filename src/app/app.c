@@ -333,16 +333,18 @@ session *app_accept_chat(app_context_t *context) {
   jnx_unix_socket *us = jnx_unix_stream_socket_create(sockpath);
   jnx_unix_stream_socket_send(us, (jnx_uint8 *) "accept",
       strlen("accept"));
-  jnx_guid session_guid;
-  read(us->socket, (void *) &session_guid, sizeof(jnx_guid));
+  jnx_guid *session_guid = calloc(1, sizeof(jnx_guid));
+  read(us->socket, (void *) session_guid, sizeof(jnx_guid));
+  JNXCHECK(session_guid);
   jnx_unix_socket_destroy(&us);
 
   session *osession = NULL;
   while (SESSION_STATE_NOT_FOUND 
       == session_service_fetch_session(context->session_serv,
-            &session_guid, &osession)) {
+            session_guid, &osession)) {
     sleep(1);
   }
+  free(session_guid);
   while (osession->secure_comms_fd == 0) {
     sleep(1);
   }
