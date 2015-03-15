@@ -22,6 +22,7 @@
 #define COL_LOGO   1
 #define COL_LOCAL  2
 #define COL_REMOTE 3
+#define COL_ALERT  4
 
 static pthread_mutex_t output_mutex;
 static pthread_cond_t output_cond;
@@ -36,6 +37,7 @@ void init_colours() {
   init_pair(COL_LOGO, COLOR_WHITE, COLOR_BLUE);
   init_pair(COL_LOCAL, COLOR_WHITE, COLOR_BLACK);
   init_pair(COL_REMOTE, COLOR_GREEN, COLOR_BLACK);
+  init_pair(COL_ALERT, COLOR_RED, COLOR_BLACK);
 }
 void show_prompt(ui_t *ui) {
   wmove(ui->prompt, 1, 1);
@@ -117,6 +119,9 @@ void display_remote_message(gui_context_t *c, char *msg) {
   display_message(c->ui, msg, COL_REMOTE);
   free(msg);
 }
+void display_alert_message(gui_context_t *c, char *msg) {
+  display_message(c->ui, msg, COL_ALERT);
+}
 void signal_message() {
   int retval;
   if ((retval = pthread_cond_signal(&output_cond)) != 0) {
@@ -149,7 +154,6 @@ void *read_loop(void *data) {
         display_local_message(context, msg);
       }
       else {
-        display_local_message(context, "!!! The chat has finished !!!");
         break;
       }
     }
@@ -164,6 +168,8 @@ void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
     display_remote_message(c, message);
   }
   else {
+    display_alert_message(c, message);
+    sleep(2);
     gui_destroy(c);
   }
 }

@@ -75,7 +75,6 @@ void *secure_comms_bootstrap_listener(void *args) {
     bzero(buffer,2048);
     int bytes_read = recv(s->secure_comms_fd,
         buffer,2048, 0);
-    printf("Bytes read = %d\n", bytes_read);
     if (bytes_read > 0) { 
       jnx_char *decrypted_message = 
         symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
@@ -85,6 +84,7 @@ void *secure_comms_bootstrap_listener(void *args) {
     else {
       session_disconnect(s);
       s->is_connected = 0;
+      s->session_callback(s->gui_context, &s->session_guid, "The chat has terminated.");
     }
   }
   return NULL;
