@@ -139,7 +139,8 @@ void *read_loop(void *data) {
     }
   }
   session_disconnect(context->s);
-  display_alert_message(context, "The chat has terminated. Type :q to end the session."); 
+  gui_unpair_session(context);
+  gui_destroy(context);
   return NULL;
 }
 void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
@@ -151,9 +152,6 @@ void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
     display_remote_message(c, message);
   }
   else {
-    gui_unpair_session(c);
     display_alert_message(c, message);
-    sleep(2);
-    gui_destroy(c);
   }
 }
