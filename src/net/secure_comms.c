@@ -73,8 +73,8 @@ void *secure_comms_bootstrap_listener(void *args) {
   jnx_char buffer[2048];
   while(s->is_connected) {
     bzero(buffer,2048);
-    int bytes_read = read(s->secure_comms_fd,
-        buffer,2048);
+    int bytes_read = recv(s->secure_comms_fd,
+        buffer,2048, 0);
     printf("Bytes read = %d\n", bytes_read);
     if (bytes_read > 0) { 
       jnx_char *decrypted_message = 
