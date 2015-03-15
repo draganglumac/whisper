@@ -110,7 +110,7 @@ session_state session_service_create_shared_session(session_service *service,\
     printf("Returning existing session.\n");
     return e;
   }
-   e = session_service_create_session(service,osession);
+  e = session_service_create_session(service,osession);
   (*osession)->session_guid = g;
   return e;
 }

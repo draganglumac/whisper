@@ -24,9 +24,6 @@
 #define COL_REMOTE 3
 #define COL_ALERT  4
 
-static pthread_mutex_t output_mutex;
-static pthread_cond_t output_cond;
-
 void init_colours() {
   if (has_colors() == FALSE) {
     endwin();
@@ -53,8 +50,6 @@ void display_logo() {
   refresh();
 }
 gui_context_t *gui_create(session *s) {
-  pthread_mutex_init(&output_mutex, NULL);
-  pthread_cond_init(&output_cond, NULL);
   gui_context_t *c = malloc(sizeof(gui_context_t));
   ui_t *ui = malloc(sizeof(ui_t));
   initscr();
@@ -123,33 +118,12 @@ void display_remote_message(gui_context_t *c, char *msg) {
 void display_alert_message(gui_context_t *c, char *msg) {
   display_message(c->ui, msg, COL_ALERT);
 }
-void signal_message() {
-  int retval;
-  if ((retval = pthread_cond_signal(&output_cond)) != 0) {
-    printf("Error in signaling arrival of the mesage, Error %d\n", retval);
-  }
-}
-void wait_for_message() {
-  int retval;
-  if ((retval = pthread_cond_wait(&output_cond,&output_mutex)) != 0) {
-    printf("Error in waiting for the mesage, Error %d\n", retval);
-  }
-}
-void send_message_to_context(gui_context_t *context, char *message) {
-  pthread_mutex_lock(&output_mutex);
-  context->msg = message;
-  pthread_mutex_unlock(&output_mutex);
-  signal_message();
-}
 static void gui_unpair_session(gui_context_t *c) {
   c->s->session_callback = NULL;
 }
 void *read_loop(void *data) {
   gui_context_t *context = (gui_context_t *) data;
   while(TRUE) {
-    if (!context->is_active) {
-      return NULL;
-    }
     char *msg = get_message(context);
     if (strcmp(msg, ":q") == 0) {
       break;
