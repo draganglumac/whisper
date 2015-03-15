@@ -159,6 +159,7 @@ void *read_loop(void *data) {
     }
   }
   session_disconnect(context->s);
+  display_alert_message(context->s, "The chat has terminated."); 
   gui_destroy(context);
   return NULL;
 }
