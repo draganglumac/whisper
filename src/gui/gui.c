@@ -133,9 +133,6 @@ void *read_loop(void *data) {
       if (SESSION_STATE_OKAY == res) {
         display_local_message(context, msg);
       }
-      else {
-        break;
-      }
     }
   }
   session_disconnect(context->s);
@@ -152,6 +149,7 @@ void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
     display_remote_message(c, message);
   }
   else {
+    session_disconnect(c->s);
     display_alert_message(c, message);
   }
 }
