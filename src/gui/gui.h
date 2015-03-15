@@ -32,6 +32,7 @@ typedef struct {
   ui_t *ui;
   session *s;
   char *msg;
+  int is_active;
 } gui_context_t;
 
 gui_context_t *gui_create(session *s);

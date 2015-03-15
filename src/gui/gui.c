@@ -72,13 +72,14 @@ gui_context_t *gui_create(session *s) {
   c->ui = ui;
   c->s = s;
   c->msg = NULL;
+  c->is_active = 1;
   return c;
 }
 void gui_destroy(gui_context_t *c) {
   delwin(c->ui->screen);
   delwin(c->ui->prompt);
   endwin();
-  free(c);
+  c->is_active = 0;
 }
 char *get_message(gui_context_t *c){
   char *msg = malloc(1024);
@@ -146,6 +147,9 @@ static void gui_unpair_session(gui_context_t *c) {
 void *read_loop(void *data) {
   gui_context_t *context = (gui_context_t *) data;
   while(TRUE) {
+    if (!context->is_active) {
+      return NULL;
+    }
     char *msg = get_message(context);
     if (strcmp(msg, ":q") == 0) {
       break;
@@ -168,6 +172,9 @@ void *read_loop(void *data) {
 }
 void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
   gui_context_t *c = (gui_context_t *) gc;
+  if (!c->is_active) {
+    return;
+  }
   if (c->s->is_connected) {
     display_remote_message(c, message);
   }
