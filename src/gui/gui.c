@@ -140,7 +140,9 @@ void send_message_to_context(gui_context_t *context, char *message) {
   pthread_mutex_unlock(&output_mutex);
   signal_message();
 }
-
+static void gui_unpair_session(gui_context_t *c) {
+  c->s->session_callback = NULL;
+}
 void *read_loop(void *data) {
   gui_context_t *context = (gui_context_t *) data;
   while(TRUE) {
@@ -159,6 +161,7 @@ void *read_loop(void *data) {
     }
   }
   session_disconnect(context->s);
+  gui_unpair_session(context);
   display_alert_message(context, "The chat has terminated."); 
   gui_destroy(context);
   return NULL;
@@ -169,6 +172,7 @@ void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
     display_remote_message(c, message);
   }
   else {
+    gui_unpair_session(c);
     display_alert_message(c, message);
     sleep(2);
     gui_destroy(c);
