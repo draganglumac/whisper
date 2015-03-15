@@ -15,8 +15,13 @@ if(RUN_TESTS)
 endif()
 
 if(DEBUG)
-  add_definitions("-DDEBUG -g")
+  add_definitions("-g")
 endif()
+
+if(PRINT_DEBUG)
+  add_definitions("-DDEBUG")
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set (CMAKE_CXX_FLAGS "-Wno-pointer-sign")
 endif()

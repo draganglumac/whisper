@@ -19,36 +19,89 @@
 #include <string.h>
 #include <stdio.h>
 #include <jnxc_headers/jnxterm.h>
-#include <jnxc_headers/jnxunixsocket.h>
 #include <jnxc_headers/jnxthread.h>
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
 
+#define END_LISTEN -1
 #define SESSION_INTERACTION "session_interaction"
+#define RECEIVE_GUID "receive_guid"
 
-static char *session_interaction_path() {
+static int get_tmp_path(char *path, char *filename) {
   int size = 0;
   size += strlen(P_tmpdir);
-  size += strlen(SESSION_INTERACTION);
-  char *path = calloc(1, size + 1);
+  int has_end_slash = (P_tmpdir[strlen(P_tmpdir)] == '/');
+  if (has_end_slash) {
+    size++;
+  }
+  size += strlen(filename);
+  memset(path, 0, size);
   strcpy(path, P_tmpdir);
-  strcpy(path, SESSION_INTERACTION);
-  return path;
+  if (! has_end_slash) {
+    strcat(path, "/");
+  }
+  strcat(path, filename);
+  return size;
 }
-int app_accept_or_reject_session(discovery_service *ds,jnx_guid *intiator_guid) {
-  
-  int will_accept = 1;
-  return will_accept ? 0 : 1;
+static int get_session_interaction_path(char *path) {
+  return get_tmp_path(path, SESSION_INTERACTION);
+}
+static int get_recieve_guid_path(char *path) {
+  return get_tmp_path(path, RECEIVE_GUID);
+}
+typedef struct {
+  int abort;
+  jnx_guid *session_guid;
+} accept_reject_dto;
+static jnx_int32 user_accept_reject(jnx_uint8 *payload, jnx_size bytesread, 
+    jnx_unix_socket *remote_sock, void *ctx) {
+  accept_reject_dto *ar = (accept_reject_dto *) ctx;
+  if (0 == strncmp((char *) payload, "a", bytesread)
+      || 0 == strncmp((char *) payload, "accept", bytesread)) {
+    ar->abort = 0;
+  }
+  else {
+    ar->abort = 1;
+  }
+  return END_LISTEN;
+}
+int app_accept_or_reject_session(discovery_service *ds,
+    jnx_guid *initiator_guid, jnx_guid *session_guid) {
+  char sockpath[128], guidpath[128];
+  get_session_interaction_path(sockpath);
+  get_recieve_guid_path(guidpath);
+  unlink(sockpath);
+  unlink(guidpath);
+  jnx_unix_socket *s = jnx_unix_stream_socket_create(sockpath),
+                  *gs = jnx_unix_stream_socket_create(guidpath);
+  int abort;
+  peer *p = peerstore_lookup(ds->peers, initiator_guid);
+  printf("You have a chat request from %s. %s",
+      p->user_name, "Would you like to accept or reject the chat? [a/r]: ");
+  fflush(stdout);
+  accept_reject_dto ar;
+  ar.session_guid = session_guid;
+  jnx_unix_stream_socket_listen_with_context(
+      s, 1, user_accept_reject, (void *) &ar);
+  jnx_unix_stream_socket_send(gs, (void *) session_guid, sizeof(jnx_guid));
+  jnx_unix_socket_destroy(&gs);
+  jnx_unix_socket_destroy(&s);
+  return ar.abort;
 }
 void pair_session_with_gui(session *s, void *gui_context) {
   s->gui_context = gui_context;
   s->session_callback = gui_receive_message;
 }
+void unpair_session_from_gui(session *s, void *gui_context) {
+  s->gui_context = NULL;
+  s->session_callback = NULL;
+}
 void app_create_gui_session(session *s) {
   gui_context_t *c = gui_create(s);
-  pair_session_with_gui(s, (void *) c);
-  read_loop((void *) c);
+  pair_session_with_gui(s, (void *)c);
+  read_loop((void *)c);
+  unpair_session_from_gui(s, (void *)c);
 }
 int is_equivalent(char *command, char *expected) {
   if (strcmp(command, expected) == 0) {
@@ -283,4 +336,43 @@ void app_destroy_context(app_context_t **context) {
   auth_comms_destroy(&(*context)->auth_comms);
   free(*context);
   *context = NULL;
+}
+static jnx_int32 read_guid(jnx_uint8* buffer, jnx_size bytesread,
+    jnx_unix_socket *remote_sock, void *context) {
+  jnx_guid *guid = (jnx_guid *) context;
+  JNXCHECK(bytesread == sizeof(jnx_guid));
+  memcpy((void *) guid, buffer, bytesread);
+  return END_LISTEN;
+}
+session *app_accept_chat(app_context_t *context) {
+  char sockpath[128], guidpath[128];
+  get_session_interaction_path(sockpath);
+  get_recieve_guid_path(guidpath);
+  jnx_unix_socket *us = jnx_unix_stream_socket_create(sockpath),
+                  *gs = jnx_unix_stream_socket_create(guidpath);
+  jnx_unix_stream_socket_send(us, (jnx_uint8 *) "accept",
+      strlen("accept"));
+  jnx_guid session_guid;
+  jnx_unix_stream_socket_listen_with_context(gs, 1, read_guid,
+      (void *) &session_guid);
+  read(us->socket, (void *) &session_guid, sizeof(jnx_guid));
+#ifdef DEBUG
+  char *guid_str;
+  jnx_guid_to_string(&session_guid, &guid_str);
+  printf("[DEBUG] Received SessionGUID = %s\n", guid_str);
+  free(guid_str);
+#endif
+  jnx_unix_socket_destroy(&gs);
+  jnx_unix_socket_destroy(&us);
+
+  session *osession = NULL;
+  while (SESSION_STATE_NOT_FOUND 
+      == session_service_fetch_session(context->session_serv,
+            &session_guid, &osession)) {
+    sleep(1);
+  }
+  while (osession->secure_comms_fd == 0) {
+    sleep(1);
+  }
+  return osession;
 }

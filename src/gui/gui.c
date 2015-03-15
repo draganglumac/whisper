@@ -22,9 +22,7 @@
 #define COL_LOGO   1
 #define COL_LOCAL  2
 #define COL_REMOTE 3
-
-static pthread_mutex_t output_mutex;
-static pthread_cond_t output_cond;
+#define COL_ALERT  4
 
 void init_colours() {
   if (has_colors() == FALSE) {
@@ -36,6 +34,7 @@ void init_colours() {
   init_pair(COL_LOGO, COLOR_WHITE, COLOR_BLUE);
   init_pair(COL_LOCAL, COLOR_WHITE, COLOR_BLACK);
   init_pair(COL_REMOTE, COLOR_GREEN, COLOR_BLACK);
+  init_pair(COL_ALERT, COLOR_YELLOW, COLOR_BLACK);
 }
 void show_prompt(ui_t *ui) {
   wmove(ui->prompt, 1, 1);
@@ -51,8 +50,6 @@ void display_logo() {
   refresh();
 }
 gui_context_t *gui_create(session *s) {
-  pthread_mutex_init(&output_mutex, NULL);
-  pthread_cond_init(&output_cond, NULL);
   gui_context_t *c = malloc(sizeof(gui_context_t));
   ui_t *ui = malloc(sizeof(ui_t));
   initscr();
@@ -60,8 +57,8 @@ gui_context_t *gui_create(session *s) {
   display_logo();
   ui->screen = newwin(LINES - 6, COLS - 1, 1, 1);
   scrollok(ui->screen, TRUE);
-//  box(ui->screen, 0, 0);
-  wborder(ui->screen, '|', '|', '-', '-', '+', '+', '+', '+');
+  box(ui->screen, 0, 0);
+//  wborder(ui->screen, '|', '|', '-', '-', '+', '+', '+', '+');
   ui->next_line = 1;
   wrefresh(ui->screen);
   ui->prompt = newwin(4, COLS - 1, LINES - 5, 1);
@@ -70,13 +67,14 @@ gui_context_t *gui_create(session *s) {
   c->ui = ui;
   c->s = s;
   c->msg = NULL;
+  c->is_active = 1;
   return c;
 }
 void gui_destroy(gui_context_t *c) {
   delwin(c->ui->screen);
   delwin(c->ui->prompt);
   endwin();
-  free(c);
+  c->is_active = 0;
 }
 char *get_message(gui_context_t *c){
   char *msg = malloc(1024);
@@ -114,63 +112,44 @@ void display_local_message(gui_context_t *c, char *msg) {
   free(msg);
 }
 void display_remote_message(gui_context_t *c, char *msg) {
-  display_message(c->ui, msg + 2, COL_REMOTE);
+  display_message(c->ui, msg, COL_REMOTE);
   free(msg);
 }
-void signal_message() {
-  int retval;
-  if ((retval = pthread_cond_signal(&output_cond)) != 0) {
-    printf("Error in signaling arrival of the mesage, Error %d\n", retval);
-  }
+void display_alert_message(gui_context_t *c, char *msg) {
+  display_message(c->ui, msg, COL_ALERT);
 }
-void wait_for_message() {
-  int retval;
-  if ((retval = pthread_cond_wait(&output_cond,&output_mutex)) != 0) {
-    printf("Error in waiting for the mesage, Error %d\n", retval);
-  }
+static void gui_unpair_session(gui_context_t *c) {
+  c->s->session_callback = NULL;
 }
-void send_message_to_context(gui_context_t *context, char *message) {
-  pthread_mutex_lock(&output_mutex);
-  context->msg = message;
-  pthread_mutex_unlock(&output_mutex);
-  signal_message();
-}
-
 void *read_loop(void *data) {
   gui_context_t *context = (gui_context_t *) data;
   while(TRUE) {
     char *msg = get_message(context);
     if (strcmp(msg, ":q") == 0) {
-      session_disconnect(context->s);
-      gui_destroy(context);
       break;
     }
     else {
       session_state res = session_message_write(context->s, msg);
-      display_local_message(context, msg);
+      if (SESSION_STATE_OKAY == res) {
+        display_local_message(context, msg);
+      }
     }
   }
+  session_disconnect(context->s);
+  gui_unpair_session(context);
+  gui_destroy(context);
   return NULL;
 }
 void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
   gui_context_t *c = (gui_context_t *) gc;
-  display_remote_message(c, message);
-}
-int output_next_message_in_context(gui_context_t *context) {
-  pthread_mutex_lock(&output_mutex);	
-  wait_for_message();
-  ui_t *cui = context->ui;
-  char *msg = context->msg;
-  if (strcmp(msg, ":q") == 0) {
-    pthread_mutex_unlock(&output_mutex);
-    return -1;
+  if (!c->is_active) {
+    return;
   }
-  else if (strncmp(msg, "r/", 2) == 0) {
-    display_remote_message(context, msg);
+  if (c->s->is_connected) {
+    display_remote_message(c, message);
   }
   else {
-    display_local_message(context, msg);
+    session_disconnect(c->s);
+    display_alert_message(c, message);
   }
-  pthread_mutex_unlock(&output_mutex);
-  return 0;
 }

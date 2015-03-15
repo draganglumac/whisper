@@ -13,7 +13,7 @@
 #include "../session/session_service.h"
 #include <jnxc_headers/jnxthread.h>
 
-typedef int (*accept_reject_callback)(discovery_service *, jnx_guid *);
+typedef int (*accept_reject_callback)(discovery_service *, jnx_guid *, jnx_guid *);
 
 typedef struct auth_comms_service {
   jnx_socket *listener_socket;

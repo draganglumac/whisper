@@ -21,6 +21,7 @@
 
 #include <jnxc_headers/jnxhash.h>
 #include <jnxc_headers/jnxvector.h>
+#include <jnxc_headers/jnxunixsocket.h>
 #include "../net/discovery.h"
 #include "../net/auth_comms.h"
 #include "../session/session_service.h"
@@ -53,5 +54,7 @@ void app_create_gui_session(session *s);
 void app_list_active_peers(app_context_t *context);
 peer *app_peer_from_input(app_context_t *context,char *param);
 void app_initiate_handshake(app_context_t *context,session *s);
-int app_accept_or_reject_session(discovery_service *ds, jnx_guid *g);
+int app_accept_or_reject_session(discovery_service *ds,
+    jnx_guid *ig, jnx_guid *sg);
+session *app_accept_chat(app_context_t *context);
 #endif // __APP_H__

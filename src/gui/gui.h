@@ -32,6 +32,7 @@ typedef struct {
   ui_t *ui;
   session *s;
   char *msg;
+  int is_active;
 } gui_context_t;
 
 gui_context_t *gui_create(session *s);
@@ -41,6 +42,5 @@ void display_local_message(gui_context_t *c, char *msg);
 void display_remote_message(gui_context_t *c, char *msg);
 void *read_loop(void *data);
 void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message);
-int output_next_message_in_context(gui_context_t *c);
 
 #endif
