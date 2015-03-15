@@ -26,22 +26,29 @@
 
 #define END_LISTEN -1
 #define SESSION_INTERACTION "session_interaction"
+#define RECEIVE_GUID "receive_guid"
 
-static int get_session_interaction_path(char *path) {
+static int get_tmp_path(char *path, char *filename) {
   int size = 0;
   size += strlen(P_tmpdir);
   int has_end_slash = (P_tmpdir[strlen(P_tmpdir)] == '/');
   if (has_end_slash) {
     size++;
   }
-  size += strlen(SESSION_INTERACTION);
+  size += strlen(filename);
   memset(path, 0, size);
   strcpy(path, P_tmpdir);
   if (! has_end_slash) {
     strcat(path, "/");
   }
-  strcat(path, SESSION_INTERACTION);
+  strcat(path, filename);
   return size;
+}
+static int get_session_interaction_path(char *path) {
+  return get_tmp_path(path, SESSION_INTERACTION);
+}
+static int get_recieve_guid_path(char *path) {
+  return get_tmp_path(path, RECEIVE_GUID);
 }
 typedef struct {
   int abort;
