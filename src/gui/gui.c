@@ -34,7 +34,7 @@ void init_colours() {
   init_pair(COL_LOGO, COLOR_WHITE, COLOR_BLUE);
   init_pair(COL_LOCAL, COLOR_WHITE, COLOR_BLACK);
   init_pair(COL_REMOTE, COLOR_GREEN, COLOR_BLACK);
-  init_pair(COL_ALERT, COLOR_RED, COLOR_BLACK);
+  init_pair(COL_ALERT, COLOR_YELLOW, COLOR_BLACK);
 }
 void show_prompt(ui_t *ui) {
   wmove(ui->prompt, 1, 1);
@@ -139,9 +139,7 @@ void *read_loop(void *data) {
     }
   }
   session_disconnect(context->s);
-  gui_unpair_session(context);
-  display_alert_message(context, "The chat has terminated."); 
-  gui_destroy(context);
+  display_alert_message(context, "The chat has terminated. Type :q to end the session."); 
   return NULL;
 }
 void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
