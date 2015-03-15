@@ -73,14 +73,18 @@ void *secure_comms_bootstrap_listener(void *args) {
   jnx_char buffer[2048];
   while(s->is_connected) {
     bzero(buffer,2048);
-    jnx_size bytes_read = read(s->secure_comms_fd,
+    int bytes_read = read(s->secure_comms_fd,
         buffer,2048);
-
+    printf("Bytes read = %d\n", bytes_read);
     if (bytes_read > 0) { 
       jnx_char *decrypted_message = 
         symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
 
       s->session_callback(s->gui_context, &s->session_guid, decrypted_message);
+    }
+    else {
+      session_disconnect(s);
+      s->is_connected = 0;
     }
   }
   return NULL;
