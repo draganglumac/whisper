@@ -57,8 +57,8 @@ gui_context_t *gui_create(session *s) {
   display_logo();
   ui->screen = newwin(LINES - 6, COLS - 1, 1, 1);
   scrollok(ui->screen, TRUE);
-  //  box(ui->screen, 0, 0);
-  wborder(ui->screen, '|', '|', '-', '-', '+', '+', '+', '+');
+  box(ui->screen, 0, 0);
+//  wborder(ui->screen, '|', '|', '-', '-', '+', '+', '+', '+');
   ui->next_line = 1;
   wrefresh(ui->screen);
   ui->prompt = newwin(4, COLS - 1, LINES - 5, 1);

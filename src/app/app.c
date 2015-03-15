@@ -60,8 +60,6 @@ static jnx_int32 user_accept_reject(jnx_uint8 *payload, jnx_size bytesread,
   if (0 == strncmp((char *) payload, "a", bytesread)
       || 0 == strncmp((char *) payload, "accept", bytesread)) {
     ar->abort = 0;
-    write(remote_sock->socket, 
-        (void *) ar->session_guid, sizeof(jnx_guid));
   }
   else {
     ar->abort = 1;
@@ -70,11 +68,14 @@ static jnx_int32 user_accept_reject(jnx_uint8 *payload, jnx_size bytesread,
 }
 int app_accept_or_reject_session(discovery_service *ds,
     jnx_guid *initiator_guid, jnx_guid *session_guid) {
-  char sockpath[128];
+  char sockpath[128], guidpath[128];
   get_session_interaction_path(sockpath);
+  get_recieve_guid_path(guidpath);
   unlink(sockpath);
-  jnx_unix_socket *s = jnx_unix_stream_socket_create(sockpath);
-  int abort; 
+  unlink(guidpath);
+  jnx_unix_socket *s = jnx_unix_stream_socket_create(sockpath),
+                  *gs = jnx_unix_stream_socket_create(guidpath);
+  int abort;
   peer *p = peerstore_lookup(ds->peers, initiator_guid);
   printf("You have a chat request from %s. %s",
       p->user_name, "Would you like to accept or reject the chat? [a/r]: ");
@@ -83,6 +84,8 @@ int app_accept_or_reject_session(discovery_service *ds,
   ar.session_guid = session_guid;
   jnx_unix_stream_socket_listen_with_context(
       s, 1, user_accept_reject, (void *) &ar);
+  jnx_unix_stream_socket_send(gs, (void *) session_guid, sizeof(jnx_guid));
+  jnx_unix_socket_destroy(&gs);
   jnx_unix_socket_destroy(&s);
   return ar.abort;
 }
@@ -334,13 +337,24 @@ void app_destroy_context(app_context_t **context) {
   free(*context);
   *context = NULL;
 }
+static jnx_int32 read_guid(jnx_uint8* buffer, jnx_size bytesread,
+    jnx_unix_socket *remote_sock, void *context) {
+  jnx_guid *guid = (jnx_guid *) context;
+  JNXCHECK(bytesread == sizeof(jnx_guid));
+  memcpy((void *) guid, buffer, bytesread);
+  return END_LISTEN;
+}
 session *app_accept_chat(app_context_t *context) {
-  char sockpath[128];
+  char sockpath[128], guidpath[128];
   get_session_interaction_path(sockpath);
-  jnx_unix_socket *us = jnx_unix_stream_socket_create(sockpath);
+  get_recieve_guid_path(guidpath);
+  jnx_unix_socket *us = jnx_unix_stream_socket_create(sockpath),
+                  *gs = jnx_unix_stream_socket_create(guidpath);
   jnx_unix_stream_socket_send(us, (jnx_uint8 *) "accept",
       strlen("accept"));
   jnx_guid session_guid;
+  jnx_unix_stream_socket_listen_with_context(gs, 1, read_guid,
+      (void *) &session_guid);
   read(us->socket, (void *) &session_guid, sizeof(jnx_guid));
 #ifdef DEBUG
   char *guid_str;
@@ -348,6 +362,7 @@ session *app_accept_chat(app_context_t *context) {
   printf("[DEBUG] Received SessionGUID = %s\n", guid_str);
   free(guid_str);
 #endif
+  jnx_unix_socket_destroy(&gs);
   jnx_unix_socket_destroy(&us);
 
   session *osession = NULL;
