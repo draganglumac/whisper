@@ -78,13 +78,19 @@ void *secure_comms_bootstrap_listener(void *args) {
     if (bytes_read > 0) { 
       jnx_char *decrypted_message = 
         symmetrical_decrypt(s->shared_secret,buffer,strlen(buffer));
-
-      s->session_callback(s->gui_context, &s->session_guid, decrypted_message);
+      if (s->is_connected) {
+        s->session_callback(s->gui_context, &s->session_guid, decrypted_message);
+      }
+      else {
+        break;
+      }
     }
-    else if (bytes_read == 0) {
+    else {
       // the other side has closed the chat
-      session_disconnect(s);
-      s->session_callback(s->gui_context, &s->session_guid, "The chat has terminated. Type :q to end the session.");
+      if (s->is_connected) {
+        session_disconnect(s);
+        s->session_callback(s->gui_context, &s->session_guid, "The chat has terminated. Type :q to end the session.");
+      }
       break;
     }
   }

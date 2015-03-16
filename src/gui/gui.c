@@ -149,7 +149,6 @@ void gui_receive_message(void *gc, jnx_guid *session_guid, jnx_char *message) {
     display_remote_message(c, message);
   }
   else {
-    session_disconnect(c->s);
     display_alert_message(c, message);
   }
 }
