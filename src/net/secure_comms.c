@@ -85,7 +85,7 @@ void *secure_comms_bootstrap_listener(void *args) {
         break;
       }
     }
-    else if (bytes_read == 0) {
+    else {
       // the other side has closed the chat
       session_disconnect(s);
       s->session_callback(s->gui_context, &s->session_guid, "The chat has terminated. Type :q to end the session.");
