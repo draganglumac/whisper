@@ -329,6 +329,8 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
  // set_up_sockets_for_broadcast(svc);
   svc->sock_send = jnx_socket_udp_create(svc->family);  
 
+  svc->isrunning = 1;
+  
   if (0 != listen_for_discovery_packets(svc)) {
     JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
     return ERR_DISCOVERY_START;
@@ -345,7 +347,6 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
     strategy(svc);
   }
 
-  svc->isrunning = 1;
   return 0;
 }
 int discovery_service_stop(discovery_service *svc) {
