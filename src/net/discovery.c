@@ -161,7 +161,8 @@ int is_active_peer_periodic_update(time_t last_update_time, peer *p) {
 jnx_int32 send_discovery_request(discovery_service *svc) {
   char *tmp = "LIST";
   char *port = port_to_string(svc);
-  jnx_socket_udp_send(svc->sock_send, svc->broadcast_group_address, port, (jnx_uint8 *) tmp, 5);	
+  jnx_socket_udp_broadcast_send(svc->sock_send, 
+    svc->broadcast_group_address, port, (jnx_uint8 *) tmp, 5);	
   return 0;
 }
 
@@ -240,7 +241,6 @@ void discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesread, void *con
   else {
     JNX_LOG(0, "[DISCOVERY] Received unknown command. Ignoring the packet.");
   }
-  free(payload);
   return;
 }
 static void ensure_listening_on_port(int port) {
@@ -328,7 +328,7 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
   // or changing the function signature and calling either
   // set_up_sockets_for_broadcast or set_up_sockets_for_multicast.
  // set_up_sockets_for_broadcast(svc);
-  svc->sock_send = jnx_socket_udp_create(svc->family);
+  svc->sock_send = jnx_socket_udp_create(svc->family);  
 
   if (0 != listen_for_discovery_packets(svc)) {
     JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
