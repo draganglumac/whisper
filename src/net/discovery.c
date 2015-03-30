@@ -222,7 +222,8 @@ jnx_int32 broadcast_update_strategy(discovery_service *svc) {
 }
 
 // Discovery listener and loop - async thread
-static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesread, jnx_socket *s, void *context) {
+
+void discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesread, void *context) {
   discovery_service *svc = (discovery_service *) context;
   char command[5];
   memset(command, 0, 5);
@@ -234,13 +235,13 @@ static jnx_int32 discovery_receive_handler(jnx_uint8 *payload, jnx_size bytesrea
     handle_peer(svc, payload + 4, bytesread - 4);
   }
   else if (0 == strcmp(command, "STOP")) {
-    return handle_stop(svc, payload + 4, bytesread - 4);
+    return;
   }
   else {
     JNX_LOG(0, "[DISCOVERY] Received unknown command. Ignoring the packet.");
   }
   free(payload);
-  return 0;
+  return;
 }
 static void ensure_listening_on_port(int port) {
   // Until we find a smarter strategy just sleep a little
@@ -251,9 +252,12 @@ static void *discovery_loop(void* data) {
 //  pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
   discovery_service *svc = (discovery_service*) data;
   char *port = port_to_string(svc);
-  jnx_socket_udp_listen_with_context(svc->sock_receive, port, 0, svc->receive_callback, data);
+  while(1){
+    jnx_socket_udp_listener_tick(svc->udp_listener,svc->receive_callback,
+      data);
+  }
   free(port);
-  return NULL;
+  return;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
   svc->listening_thread = jnx_thread_create(discovery_loop, (void*) svc);
@@ -269,19 +273,16 @@ void cancel_thread(jnx_thread **thr) {
 }
 
 // Broadcast or Multicast - call the appropriate function
+/*
 static void set_up_sockets_for_broadcast(discovery_service *svc) {
-  svc->sock_receive = jnx_socket_udp_create(svc->family);
-  jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_receive);
   svc->sock_send = jnx_socket_udp_create(svc->family);
   jnx_socket_udp_enable_broadcast_send_or_listen(svc->sock_send);
 }
 static void set_up_sockets_for_multicast(discovery_service *svc) {
-  svc->sock_receive = jnx_socket_udp_create(svc->family);
-  jnx_socket_udp_enable_multicast_listen(svc->sock_receive, "todo", "todo");
   svc->sock_send = jnx_socket_udp_create(svc->family);
   jnx_socket_udp_enable_multicast_send(svc->sock_send, "todo", 1);
 }
-
+*/
 // Public interface functions
 void get_local_ip(char **local_ip) {
 	*local_ip = calloc(16, sizeof(char));
@@ -325,7 +326,7 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
   // It should just be a simple matter of passing a flag to the service
   // or changing the function signature and calling either
   // set_up_sockets_for_broadcast or set_up_sockets_for_multicast.
-  set_up_sockets_for_broadcast(svc);
+ // set_up_sockets_for_broadcast(svc);
 
   if (0 != listen_for_discovery_packets(svc)) {
     JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
@@ -355,7 +356,6 @@ int discovery_service_stop(discovery_service *svc) {
   send_stop_packet(svc);
   pthread_join(svc->listening_thread->system_thread, NULL);
 
-  jnx_socket_destroy(&(svc->sock_receive));
   jnx_socket_destroy(&(svc->sock_send));
   return 0;
 }
@@ -365,6 +365,7 @@ void discovery_service_cleanup(discovery_service **ppsvc) {
   if (svc->isrunning) {
     discovery_service_stop(svc);
   }
+  jnx_socket_udp_listener_destroy(&svc->udp_listener);
   jnx_thread_mutex_destroy(&svc->update_time_lock);
   peerstore_destroy(&(svc->peers));
   free(svc);

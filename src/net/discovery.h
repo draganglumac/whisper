@@ -29,7 +29,7 @@ typedef struct {
   int port;
   unsigned int family;
   jnx_socket *sock_send;
-  jnx_socket *sock_receive;
+  jnx_udp_listener *udp_listener;
   char *broadcast_group_address;
   jnx_udp_listener_callback receive_callback;
   int isrunning;
@@ -38,6 +38,8 @@ typedef struct {
   jnx_thread *listening_thread;  
   time_t last_updated; // synchronised
   jnx_thread_mutex *update_time_lock;
+
+
 } discovery_service;
 
 typedef jnx_int32 (discovery_strategy)(discovery_service *);
