@@ -294,7 +294,8 @@ void get_broadcast_ip(char **broadcast_ip) {
 	get_ip(*broadcast_ip, filter_broadcast_address);
 	JNX_LOG(0, "Broadcast IP is %s", *broadcast_ip); 
 }
-discovery_service* discovery_service_create(int port, unsigned int family, char *broadcast_group_address, peerstore *peers) {
+discovery_service* discovery_service_create(int port, unsigned int family,
+ char *broadcast_group_address, peerstore *peers) {
   discovery_service *svc = calloc(1, sizeof(discovery_service));
   svc->port = port;
   svc->family = family;
@@ -327,6 +328,7 @@ int discovery_service_start(discovery_service *svc, discovery_strategy *strategy
   // or changing the function signature and calling either
   // set_up_sockets_for_broadcast or set_up_sockets_for_multicast.
  // set_up_sockets_for_broadcast(svc);
+  svc->sock_send = jnx_socket_udp_create(svc->family);
 
   if (0 != listen_for_discovery_packets(svc)) {
     JNX_LOG(0, "[DISCOVERY] Couldn't start the discovery listener.\n");
