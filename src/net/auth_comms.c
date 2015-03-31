@@ -48,7 +48,7 @@ static void listener_callback(const jnx_uint8 *payload,
   transport_options *t = (transport_options*)context;
   void *object;
   int abort_token = 0;
-  if(handshake_did_receive_initiator_request(payload,bytes_read,&object)) {
+  if(handshake_did_receive_initiator_request((jnx_char*)payload,bytes_read,&object)) {
     AuthInitiator *a = (AuthInitiator*)object;
     /*
      *At this point the receiver does not have a session for PeerA/B
