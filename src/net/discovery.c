@@ -252,12 +252,11 @@ static void *discovery_loop(void* data) {
 //  pthread_setcancelstate(PTHREAD_CANCEL_ASYNCHRONOUS, &old_cancel_state);
   discovery_service *svc = (discovery_service*) data;
   char *port = port_to_string(svc);
-  while(1){
+  while(svc->isrunning){
     jnx_socket_udp_listener_tick(svc->udp_listener,svc->receive_callback,
       data);
   }
   free(port);
-  return;
 }
 static jnx_int32 listen_for_discovery_packets(discovery_service *svc) {
   svc->listening_thread = jnx_thread_create(discovery_loop, (void*) svc);
