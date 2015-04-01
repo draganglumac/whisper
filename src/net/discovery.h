@@ -32,7 +32,7 @@ typedef struct {
   jnx_udp_listener *udp_listener;
   char *broadcast_group_address;
   jnx_udp_listener_callback receive_callback;
-  volatile int isrunning;
+  int isrunning;
   peerstore *peers; // synchronised
   jnx_thread *update_thread;
   jnx_thread *listening_thread;  
