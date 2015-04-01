@@ -85,7 +85,7 @@ static void listener_callback(const jnx_uint8 *payload,
       /* free data */
       free(onetbuffer);    
       auth_initiator__free_unpacked(a,NULL);
-      
+
       if(abort_token) {
         printf("Aborting session.\n");
       }
@@ -142,7 +142,7 @@ static void *listener_bootstrap(void *args) {
   transport_options *t = (transport_options*)args;
   while(1) {
     jnx_socket_tcp_listener_tick(t->ac->listener,
-      listener_callback,t);
+        listener_callback,t);
   }
 }
 auth_comms_service *auth_comms_create() {
@@ -187,7 +187,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
   printf("Received reply on initial handshake.\n");
   if(handshake_did_receive_receiver_request(reply,replysize,&object)) {
     AuthReceiver *r = (AuthReceiver *)object;
- 
+
     /* first thing we check is if we should abort */
     if(r->should_abort) {
       printf("Handshake has been rejected.\n");
@@ -195,7 +195,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
       auth_receiver__free_unpacked(r,NULL);
       return;
     }
-    
+
     /* At this point we have a session with the receiver public key
        we can generate the shared secret and transmit it back */
     jnx_uint8 *secret;
