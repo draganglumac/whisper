@@ -6,10 +6,10 @@
   
   
   Example of session initiator:
-  ![Sender](http://showterm.io/84a6e4faaf26cacf26b70)
+  [Sender](http://showterm.io/84a6e4faaf26cacf26b70)
   
   Example of receiver of session:
-  ![Receiver](http://showterm.io/d5b18c422e701d2b8a441)
+  [Receiver](http://showterm.io/d5b18c422e701d2b8a441)
 
 ---
 ##For Developers
