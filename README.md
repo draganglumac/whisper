@@ -14,6 +14,8 @@
 ---
 ##For Developers
 
+[![Join the chat at https://gitter.im/AlexsJones/whisper](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AlexsJones/whisper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/AlexsJones/whisper.svg?branch=master)](https://travis-ci.org/AlexsJones/whisper)
 
 Status: In active development, not ready for general consumption.
