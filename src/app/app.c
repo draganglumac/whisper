@@ -21,7 +21,7 @@
 #include <jnxc_headers/jnxterm.h>
 #include <jnxc_headers/jnxthread.h>
 #include <jnxc_headers/jnx_tcp_socket.h>
- #include <jnxc_headers/jnx_udp_socket.h>
+#include <jnxc_headers/jnx_udp_socket.h>
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
@@ -324,8 +324,8 @@ void set_up_auth_comms(app_context_t *context) {
   context->auth_comms = auth_comms_create();
   context->auth_comms->ar_callback = app_accept_or_reject_session;
   context->auth_comms->listener = jnx_socket_tcp_listener_create("9991",
-    AF_INET,15);
-  
+      AF_INET,15);
+
   auth_comms_listener_start(context->auth_comms,context->discovery,context->session_serv);
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
@@ -379,7 +379,7 @@ session *app_accept_chat(app_context_t *context) {
   session *osession = NULL;
   while (SESSION_STATE_NOT_FOUND 
       == session_service_fetch_session(context->session_serv,
-            &session_guid, &osession)) {
+        &session_guid, &osession)) {
     sleep(1);
   }
   while (osession->secure_comms_fd == 0) {
