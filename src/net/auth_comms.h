@@ -8,7 +8,7 @@
 #ifndef AUTH_COMMS_H
 #define AUTH_COMMS_H
 #include "../net/discovery.h"
-#include <jnxc_headers/jnxsocket.h>
+#include <jnxc_headers/jnx_tcp_socket.h>
 #include "../session/session.h"
 #include "../session/session_service.h"
 #include <jnxc_headers/jnxthread.h>
@@ -16,11 +16,9 @@
 typedef int (*accept_reject_callback)(discovery_service *, jnx_guid *, jnx_guid *);
 
 typedef struct auth_comms_service {
-  jnx_socket *listener_socket;
-  jnx_unsigned_int listener_family;
-  jnx_char *listener_port;
+  jnx_tcp_listener *listener;
   jnx_thread *listener_thread;
-  tcp_socket_listener_callback_with_context listener_callback;
+  jnx_tcp_listener_callback listener_callback;
   accept_reject_callback ar_callback;
 }auth_comms_service;
 

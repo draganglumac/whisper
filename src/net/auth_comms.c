@@ -42,13 +42,13 @@ static jnx_uint8 *send_data_await_reply(jnx_char *hostname, jnx_char *port,
   jnx_socket_destroy(&sock);
   return reply;
 }
-static jnx_int32 listener_callback(jnx_uint8 *payload,
-    jnx_size bytes_read, jnx_socket *s,int connected_socket, void *context) {
+static void listener_callback(const jnx_uint8 *payload,
+    jnx_size bytes_read, int connected_socket, void *context) {
 
   transport_options *t = (transport_options*)context;
   void *object;
   int abort_token = 0;
-  if(handshake_did_receive_initiator_request(payload,bytes_read,&object)) {
+  if(handshake_did_receive_initiator_request((jnx_char*)payload,bytes_read,&object)) {
     AuthInitiator *a = (AuthInitiator*)object;
     /*
      *At this point the receiver does not have a session for PeerA/B
@@ -89,7 +89,7 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       if(abort_token) {
         printf("Aborting session.\n");
       }
-      return 0;
+      return;
     }
     if(!a->is_requesting_public_key && a->is_requesting_finish){
       printf("Did receive encrypted shared secret.\n"); 
@@ -129,22 +129,21 @@ static jnx_int32 listener_callback(jnx_uint8 *payload,
       osession->is_connected = 1;
       printf("Handshake complete.\n");
       printf("Starting secure comms channel.\n");
-      secure_comms_receiver_start(t->ds,osession,t->ac->listener_family);
+      secure_comms_receiver_start(t->ds,osession,t->ac->listener->socket->addrfamily);
       /* free data */
       jnx_encoder_destroy(&encoder);
       auth_initiator__free_unpacked(a,NULL);
-      return 0;
+      return;
     }
   } 
-  return 0;
+  return;
 }
 static void *listener_bootstrap(void *args) {
-  transport_options *t = (transport_options *)args;
-  JNXCHECK(t->ac->listener_socket);
-  JNXCHECK(t->ac->listener_port);
-  jnx_socket_tcp_listen_with_context(t->ac->listener_socket,
-      t->ac->listener_port,100,listener_callback,t);
-  free(t);
+  transport_options *t = (transport_options*)args;
+  while(1) {
+    jnx_socket_tcp_listener_tick(t->ac->listener,
+      listener_callback,t);
+  }
 }
 auth_comms_service *auth_comms_create() {
   return malloc(sizeof(auth_comms_service));
@@ -159,7 +158,7 @@ void auth_comms_listener_start(auth_comms_service *ac, discovery_service *ds,
   ac->listener_thread = jnx_thread_create(listener_bootstrap,ts);
 }
 void auth_comms_destroy(auth_comms_service **ac) {
-  jnx_socket_destroy(&(*ac)->listener_socket);
+  jnx_socket_tcp_listener_destroy(&(*ac)->listener);
 }
 void auth_comms_initiator_start(auth_comms_service *ac, \
     discovery_service *ds, session *s, jnx_char *secure_port) {
@@ -179,8 +178,8 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
 
   printf("Generated initial handshake...[%d/bytes]\n",bytes_read);
   jnx_size replysize;
-  jnx_uint8 *reply = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
-      ac->listener_family,
+  jnx_uint8 *reply = send_data_await_reply(remote_peer->host_address,"9991", 
+      ac->listener->socket->addrfamily,
       obuffer,bytes_read,&replysize);
 
   /* expect an AuthReceiver public key reply here */
@@ -224,8 +223,8 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
     bytes_read = handshake_generate_finish_request(s,encoded_secret,encoded_len,&fbuffer);
 
     jnx_size replysizetwo;
-    jnx_uint8 *replytwo = send_data_await_reply(remote_peer->host_address,ac->listener_port, 
-        ac->listener_family,
+    jnx_uint8 *replytwo = send_data_await_reply(remote_peer->host_address,"9991", 
+        ac->listener->socket->addrfamily,
         fbuffer,bytes_read,&replysizetwo);
 
     /* free data */
@@ -247,7 +246,7 @@ void auth_comms_initiator_start(auth_comms_service *ac, \
       if(ar->is_receiving_finish == 1 && ar->is_receiving_public_key == 0) {
         s->is_connected = 1;
         printf("Handshake complete.\n");
-        secure_comms_initiator_start(ds,s,ac->listener_family);
+        secure_comms_initiator_start(ds,s,ac->listener->socket->addrfamily);
       }
       /* free data */
       free(replytwo);

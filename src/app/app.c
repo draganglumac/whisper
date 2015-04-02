@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <jnxc_headers/jnxterm.h>
 #include <jnxc_headers/jnxthread.h>
+#include <jnxc_headers/jnx_tcp_socket.h>
+ #include <jnxc_headers/jnx_udp_socket.h>
 #include "app.h"
 #include "../gui/gui.h"
 #include "../net/auth_comms.h"
@@ -248,6 +250,13 @@ static void set_up_discovery_service(app_context_t *context) {
   }
 
   context->discovery = discovery_service_create(port, AF_INET, broadcast_address, ps);
+
+  jnx_char buffer[38];
+  bzero(buffer,38);
+  sprintf(buffer,"%d",port);
+
+  context->discovery->udp_listener = jnx_socket_udp_listener_broadcast_create(buffer,AF_INET);
+
   char *discovery_strategy = (char *) jnx_hash_get(config, "DISCOVERY_STRATEGY");
   if (NULL == discovery_strategy) {
     JNX_LOG(0, "Starting discovery service with heartbeat srategy.");
@@ -310,11 +319,9 @@ void set_up_session_service(app_context_t *context){
 void set_up_auth_comms(app_context_t *context) {
   context->auth_comms = auth_comms_create();
   context->auth_comms->ar_callback = app_accept_or_reject_session;
-  context->auth_comms->listener_port = malloc(strlen("9991")+1);
-  bzero(context->auth_comms->listener_port,strlen("9991")+1);
-  strcpy(context->auth_comms->listener_port,"9991");
-  context->auth_comms->listener_family = AF_INET;
-  context->auth_comms->listener_socket = jnx_socket_tcp_create(AF_INET);
+  context->auth_comms->listener = jnx_socket_tcp_listener_create("9991",
+    AF_INET,15);
+  
   auth_comms_listener_start(context->auth_comms,context->discovery,context->session_serv);
 }
 app_context_t *app_create_context(jnx_hashmap *config) {
