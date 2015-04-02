@@ -3,6 +3,12 @@
   Take that idea and apply it to your everyday workplace where having an outspoken opinion remains locked away due to fear of leaving a digital footprint.
   Whisper aims to help provide a platform for inter-domain level chat.
   Using dynamically generated dual encrypted one time sessions; we're giving you the tools to speak your mind without   worrying about who is listening in.
+  
+  
+  Example of session initiator:
+  ![Sender](http://showterm.io/84a6e4faaf26cacf26b70)
+  Example of receiver of session:
+  ![Receiver](http://showterm.io/d5b18c422e701d2b8a441)
 
 ---
 ##For Developers
